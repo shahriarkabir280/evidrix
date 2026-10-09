@@ -54,7 +54,8 @@ class Document(Base):
     error_code: Mapped[str | None] = mapped_column(String(64))
     error_message: Mapped[str | None] = mapped_column(Text)
     page_count: Mapped[int | None]
-    extracted_text: Mapped[str | None] = mapped_column(Text)
+    # Deferred: loaded only when accessed, so listing documents doesn't pull full texts.
+    extracted_text: Mapped[str | None] = mapped_column(Text, deferred=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
 

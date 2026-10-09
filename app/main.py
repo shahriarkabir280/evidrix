@@ -5,7 +5,7 @@ Component 1A · Plan: Part 1, step 1 and §10.
 
 from fastapi import FastAPI
 
-from app.api.routes import health
+from app.api.routes import documents, health
 
 
 def create_app() -> FastAPI:
@@ -15,6 +15,7 @@ def create_app() -> FastAPI:
         version="0.1.0",
     )
     app.include_router(health.router)
+    app.include_router(documents.router)
     return app
 
 

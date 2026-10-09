@@ -4,6 +4,7 @@ Component 1A · Plan: Part 1, step 2.
 """
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -14,6 +15,8 @@ class Settings(BaseSettings):
 
     app_env: Literal["development", "test", "production"] = "development"
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix"
+    max_upload_bytes: int = 10_000_000
+    blob_dir: Path = Path("data/uploads")
 
 
 @lru_cache

@@ -10,11 +10,13 @@ from app.db import models  # noqa: F401  (registers every table on Base.metadata
 from app.db.base import Base
 
 config = context.config
-if config.config_file_name is not None:
+# Tests run migrations in-process; reconfiguring logging there would silence app loggers.
+if config.config_file_name is not None and config.attributes.get("configure_logger", True):
     fileConfig(config.config_file_name)
 
 target_metadata = Base.metadata
-database_url = get_settings().database_url
+# Tests pass their own URL via Config.attributes; normal runs use Settings (DATABASE_URL).
+database_url = config.attributes.get("database_url") or get_settings().database_url
 
 
 def run_migrations_offline() -> None:
