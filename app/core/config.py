@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
+    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix"
 
 
 @lru_cache
