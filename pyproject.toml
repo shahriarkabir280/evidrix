@@ -9,12 +9,14 @@ dependencies = [
     "pgvector>=0.5.1",
     "psycopg[binary]>=3.3.6",
     "pydantic-settings>=2.15.0",
+    "pypdf[crypto]>=6.19.0",
     "sqlalchemy>=2.1.4",
     "uvicorn[standard]>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "fpdf2>=2.8.9",
     "httpx2>=2.13.1",
     "pytest>=9.1.1",
     "ruff>=0.16.10",
