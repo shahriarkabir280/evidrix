@@ -16,16 +16,15 @@ with schemas, interfaces, tests, and acceptance criteria.
 
 ### How we build each component
 
-| Step | What happens | Who |
-|---|---|---|
-| 1. **Concept** | Short explanation of the idea behind the component, plus a small hands-on experiment (REPL, `psql`, or a scratch script). | Claude explains, you experiment |
-| 2. **Design** | Agree on the interface: function signatures, table columns, endpoint shape. Push back if something seems wrong. | Together |
-| 3. **Tests first** | Write failing tests that specify the behavior. The tests are the spec. | Together |
-| 4. **Implement** | You write the core logic. Claude writes or explains boilerplate (config, wiring) when it adds nothing to learning. | Mostly you |
-| 5. **Review** | Claude reviews your code for bugs, edge cases, and idioms, and explains each comment. | Claude |
-| 6. **Reflect** | Answer the part's "check your understanding" questions in your own words, add a `docs/devlog.md` entry, commit. | You |
+| Step | What happens |
+|---|---|
+| 1. **Concept** | Short explanation of the idea behind the component. |
+| 2. **Tests + code** | Claude writes the tests (the spec) and the implementation. |
+| 3. **Run** | Tests, lint, and the running app, so you see it work. |
+| 4. **Explain** | File by file: what each library and line does, why it was chosen over the alternatives, and what would break without it. |
+| 5. **Reflect** | Answer the "check your understanding" questions, ask anything unclear, add a `docs/devlog.md` entry, commit. |
 
-The core components where writing the code yourself teaches the most: extraction, the chunker,
+The components with the most to learn from, worth reading line by line: extraction, the chunker,
 retrieval SQL, RRF fusion, citation validation, eval metrics, the job claim/idempotency logic, and the
 authorization filters.
 
@@ -1081,7 +1080,7 @@ rm -f main.py hello.py                     # remove uv's sample file if created
 
 uv add fastapi "uvicorn[standard]" pydantic-settings sqlalchemy "psycopg[binary]" \
        pgvector alembic pypdf python-multipart
-uv add --dev pytest httpx ruff pytest-cov
+uv add --dev pytest httpx2 ruff pytest-cov
 
 # The directory structure and stub modules already exist (each stub's docstring names its component).
 # `migrations/` is created later by `alembic init migrations` in component 1B.
