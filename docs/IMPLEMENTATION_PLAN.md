@@ -1083,10 +1083,8 @@ uv add fastapi "uvicorn[standard]" pydantic-settings sqlalchemy "psycopg[binary]
        pgvector alembic pypdf python-multipart
 uv add --dev pytest httpx ruff pytest-cov
 
-mkdir -p app/{api/routes,core,db/repositories,rag/prompts,services,storage,worker} \
-         tests/{unit,integration,api,security,fixtures} evals/{corpus,results} \
-         configs/retrieval scripts docs/adr migrations
-find app tests -type d -exec touch {}/__init__.py \;
+# The directory structure and stub modules already exist (each stub's docstring names its component).
+# `migrations/` is created later by `alembic init migrations` in component 1B.
 
 cat > .gitignore <<'EOF'
 .venv/
