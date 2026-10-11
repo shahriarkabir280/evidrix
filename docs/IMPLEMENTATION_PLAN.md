@@ -928,6 +928,7 @@ judge, and split fixed across all runs.
 | E4 | chunk size | 256 vs 400 tokens (best config from E1–E3; needs a second `index_version` → `cli reindex --index-version …`) |
 | E5 | retrieval depth | top-k 3 / 5 / 8 → answer quality vs tokens/cost |
 | E6 (optional) | contextual header | on / off |
+| E7 (optional) | bge query instruction | on / off (an 8-question preview in component 2C showed no difference: MRR 0.823 without vs 0.812 with) |
 
 **Error analysis.** Classify every failed test question (and dev failures for the final config):
 - Retrieval failures: vocabulary mismatch · answer split across a chunk boundary · distractor ranked above

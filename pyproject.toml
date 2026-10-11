@@ -13,6 +13,7 @@ dependencies = [
     "python-multipart>=0.0.32",
     "sentence-transformers>=6.1.0",
     "sqlalchemy>=2.1.4",
+    "torch>=2.14.1",
     "uvicorn[standard]>=0.54.0",
 ]
 
@@ -39,4 +40,15 @@ addopts = "-q"
 markers = [
     "integration: needs Postgres/Redis",
     "live: calls real model providers",
+    "model: loads a real local ML model (downloads it on first run)",
 ]
+
+# On Linux (CI, Docker) install CPU-only torch; the default Linux wheels bundle several GB of
+# NVIDIA CUDA libraries we never use. macOS keeps the normal PyPI wheel (with Apple MPS support).
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]

@@ -18,6 +18,13 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 10_000_000
     blob_dir: Path = Path("data/uploads")
 
+    embedding_model: str = "BAAI/bge-small-en-v1.5"
+    # bge-v1.5 retrieves better when queries (not documents) carry this instruction.
+    # The model's own sentence-transformers config leaves the query prompt empty.
+    embedding_query_instruction: str = "Represent this sentence for searching relevant passages: "
+    embedding_device: Literal["auto", "cpu", "mps", "cuda"] = "auto"
+    embedding_batch_size: int = 32
+
 
 @lru_cache
 def get_settings() -> Settings:
