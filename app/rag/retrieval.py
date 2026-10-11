@@ -146,6 +146,9 @@ class RetrievalConfig(BaseModel):
     # rerank), so each preset needs its own value, calibrated on the dev split (evals/
     # calibrate_abstention.py). None disables the gate.
     min_score: float | None = None
+    # Leave out chunks in a "References" / "Bibliography" section (research papers): citation
+    # lists are keyword-dense but rarely contain an answer.
+    exclude_references: bool = False
 
     @model_validator(mode="after")
     def _pool_holds_the_results(self) -> "RetrievalConfig":
@@ -196,6 +199,7 @@ def retrieve(
         "index_version_id": index_version_id,
         "k": fetch,
         "document_ids": document_ids,
+        "exclude_references": config.exclude_references,
     }
     legs: dict[str, list[ChunkHit]] = {}
 

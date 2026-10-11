@@ -4,6 +4,7 @@ Component 4E.
 
     uv run python -m evals.run --preset hybrid_rerank --split dev --mode retrieval
     uv run python -m evals.run --preset hybrid_rerank --split dev --mode full
+    uv run python -m evals.run --benchmark papers --preset hybrid_rerank --split dev
 
 `retrieval` scores only what was retrieved (seconds). `full` also generates answers with the
 production answer path and grades them with the judge (minutes; uses the local LLM).
@@ -36,7 +37,13 @@ from app.rag.llm import LLMError, get_llm
 from app.rag.rerank import get_reranker
 from app.rag.retrieval import load_preset, retrieve
 from app.services.answering import answer_question
-from evals.benchmark import QUESTIONS_PATH, Question, evidence_items, load_questions
+from evals.benchmark import (
+    PAPERS_QUESTIONS_PATH,
+    QUESTIONS_PATH,
+    Question,
+    evidence_items,
+    load_questions,
+)
 from evals.judge import CORRECTNESS_PROMPT, FAITHFULNESS_PROMPT, JudgeError, get_judge
 from evals.metrics import (
     SourceSpan,
@@ -50,6 +57,11 @@ RESULTS_DIR = Path(__file__).parent / "results"
 # Answers saved between the generation and judge passes (not committed).
 WORK_DIR = RESULTS_DIR / "work"
 MANIFEST_PATH = Path(__file__).parent / "corpus" / "manifest.json"
+# Each benchmark searches only its own collection of the corpus.
+BENCHMARKS = {
+    "docs": {"questions": QUESTIONS_PATH, "collection": "docs"},
+    "papers": {"questions": PAPERS_QUESTIONS_PATH, "collection": "papers"},
+}
 RETRIEVAL_METRICS = ("recall", "all_evidence", "hit", "mrr", "ndcg")
 
 
@@ -248,12 +260,15 @@ def _latency(rows: list[dict[str, Any]]) -> dict[str, dict[str, float]]:
     return out
 
 
-def provenance(preset: str, config, split: str, mode: str, k: int, index_version: str) -> dict:
+def provenance(
+    benchmark: str, preset: str, config, split: str, mode: str, k: int, index_version: str
+) -> dict:
     settings = get_settings()
     info = {
         "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "git_commit": _git("rev-parse", "HEAD"),
         "git_dirty": bool(_git("status", "--porcelain")),
+        "benchmark": benchmark,
         "preset": preset,
         "retrieval": config.model_dump(),
         "split": split,
@@ -262,7 +277,9 @@ def provenance(preset: str, config, split: str, mode: str, k: int, index_version
         "index_version": index_version,
         "embedding_model": settings.embedding_model,
         "reranker_model": settings.reranker_model if config.rerank else None,
-        "benchmark_sha256": hashlib.sha256(QUESTIONS_PATH.read_bytes()).hexdigest(),
+        "benchmark_sha256": hashlib.sha256(
+            BENCHMARKS[benchmark]["questions"].read_bytes()
+        ).hexdigest(),
         "corpus_manifest_sha256": hashlib.sha256(MANIFEST_PATH.read_bytes()).hexdigest(),
     }
     if mode == "full":
@@ -284,15 +301,16 @@ def _git(*args: str) -> str:
         return "unknown"
 
 
-def run(preset: str, split: str, mode: str, k: int, limit: int | None) -> Path:
+def run(benchmark: str, preset: str, split: str, mode: str, k: int, limit: int | None) -> Path:
     """Retrieve (and answer) every question. Full mode then hands judging to a fresh process."""
     config = load_preset(preset)
-    questions = load_questions(split=split)[:limit]
+    spec = BENCHMARKS[benchmark]
+    questions = load_questions(spec["questions"], split=split)[:limit]
     rows: list[dict[str, Any]] = []
     sources: list[list[str]] = []
     started = time.perf_counter()
     with get_session_factory()() as session:
-        documents = corpus_documents(session)
+        documents = corpus_documents(session, spec["collection"])
         index_version = index_versions_repo.get_active(session).name
         for n, question in enumerate(questions, start=1):
             row, passages = evaluate_question(
@@ -306,14 +324,14 @@ def run(preset: str, split: str, mode: str, k: int, limit: int | None) -> Path:
                 f"  [{n:2}/{len(questions)}] {question.id} {question.type:12} {status}", flush=True
             )
 
-    info = provenance(preset, config, split, mode, k, index_version)
+    info = provenance(benchmark, preset, config, split, mode, k, index_version)
     info["duration_s"] = round(time.perf_counter() - started, 1)
     if mode == "retrieval":
         return write_results(info, rows)
 
     # Save the answers before judging: if judging is interrupted it can be resumed with
     # --judge-from, without generating the answers again.
-    checkpoint = WORK_DIR / f"{_stamp()}_{preset}_{split}.json"
+    checkpoint = WORK_DIR / f"{_stamp()}_{_name(info)}.json"
     WORK_DIR.mkdir(parents=True, exist_ok=True)
     checkpoint.write_text(json.dumps({"provenance": info, "rows": rows, "sources": sources}))
     print(f"Saved answers to {checkpoint}", flush=True)
@@ -328,7 +346,8 @@ def judge_checkpoint(checkpoint: Path) -> Path:
     """Grade the answers saved by a full run, then write the results file."""
     saved = json.loads(checkpoint.read_text())
     info, rows, sources = saved["provenance"], saved["rows"], saved["sources"]
-    by_id = {q.id: q for q in load_questions()}
+    questions_path = BENCHMARKS[info.get("benchmark", "docs")]["questions"]
+    by_id = {q.id: q for q in load_questions(questions_path)}
     judge = get_judge()
     started = time.perf_counter()
     print(f"Judging {len(rows)} answers with {judge.model}...", flush=True)
@@ -344,9 +363,15 @@ def judge_checkpoint(checkpoint: Path) -> Path:
 def write_results(info: dict[str, Any], rows: list[dict[str, Any]]) -> Path:
     result = {"provenance": info, "summary": summarize(rows, info["mode"]), "questions": rows}
     RESULTS_DIR.mkdir(exist_ok=True)
-    path = RESULTS_DIR / f"{_stamp()}_{info['preset']}_{info['split']}_{info['mode']}.json"
+    path = RESULTS_DIR / f"{_stamp()}_{_name(info)}_{info['mode']}.json"
     path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
     return path
+
+
+def _name(info: dict[str, Any]) -> str:
+    """e.g. "hybrid_rerank_dev" for the documentation benchmark, "papers_hybrid_rerank_dev"."""
+    prefix = "" if info.get("benchmark", "docs") == "docs" else f"{info['benchmark']}_"
+    return f"{prefix}{info['preset']}_{info['split']}"
 
 
 def _stamp() -> str:
@@ -356,6 +381,7 @@ def _stamp() -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--preset", help="configs/retrieval/<name>.toml")
+    parser.add_argument("--benchmark", choices=sorted(BENCHMARKS), default="docs")
     parser.add_argument("--split", choices=["dev", "test"], default="dev")
     parser.add_argument("--mode", choices=["retrieval", "full"], default="retrieval")
     parser.add_argument("--k", type=int, default=5)
@@ -375,7 +401,7 @@ def main() -> None:
             "The test split is held out for the final report (Part 8). Tune on dev; "
             "pass --final only for the one final run."
         )
-    path = run(args.preset, args.split, args.mode, args.k, args.limit)
+    path = run(args.benchmark, args.preset, args.split, args.mode, args.k, args.limit)
     print(f"\nWrote {path}")
     print(json.dumps(json.loads(path.read_text())["summary"], indent=2))
 

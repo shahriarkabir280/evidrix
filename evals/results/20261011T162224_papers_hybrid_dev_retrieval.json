@@ -1,0 +1,874 @@
+{
+  "provenance": {
+    "created_at": "2026-10-11T16:22:24+00:00",
+    "git_commit": "2d306998d2359c88904401d510db7c7b1ed55b66",
+    "git_dirty": true,
+    "benchmark": "papers",
+    "preset": "hybrid",
+    "retrieval": {
+      "mode": "hybrid",
+      "rerank": false,
+      "top_k": 5,
+      "candidate_k": 20,
+      "rrf_k": 60,
+      "min_score": null,
+      "exclude_references": false
+    },
+    "split": "dev",
+    "mode": "retrieval",
+    "k": 5,
+    "index_version": "bge-small_c400_o64",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": null,
+    "benchmark_sha256": "790854ce6b3c5dbd98cbb076b133b6c30ee234060ffa4af927c5878eda402ee5",
+    "corpus_manifest_sha256": "9216ea461e5f02049d788d5f8f58689fd7d16f2e46705c404805f25e3f2b22d0",
+    "duration_s": 16.2
+  },
+  "summary": {
+    "questions": 13,
+    "errors": 0,
+    "retrieval": {
+      "recall": 0.5758,
+      "all_evidence": 0.5455,
+      "hit": 0.6364,
+      "mrr": 0.5303,
+      "ndcg": 0.4733
+    },
+    "retrieval_by_type": {
+      "distractor": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "factual": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.8333,
+        "ndcg": 0.875
+      },
+      "identifier": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "multi_hop": {
+        "recall": 0.1667,
+        "all_evidence": 0.0,
+        "hit": 0.5,
+        "mrr": 0.5,
+        "ndcg": 0.2346
+      },
+      "table": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.75,
+        "ndcg": 0.6186
+      }
+    },
+    "latency_ms": {
+      "embed": {
+        "p50": 14.2,
+        "p95": 22.8
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.1
+      },
+      "retrieve_dense": {
+        "p50": 5.5,
+        "p95": 9.2
+      },
+      "retrieve_keyword": {
+        "p50": 6.0,
+        "p95": 13.1
+      }
+    }
+  },
+  "questions": [
+    {
+      "id": "p002",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 88.1,
+        "retrieve_dense": 12.5,
+        "retrieve_keyword": 5.6,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0323,
+          "source": "papers/ragas.pdf",
+          "start": 14000,
+          "end": 15705,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0315,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0296,
+          "source": "papers/ragas.pdf",
+          "start": 20168,
+          "end": 21100,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0295,
+          "source": "papers/ragas.pdf",
+          "start": 26326,
+          "end": 27614,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0294,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.7,
+        "retrieve_dense": 7.7,
+        "retrieve_keyword": 7.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0328,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 17833,
+          "end": 19864,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0313,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 11344,
+          "end": 12823,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.031,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 19534,
+          "end": 20205,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0308,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 0,
+          "end": 1782,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0304,
+          "source": "papers/beir.pdf",
+          "start": 74029,
+          "end": 75801,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 17.3,
+        "retrieve_dense": 8.5,
+        "retrieve_keyword": 14.3,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0325,
+          "source": "papers/sentence-bert.pdf",
+          "start": 1186,
+          "end": 2814,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0325,
+          "source": "papers/sentence-bert.pdf",
+          "start": 2533,
+          "end": 4227,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0317,
+          "source": "papers/sentence-bert.pdf",
+          "start": 0,
+          "end": 1456,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 0.031,
+          "source": "papers/sentence-bert.pdf",
+          "start": 5523,
+          "end": 7168,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0294,
+          "source": "papers/sentence-bert.pdf",
+          "start": 31695,
+          "end": 32802,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      }
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.6,
+        "retrieve_dense": 7.4,
+        "retrieve_keyword": 7.3,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0328,
+          "source": "papers/e5.pdf",
+          "start": 8830,
+          "end": 10625,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0318,
+          "source": "papers/e5.pdf",
+          "start": 2506,
+          "end": 4237,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0304,
+          "source": "papers/e5.pdf",
+          "start": 29243,
+          "end": 30187,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0299,
+          "source": "papers/e5.pdf",
+          "start": 0,
+          "end": 1636,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0295,
+          "source": "papers/e5.pdf",
+          "start": 23899,
+          "end": 25335,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "p008",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.2,
+        "retrieve_dense": 9.2,
+        "retrieve_keyword": 3.5,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0313,
+          "source": "papers/e5.pdf",
+          "start": 54939,
+          "end": 56275,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0164,
+          "source": "papers/colbertv2.pdf",
+          "start": 73159,
+          "end": 74865,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0161,
+          "source": "papers/colbertv2.pdf",
+          "start": 12503,
+          "end": 14109,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0161,
+          "source": "papers/e5.pdf",
+          "start": 56148,
+          "end": 57121,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0159,
+          "source": "papers/ares.pdf",
+          "start": 9047,
+          "end": 10518,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "p010",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.1,
+        "retrieve_dense": 5.5,
+        "retrieve_keyword": 1.6,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.032,
+          "source": "papers/colbertv2.pdf",
+          "start": 21175,
+          "end": 22885,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0318,
+          "source": "papers/colbertv2.pdf",
+          "start": 73159,
+          "end": 74865,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0313,
+          "source": "papers/colbertv2.pdf",
+          "start": 74527,
+          "end": 75460,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0294,
+          "source": "papers/colbertv2.pdf",
+          "start": 22662,
+          "end": 23865,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0292,
+          "source": "papers/colbertv2.pdf",
+          "start": 71589,
+          "end": 73157,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "p012",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 15.8,
+        "retrieve_dense": 2.9,
+        "retrieve_keyword": 5.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.032,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0318,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.031,
+          "source": "papers/ares.pdf",
+          "start": 27574,
+          "end": 28952,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.031,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0296,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": true
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6240505200038379
+      }
+    },
+    {
+      "id": "p013",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.0,
+        "retrieve_dense": 2.4,
+        "retrieve_keyword": 6.0,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0325,
+          "source": "papers/sentence-bert.pdf",
+          "start": 30879,
+          "end": 31693,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0325,
+          "source": "papers/sentence-bert.pdf",
+          "start": 29682,
+          "end": 31121,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.0315,
+          "source": "papers/sentence-bert.pdf",
+          "start": 4004,
+          "end": 5521,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0304,
+          "source": "papers/sentence-bert.pdf",
+          "start": 31695,
+          "end": 32802,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0301,
+          "source": "papers/sentence-bert.pdf",
+          "start": 2533,
+          "end": 4227,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      }
+    },
+    {
+      "id": "p016",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.2,
+        "retrieve_dense": 2.2,
+        "retrieve_keyword": 4.4,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0325,
+          "source": "papers/beir.pdf",
+          "start": 15048,
+          "end": 16551,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.032,
+          "source": "papers/beir.pdf",
+          "start": 18131,
+          "end": 19106,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0307,
+          "source": "papers/beir.pdf",
+          "start": 14365,
+          "end": 15271,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0306,
+          "source": "papers/beir.pdf",
+          "start": 63578,
+          "end": 65387,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0305,
+          "source": "papers/beir.pdf",
+          "start": 3145,
+          "end": 4804,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "p017",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.6,
+        "retrieve_dense": 8.4,
+        "retrieve_keyword": 9.0,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0328,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 13646,
+          "end": 14871,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0323,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 17833,
+          "end": 19864,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0313,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 5893,
+          "end": 7016,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0301,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 0,
+          "end": 1782,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0301,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 19534,
+          "end": 20205,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.3333333333333333,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.46927872602275644
+      }
+    },
+    {
+      "id": "p020",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.2,
+        "retrieve_dense": 5.1,
+        "retrieve_keyword": 13.1,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0315,
+          "source": "papers/self-rag.pdf",
+          "start": 10866,
+          "end": 12531,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0311,
+          "source": "papers/self-rag.pdf",
+          "start": 19555,
+          "end": 21442,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0311,
+          "source": "papers/self-rag.pdf",
+          "start": 12273,
+          "end": 13533,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.031,
+          "source": "papers/self-rag.pdf",
+          "start": 13344,
+          "end": 14620,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0305,
+          "source": "papers/self-rag.pdf",
+          "start": 66212,
+          "end": 67957,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "p021",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 22.8,
+        "retrieve_dense": 2.8,
+        "retrieve_keyword": 3.8,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.032,
+          "source": "papers/ares.pdf",
+          "start": 2386,
+          "end": 4339,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0318,
+          "source": "papers/ragas.pdf",
+          "start": 0,
+          "end": 1472,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0288,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 22997,
+          "end": 24471,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0287,
+          "source": "papers/self-rag.pdf",
+          "start": 13344,
+          "end": 14620,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0272,
+          "source": "papers/ragas.pdf",
+          "start": 2930,
+          "end": 4664,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "p024",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.8,
+        "retrieve_dense": 2.3,
+        "retrieve_keyword": 6.1,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.032,
+          "source": "papers/ares.pdf",
+          "start": 30250,
+          "end": 31349,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0315,
+          "source": "papers/ares.pdf",
+          "start": 14244,
+          "end": 15826,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0311,
+          "source": "papers/ares.pdf",
+          "start": 24821,
+          "end": 26600,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0305,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0301,
+          "source": "papers/ares.pdf",
+          "start": 31136,
+          "end": 32686,
+          "relevant": false
+        }
+      ]
+    }
+  ]
+}
