@@ -125,3 +125,10 @@ def test_hnsw_and_exact_search_agree_on_a_small_index(session_factory, embedder,
         exact = chunks_repo.search_dense(session, query_vector=query_vector, exact=True, **common)
 
     assert [h.chunk_id for h in approximate] == [h.chunk_id for h in exact]
+
+
+def test_hits_carry_their_position_in_the_document(session_factory, embedder, corpus):
+    hit = search(session_factory, embedder, "cookie parameters")[0]
+
+    assert 0 <= hit.char_start < hit.char_end
+    assert hit.char_end - hit.char_start == len(hit.text)

@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field, model_validator
 
 from app.rag.extract import ExtractedDocument, extract
 from app.services.ingestion import detect_kind
+from evals.metrics import SourceSpan
 
 QUESTIONS_PATH = Path(__file__).parent / "questions.jsonl"
 CORPUS_DIR = Path(__file__).parent / "corpus" / "raw"
@@ -155,3 +156,11 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+def evidence_items(question: Question) -> list[list[SourceSpan]]:
+    """Each evidence quote of `question` resolved to every place it occurs in its source."""
+    return [
+        [SourceSpan(evidence.source, span.char_start, span.char_end) for span in resolve(evidence)]
+        for evidence in question.evidence
+    ]

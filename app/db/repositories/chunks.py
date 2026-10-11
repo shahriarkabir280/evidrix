@@ -32,6 +32,9 @@ class ChunkHit:
     rank: int  # 1-based
     # How each retrieval stage saw this chunk, e.g. {"dense_rank": 2, "keyword_score": 0.1}.
     debug: dict[str, float] = field(default_factory=dict)
+    # Position of the chunk in Document.extracted_text (used to match evaluation labels).
+    char_start: int | None = None
+    char_end: int | None = None
 
 
 def search_dense(
@@ -122,6 +125,8 @@ def _searchable(
             Chunk.section_path,
             Chunk.page_start,
             Chunk.page_end,
+            Chunk.char_start,
+            Chunk.char_end,
             score,
         )
         .join(Document, Document.id == Chunk.document_id)
@@ -148,4 +153,6 @@ def _hit(row, *, score: float, rank: int) -> ChunkHit:
         page_end=row.page_end,
         score=score,
         rank=rank,
+        char_start=row.char_start,
+        char_end=row.char_end,
     )
