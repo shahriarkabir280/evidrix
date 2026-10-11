@@ -1,0 +1,2052 @@
+{
+  "provenance": {
+    "created_at": "2026-10-11T05:36:53+00:00",
+    "git_commit": "0126315663dce80122f2b82be67ec8277a850d22",
+    "git_dirty": true,
+    "preset": "hybrid",
+    "retrieval": {
+      "mode": "hybrid",
+      "rerank": false,
+      "top_k": 5,
+      "candidate_k": 20,
+      "rrf_k": 60
+    },
+    "split": "dev",
+    "mode": "retrieval",
+    "k": 5,
+    "index_version": "bge-small_c400_o64",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": null,
+    "benchmark_sha256": "91b2b3844a2e890bf900f9caf97dcb0ffb08e49570f12310ce73fe62c94c44e9",
+    "corpus_manifest_sha256": "d12fd01810469a5a7561c037f6b767b0c39f25d10fb4e045030b81d082519703",
+    "duration_s": 19.3
+  },
+  "summary": {
+    "questions": 36,
+    "errors": 0,
+    "retrieval": {
+      "recall": 0.8046,
+      "all_evidence": 0.7241,
+      "hit": 0.8966,
+      "mrr": 0.7701,
+      "ndcg": 0.7159
+    },
+    "retrieval_by_type": {
+      "distractor": {
+        "recall": 0.6,
+        "all_evidence": 0.6,
+        "hit": 0.6,
+        "mrr": 0.6,
+        "ndcg": 0.6
+      },
+      "factual": {
+        "recall": 0.9167,
+        "all_evidence": 0.9167,
+        "hit": 0.9167,
+        "mrr": 0.875,
+        "ndcg": 0.8537
+      },
+      "identifier": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.6667,
+        "ndcg": 0.6895
+      },
+      "multi_hop": {
+        "recall": 0.5556,
+        "all_evidence": 0.1667,
+        "hit": 1.0,
+        "mrr": 0.8056,
+        "ndcg": 0.5634
+      }
+    },
+    "latency_ms": {
+      "embed": {
+        "p50": 13.6,
+        "p95": 16.6
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.1
+      },
+      "retrieve_dense": {
+        "p50": 6.8,
+        "p95": 8.9
+      },
+      "retrieve_keyword": {
+        "p50": 4.8,
+        "p95": 11.2
+      }
+    }
+  },
+  "questions": [
+    {
+      "id": "q001",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 340.1,
+        "retrieve_dense": 22.2,
+        "retrieve_keyword": 14.7,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 1845,
+          "end": 3137,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 833,
+          "end": 2100,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 3596,
+          "end": 4937,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/response-status-code.md",
+          "start": 1176,
+          "end": 2656,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 7713,
+          "end": 8954,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q002",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.8,
+        "retrieve_dense": 3.1,
+        "retrieve_keyword": 3.3,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 833,
+          "end": 2100,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 8591,
+          "end": 10450,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 1845,
+          "end": 3137,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 9232,
+          "end": 10545,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/dependencies/dependencies-in-path-operation-decorators.md",
+          "start": 2784,
+          "end": 3850,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q003",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.1,
+        "retrieve_dense": 5.6,
+        "retrieve_keyword": 2.4,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 3495,
+          "end": 4942,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 2504,
+          "end": 3493,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 1541,
+          "end": 2502,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 744,
+          "end": 1539,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 5789,
+          "end": 6481,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "q005",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.9,
+        "retrieve_dense": 5.9,
+        "retrieve_keyword": 2.8,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 2811,
+          "end": 4097,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 317,
+          "end": 699,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 0,
+          "end": 315,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 3984,
+          "end": 5130,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 5132,
+          "end": 5552,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      }
+    },
+    {
+      "id": "q006",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.8,
+        "retrieve_dense": 5.6,
+        "retrieve_keyword": 4.8,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 3984,
+          "end": 5130,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 2811,
+          "end": 4097,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1850,
+          "end": 3104,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 14851,
+          "end": 16009,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 17796,
+          "end": 19157,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q007",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 15.2,
+        "retrieve_dense": 8.1,
+        "retrieve_keyword": 8.5,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/middleware.md",
+          "start": 3390,
+          "end": 4123,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/middleware.md",
+          "start": 0,
+          "end": 956,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/middleware.md",
+          "start": 958,
+          "end": 2370,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/middleware.md",
+          "start": 2281,
+          "end": 3388,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      }
+    },
+    {
+      "id": "q008",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.3,
+        "retrieve_dense": 6.1,
+        "retrieve_keyword": 3.7,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/path-params.md",
+          "start": 3542,
+          "end": 4704,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/security/get-current-user.md",
+          "start": 3613,
+          "end": 4836,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 2664,
+          "end": 3761,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/security/get-current-user.md",
+          "start": 1498,
+          "end": 2686,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 12008,
+          "end": 12707,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q009",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.9,
+        "retrieve_dense": 5.4,
+        "retrieve_keyword": 4.2,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/query-params.md",
+          "start": 3894,
+          "end": 5107,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/query-params-str-validations.md",
+          "start": 9386,
+          "end": 10465,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/query-params-str-validations.md",
+          "start": 10782,
+          "end": 12051,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/query-params-str-validations.md",
+          "start": 4843,
+          "end": 6032,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/query-params.md",
+          "start": 5013,
+          "end": 5775,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q012",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.2,
+        "retrieve_dense": 6.3,
+        "retrieve_keyword": 3.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/static-files.md",
+          "start": 345,
+          "end": 1335,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 21570,
+          "end": 22810,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/index.md",
+          "start": 3607,
+          "end": 4900,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 22607,
+          "end": 23005,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q013",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.5,
+        "retrieve_dense": 6.7,
+        "retrieve_keyword": 6.2,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 347,
+          "end": 1547,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 1957,
+          "end": 3154,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 7993,
+          "end": 8717,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 7131,
+          "end": 7991,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 4775,
+          "end": 6201,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q014",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.4,
+        "retrieve_dense": 7.3,
+        "retrieve_keyword": 3.1,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 391,
+          "end": 1473,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 11799,
+          "end": 13414,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 8942,
+          "end": 9607,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 10474,
+          "end": 11932,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 20798,
+          "end": 22413,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q019",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.7,
+        "retrieve_dense": 7.4,
+        "retrieve_keyword": 4.0,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-sorting.pdf",
+          "start": 5004,
+          "end": 6170,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-sorting.pdf",
+          "start": 0,
+          "end": 1426,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-sorting.pdf",
+          "start": 4174,
+          "end": 5166,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-sorting.pdf",
+          "start": 8586,
+          "end": 9771,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-sorting.pdf",
+          "start": 7081,
+          "end": 8819,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q021",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.5,
+        "retrieve_dense": 8.6,
+        "retrieve_keyword": 4.6,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/encoder.md",
+          "start": 299,
+          "end": 1428,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/encoder.md",
+          "start": 1283,
+          "end": 1924,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/body-updates.md",
+          "start": 172,
+          "end": 1279,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 667,
+          "end": 1707,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/encoder.md",
+          "start": 0,
+          "end": 297,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      }
+    },
+    {
+      "id": "q023",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.7,
+        "retrieve_dense": 7.9,
+        "retrieve_keyword": 3.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/security/first-steps.md",
+          "start": 4259,
+          "end": 5481,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/path-params.md",
+          "start": 9258,
+          "end": 10546,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/security/first-steps.md",
+          "start": 5351,
+          "end": 6698,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/query-params.md",
+          "start": 3894,
+          "end": 5107,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/security/first-steps.md",
+          "start": 6492,
+          "end": 7592,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q026",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 11.9,
+        "retrieve_dense": 8.2,
+        "retrieve_keyword": 5.5,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/header-param-models.md",
+          "start": 2305,
+          "end": 3381,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/header-params.md",
+          "start": 1278,
+          "end": 2575,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/header-params.md",
+          "start": 395,
+          "end": 1276,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/header-param-models.md",
+          "start": 1134,
+          "end": 2303,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/header-param-models.md",
+          "start": 348,
+          "end": 1052,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      }
+    },
+    {
+      "id": "q027",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.9,
+        "retrieve_dense": 8.3,
+        "retrieve_keyword": 5.3,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 11779,
+          "end": 13160,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 10452,
+          "end": 11970,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 3351,
+          "end": 4573,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 2270,
+          "end": 3471,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/dependencies/index.md",
+          "start": 3113,
+          "end": 4400,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      }
+    },
+    {
+      "id": "q028",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.8,
+        "retrieve_dense": 7.1,
+        "retrieve_keyword": 2.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-argparse.pdf",
+          "start": 14124,
+          "end": 15495,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-argparse.pdf",
+          "start": 8902,
+          "end": 10307,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-argparse.pdf",
+          "start": 23345,
+          "end": 24764,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-argparse.pdf",
+          "start": 21149,
+          "end": 22331,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-argparse.pdf",
+          "start": 19623,
+          "end": 20729,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      }
+    },
+    {
+      "id": "q029",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.3,
+        "retrieve_dense": 8.5,
+        "retrieve_keyword": 2.8,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-logging.pdf",
+          "start": 7927,
+          "end": 9415,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-logging.pdf",
+          "start": 6795,
+          "end": 8128,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-logging.pdf",
+          "start": 22368,
+          "end": 23886,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-logging.pdf",
+          "start": 25711,
+          "end": 27241,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-regex.pdf",
+          "start": 22532,
+          "end": 23925,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      }
+    },
+    {
+      "id": "q031",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.8,
+        "retrieve_dense": 8.1,
+        "retrieve_keyword": 13.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/response-status-code.md",
+          "start": 1176,
+          "end": 2656,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/path-operation-configuration.md",
+          "start": 270,
+          "end": 1229,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/response-status-code.md",
+          "start": 0,
+          "end": 1174,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 667,
+          "end": 1707,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/sql-databases.md",
+          "start": 10175,
+          "end": 11554,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      }
+    },
+    {
+      "id": "q032",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 16.6,
+        "retrieve_dense": 7.0,
+        "retrieve_keyword": 11.2,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/middleware.md",
+          "start": 958,
+          "end": 2370,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/middleware.md",
+          "start": 2281,
+          "end": 3388,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 3984,
+          "end": 5130,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 2811,
+          "end": 4097,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/header-params.md",
+          "start": 2577,
+          "end": 3385,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      }
+    },
+    {
+      "id": "q033",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.8,
+        "retrieve_dense": 5.0,
+        "retrieve_keyword": 6.4,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 11779,
+          "end": 13160,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 2270,
+          "end": 3471,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 10452,
+          "end": 11970,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 8591,
+          "end": 10450,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 3351,
+          "end": 4573,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.3333333333333333,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.23463936301137822
+      }
+    },
+    {
+      "id": "q034",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 15.5,
+        "retrieve_dense": 6.1,
+        "retrieve_keyword": 3.4,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 7131,
+          "end": 7991,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/request-form-models.md",
+          "start": 325,
+          "end": 920,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/header-param-models.md",
+          "start": 348,
+          "end": 1052,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/schema-extra-example.md",
+          "start": 125,
+          "end": 1488,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/extra-models.md",
+          "start": 1618,
+          "end": 2689,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      }
+    },
+    {
+      "id": "q038",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 15.7,
+        "retrieve_dense": 7.1,
+        "retrieve_keyword": 8.3,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-argparse.pdf",
+          "start": 7693,
+          "end": 9105,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-argparse.pdf",
+          "start": 8902,
+          "end": 10307,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-argparse.pdf",
+          "start": 10062,
+          "end": 11374,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-argparse.pdf",
+          "start": 22150,
+          "end": 23557,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-argparse.pdf",
+          "start": 6599,
+          "end": 7931,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.38685280723454163
+      }
+    },
+    {
+      "id": "q040",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 16.6,
+        "retrieve_dense": 5.4,
+        "retrieve_keyword": 4.7,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/sql-databases.md",
+          "start": 4607,
+          "end": 6028,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/sql-databases.md",
+          "start": 3555,
+          "end": 4816,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/sql-databases.md",
+          "start": 2594,
+          "end": 3772,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 11779,
+          "end": 13160,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/sql-databases.md",
+          "start": 1593,
+          "end": 2759,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      }
+    },
+    {
+      "id": "q041",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.9,
+        "retrieve_dense": 6.0,
+        "retrieve_keyword": 5.5,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/response-status-code.md",
+          "start": 0,
+          "end": 1174,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/path-operation-configuration.md",
+          "start": 270,
+          "end": 1229,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 11367,
+          "end": 12415,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/path-params.md",
+          "start": 3542,
+          "end": 4704,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "q043",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 14.8,
+        "retrieve_dense": 6.5,
+        "retrieve_keyword": 3.6,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 4323,
+          "end": 5578,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 15025,
+          "end": 16483,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 4948,
+          "end": 6406,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 1688,
+          "end": 3218,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 19473,
+          "end": 20931,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q044",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 46.9,
+        "retrieve_dense": 6.3,
+        "retrieve_keyword": 7.1,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 2811,
+          "end": 4097,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 3984,
+          "end": 5130,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1850,
+          "end": 3104,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 701,
+          "end": 1469,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 317,
+          "end": 699,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q046",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 15.8,
+        "retrieve_dense": 8.9,
+        "retrieve_keyword": 5.0,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 11873,
+          "end": 13227,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 11469,
+          "end": 12106,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 3857,
+          "end": 5148,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 7713,
+          "end": 8954,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/handling-errors.md",
+          "start": 5583,
+          "end": 6297,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      }
+    },
+    {
+      "id": "q048",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.8,
+        "retrieve_dense": 6.8,
+        "retrieve_keyword": 4.8,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-logging.pdf",
+          "start": 7927,
+          "end": 9415,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-logging.pdf",
+          "start": 16796,
+          "end": 18412,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-logging.pdf",
+          "start": 13984,
+          "end": 15559,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-logging.pdf",
+          "start": 36437,
+          "end": 38173,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-logging.pdf",
+          "start": 29912,
+          "end": 31247,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      }
+    },
+    {
+      "id": "q050",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.0,
+        "retrieve_dense": 9.1,
+        "retrieve_keyword": 4.9,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/index.md",
+          "start": 3607,
+          "end": 4900,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 12229,
+          "end": 13418,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 1015,
+          "end": 2088,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 1938,
+          "end": 3182,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "q051",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.7,
+        "retrieve_dense": 6.9,
+        "retrieve_keyword": 6.2,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 9415,
+          "end": 10680,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 13186,
+          "end": 13906,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 22185,
+          "end": 23443,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 13908,
+          "end": 15231,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 17737,
+          "end": 18457,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "q052",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 12.9,
+        "retrieve_dense": 6.4,
+        "retrieve_keyword": 5.7,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/request-form-models.md",
+          "start": 987,
+          "end": 2203,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/security/first-steps.md",
+          "start": 4259,
+          "end": 5481,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1850,
+          "end": 3104,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/request-forms.md",
+          "start": 547,
+          "end": 1588,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "q055",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 13.5,
+        "retrieve_dense": 6.9,
+        "retrieve_keyword": 7.6,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 9232,
+          "end": 10545,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 11367,
+          "end": 12415,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/body.md",
+          "start": 5501,
+          "end": 6175,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/body.md",
+          "start": 6177,
+          "end": 7487,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "q056",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 10.3,
+        "retrieve_dense": 6.5,
+        "retrieve_keyword": 5.1,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 7683,
+          "end": 8230,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 12229,
+          "end": 13418,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "fastapi/tutorial/index.md",
+          "start": 4634,
+          "end": 5926,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "fastapi/tutorial/index.md",
+          "start": 3607,
+          "end": 4900,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "fastapi/tutorial/first-steps.md",
+          "start": 8232,
+          "end": 9463,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "q057",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 10.5,
+        "retrieve_dense": 6.2,
+        "retrieve_keyword": 5.0,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-regex.pdf",
+          "start": 37180,
+          "end": 38545,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-regex.pdf",
+          "start": 2225,
+          "end": 4066,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-regex.pdf",
+          "start": 3734,
+          "end": 5223,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-regex.pdf",
+          "start": 0,
+          "end": 1207,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-regex.pdf",
+          "start": 29331,
+          "end": 30690,
+          "relevant": false
+        }
+      ]
+    },
+    {
+      "id": "q060",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 11.5,
+        "retrieve_dense": 5.9,
+        "retrieve_keyword": 3.3,
+        "fuse": 0.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "source": "python/howto-logging.pdf",
+          "start": 32155,
+          "end": 33867,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "source": "python/howto-logging.pdf",
+          "start": 16796,
+          "end": 18412,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "source": "python/howto-logging.pdf",
+          "start": 12845,
+          "end": 14206,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "source": "python/howto-logging.pdf",
+          "start": 11746,
+          "end": 13109,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "source": "python/howto-logging.pdf",
+          "start": 15342,
+          "end": 16973,
+          "relevant": false
+        }
+      ]
+    }
+  ]
+}
