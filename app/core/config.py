@@ -35,17 +35,17 @@ class Settings(BaseSettings):
     # A local 8B model reads ~150 prompt tokens/s; the first call also loads the model.
     llm_timeout_seconds: float = 120.0
     llm_max_retries: int = 1
+    # Evaluation only: a different model family from llm_model grades the answers. Calibration
+    # (evals/judge_calibration.jsonl, judge_correctness_v1): gemma3:12b 100%, llama3.1:8b 88%.
+    judge_model: str = "gemma3:12b"
 
     # Cross-encoder that rescores the candidate pool (runs on embedding_device).
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
-    # Name of a file in configs/retrieval/. Tentative default: hybrid + rerank fixed the hardest
-    # preview question; the Part 4 evaluation decides. Each chunk sent to the local 8B model adds
-    # ~1.8 s of prompt reading, so top_k is also a latency setting.
+    # Name of a file in configs/retrieval/. hybrid_rerank won on the dev split (MRR +0.155 over
+    # dense, significant). Each chunk sent to the local 8B model adds ~1.8 s of prompt reading,
+    # so top_k is also a latency setting.
     retrieval_preset: str = "hybrid_rerank"
-    # Below this top similarity the model isn't even asked. None = disabled until it is
-    # calibrated on the dev split (Part 4); bge scores sit around 0.6-0.8.
-    abstain_min_score: float | None = None
 
 
 @lru_cache

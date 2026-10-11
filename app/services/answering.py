@@ -57,7 +57,6 @@ def answer_question(
     document_ids: list[uuid.UUID] | None,
     retrieval: RetrievalConfig,
     max_tokens: int,
-    min_score: float | None = None,
 ) -> ChatResult:
     started = time.perf_counter()
     if document_ids is not None:
@@ -79,7 +78,7 @@ def answer_question(
     timings = dict(found.timings_ms)
     generate_started = time.perf_counter()
     generated = generate_answer(
-        llm, question, found.hits, max_tokens=max_tokens, min_score=min_score
+        llm, question, found.hits, max_tokens=max_tokens, min_score=retrieval.min_score
     )
     timings["generate"] = round((time.perf_counter() - generate_started) * 1000, 1)
     timings["total"] = round((time.perf_counter() - started) * 1000, 1)

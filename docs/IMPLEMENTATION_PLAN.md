@@ -667,6 +667,64 @@ with actual numbers, including any configuration that turned out worse.
 
 ---
 
+### Part 4b — Research papers
+
+Branch `feature/research-papers` · Milestone M3 · added 2026-10-11
+
+The goal names "technical documentation and research papers", but the Part 2 corpus has no papers.
+Papers are almost always PDFs and are harder to read than the HOWTO PDFs: two-column layouts,
+numbered section headings, references, tables, formulas, running headers. This part adds papers
+to the corpus and the benchmark, and improves PDF reading where measurements show it is needed.
+It comes after Part 4 so the existing benchmark and its splits stay untouched.
+
+**Components**
+- **4bA** Paper corpus: 5–8 arXiv papers under CC-BY (redistributable), pinned in the manifest
+- **4bB** PDF reading for papers: two-column reading order, section headings, references
+- **4bC** Paper benchmark: 20–30 labeled questions with their own dev/test split
+- **4bD** Run the Part 4 harness on papers and compare with the documentation results
+
+**Learn first**
+- How PDF text extraction decides reading order, and why two-column pages can interleave lines.
+- What distinguishes a heading in a PDF when there is no markup: font size, weight, numbering.
+- Why references and running headers hurt retrieval (repeated, keyword-dense, rarely the answer).
+- *Experiment:* extract one two-column paper and read a page of the output before changing anything.
+
+**Steps**
+1. **Corpus:** choose papers on topics that overlap the existing corpus (retrieval, RAG, evaluation,
+   transformers) so questions can mix sources. Record arXiv ID, version, license and sha256.
+2. **Measure before fixing:** run the extractor on every paper and check for interleaved columns,
+   glued words, repeated header/footer lines, and how much text the references take.
+3. **Reading order:** tune pdfminer's layout analysis (`LAParams`, e.g. `boxes_flow`) or switch the
+   paper path to a column-aware extractor if measurements require it. Add a two-column regression
+   fixture page.
+4. **Section headings for PDFs:** detect numbered headings ("3 Method", "4.2 Results") and/or larger
+   fonts from pdfminer's character metadata, emit them as heading units so chunks get a
+   `section_path` like `Paper title > 4 Experiments > 4.2 Results`.
+5. **References:** detect the references section and either drop it from indexing or index it with
+   a flag so retrieval can exclude it. Measure both on the paper benchmark.
+6. **Benchmark:** write 20–30 questions from the papers only (same rules as Part 4: quotes, no
+   retrieval output, splits assigned at creation), including questions answered by a table or a
+   result number, and unanswerable ones about related work not in the corpus.
+7. **Compare:** report documentation vs paper results separately with confidence intervals.
+
+**Tests**
+- Two-column fixture page: lines from the left column never interleave with the right one.
+- Numbered headings become section paths; body text that starts with a number does not.
+- References are excluded (or flagged) and every other chunk is unaffected.
+- Every paper quote resolves in the extracted text.
+
+**DoD**
+- [ ] Papers ingested with clean reading order on the fixture pages.
+- [ ] Paper chunks carry section paths.
+- [ ] Paper benchmark committed with splits, and results reported next to the documentation results.
+
+**Check your understanding**
+1. Why does a two-column page break naive text extraction, and how would you notice it in metrics?
+2. Why might indexing the references section lower answer quality even though it is "more text"?
+3. Why keep the paper benchmark's split separate from the documentation benchmark's?
+
+---
+
 ### Part 5 — Reliability & security
 
 Branch `feature/production-hardening` · Milestone M4
@@ -1034,6 +1092,11 @@ Create the milestones and issues up front. Close an issue only when its acceptan
 10. Cross-encoder reranking + `RetrievalConfig` presets + `POST /retrieve`
 11. Labeled benchmark (≥ 50 questions, dev/test splits, quote-based evidence)
 12. Eval harness: retrieval + answer + abstention metrics, provenance, report generator
+
+**M3b — Research papers (P4b)**
+21. Paper corpus (arXiv, CC-BY) pinned in the manifest
+22. PDF reading for papers: two-column order, section headings, references
+23. Paper benchmark (20–30 questions, own splits) and comparison with documentation
 
 **M4 — Production hardening (P5–6)**
 13. Redis + RQ ingestion jobs with retries and idempotency

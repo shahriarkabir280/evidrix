@@ -1,4 +1,4 @@
-.PHONY: up down migrate dev test test-live lint fmt psql corpus
+.PHONY: up down migrate dev test test-live lint fmt psql corpus eval eval-full
 
 up:        ## Start Postgres (and later Redis) in Docker
 	docker compose up -d --wait
@@ -29,3 +29,9 @@ psql:      ## Open a psql shell on the dev database
 
 corpus:    ## Download the pinned evaluation corpus and check it against the manifest
 	uv run python -m scripts.fetch_corpus && uv run python -m scripts.fetch_corpus --verify
+
+eval:      ## Retrieval metrics on the dev split for every preset (seconds)
+	for p in dense hybrid hybrid_rerank; do uv run python -m evals.run --preset $$p --split dev --mode retrieval; done
+
+eval-full: ## Answers + judge on the dev split for PRESET (default hybrid_rerank; minutes, needs Ollama)
+	uv run python -m evals.run --preset $${PRESET:-hybrid_rerank} --split dev --mode full

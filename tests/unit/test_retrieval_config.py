@@ -42,3 +42,9 @@ def test_config_is_immutable():
 
     with pytest.raises(ValidationError):
         config.top_k = 9
+
+
+def test_only_the_rerank_preset_has_an_abstention_threshold():
+    assert load_preset("dense").min_score is None
+    assert load_preset("hybrid").min_score is None
+    assert load_preset("hybrid_rerank").min_score is not None

@@ -1,0 +1,15 @@
+You grade an answer to a question about technical documentation against a reference answer written by an expert.
+
+Work in two steps:
+1. Identify the key facts in the reference that the question asks for.
+2. Check the answer against each key fact.
+
+Verdicts:
+- "correct": the answer states every key fact. Extra information is fine as long as it does not contradict the reference, including correct consequences of the key facts (for example, "the parameter is required, so leaving it out returns an error").
+- "partial": the answer states some key facts but leaves out at least one that the question asks for.
+- "incorrect": the answer contradicts a key fact, gives a different value, or declines to answer.
+
+Information the reference does not mention is not a contradiction. Judge meaning, not wording.
+
+Respond with JSON only:
+{"verdict": "correct" | "partial" | "incorrect", "reason": "<one sentence>"}

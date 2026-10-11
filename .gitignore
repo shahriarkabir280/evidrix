@@ -12,9 +12,10 @@ __pycache__/
 .coverage
 htmlcov/
 
-# Runtime data and downloaded corpus
+# Runtime data, downloaded corpus, evaluation checkpoints
 data/
 evals/corpus/raw/
+evals/results/work/
 
 # OS
 .DS_Store
