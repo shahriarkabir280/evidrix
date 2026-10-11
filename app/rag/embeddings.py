@@ -3,6 +3,7 @@
 Component 2C · Plan: Part 2, step 4.
 """
 
+from collections.abc import Callable
 from functools import lru_cache
 from typing import Literal, Protocol
 
@@ -96,3 +97,29 @@ def get_embedder() -> Embedder:
         device=settings.embedding_device,
         batch_size=settings.embedding_batch_size,
     )
+
+
+def text_for_embedding(
+    chunk_text: str,
+    *,
+    title: str,
+    section_path: str | None,
+    contextual_header: bool,
+    count_tokens: Callable[[str], int],
+    max_tokens: int,
+) -> str:
+    """What gets embedded for a chunk: the chunk text, optionally prefixed with where it came from.
+
+    "Recap: use Form to declare form data" is ambiguous on its own; "Form Data > Recap" in front
+    tells the model which topic it belongs to. The stored chunk text stays unchanged.
+    """
+    if not contextual_header:
+        return chunk_text
+    if section_path and section_path.startswith(title):
+        header = section_path  # Markdown paths already start with the document title (H1)
+    else:
+        header = " > ".join(part for part in (title, section_path) if part)
+    candidate = f"{header}\n\n{chunk_text}"
+    # The model adds 2 special tokens. If the header would push the chunk past the limit,
+    # drop the header rather than let the model silently cut off the end of the chunk.
+    return candidate if count_tokens(candidate) <= max_tokens - 2 else chunk_text

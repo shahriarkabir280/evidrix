@@ -6,11 +6,19 @@ Component 1B · grows in 2D, 5A, 5C, 6A.
 import uuid
 from datetime import datetime
 from enum import StrEnum
+from typing import Any
 
-from sqlalchemy import Enum, ForeignKey, String, Text, UniqueConstraint, func
+import numpy as np
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import Enum, ForeignKey, Index, String, Text, UniqueConstraint, false, func, text
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
+
+# Fixed by the vector column type. Changing the embedding model to one with another
+# dimension needs a migration (and a re-index), not just a setting.
+EMBEDDING_DIM = 384
 
 
 class DocumentStatus(StrEnum):
@@ -65,6 +73,12 @@ class Document(Base):
         passive_deletes=True,
         order_by="DocumentPage.page_number",
     )
+    chunks: Mapped[list["Chunk"]] = relationship(
+        back_populates="document",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="Chunk.chunk_index",
+    )
 
 
 class DocumentPage(Base):
@@ -80,3 +94,63 @@ class DocumentPage(Base):
     char_end: Mapped[int]
 
     document: Mapped[Document] = relationship(back_populates="pages")
+
+
+class IndexVersion(Base):
+    """One way of turning documents into searchable chunks: chunking settings + embedding model.
+
+    Several versions can coexist (e.g. 256- vs 400-token chunks for an experiment); every
+    query searches exactly one of them.
+    """
+
+    __tablename__ = "index_versions"
+    __table_args__ = (
+        # At most one row may have is_active = true.
+        Index(
+            "uq_index_versions_one_active",
+            "is_active",
+            unique=True,
+            postgresql_where=text("is_active"),
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True)
+    embedding_model: Mapped[str] = mapped_column(String(200))
+    embedding_dim: Mapped[int]
+    chunking: Mapped[dict[str, Any]] = mapped_column(JSONB)  # ChunkingConfig fields
+    contextual_header: Mapped[bool]
+    is_active: Mapped[bool] = mapped_column(default=False, server_default=false())
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class Chunk(Base):
+    __tablename__ = "chunks"
+    __table_args__ = (
+        UniqueConstraint("document_id", "index_version_id", "chunk_index"),
+        Index(
+            "ix_chunks_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_with={"m": 16, "ef_construction": 64},
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    document_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"))
+    index_version_id: Mapped[int] = mapped_column(
+        ForeignKey("index_versions.id", ondelete="CASCADE")
+    )
+    chunk_index: Mapped[int]
+    text: Mapped[str] = mapped_column(Text)
+    token_count: Mapped[int]
+    char_start: Mapped[int]
+    char_end: Mapped[int]
+    page_start: Mapped[int | None]
+    page_end: Mapped[int | None]
+    section_path: Mapped[str | None] = mapped_column(Text)
+    embedding: Mapped[np.ndarray] = mapped_column(Vector(EMBEDDING_DIM))
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+    document: Mapped[Document] = relationship(back_populates="chunks")

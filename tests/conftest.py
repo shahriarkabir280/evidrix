@@ -14,17 +14,24 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
-from app.api.deps import get_blob_store, get_db, get_settings
+from app.api.deps import get_blob_store, get_db, get_embedder, get_settings
 from app.core.config import Settings
 from app.db.models import User
 from app.main import create_app
 from app.storage.blob import LocalBlobStore
+from tests.fakes import FakeEmbedder
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix_test"
 )
 # Small limit so the "too large" test doesn't need to build a 10 MB upload.
 TEST_MAX_UPLOAD_BYTES = 50_000
+# Tests index with FakeEmbedder (word-count tokens), so chunks are small and easy to reason about.
+TEST_INDEX_VERSION = "test-fake"
+TEST_CHUNKING = (
+    '{"chunk_size_tokens": 40, "max_tokens": 50, "overlap_tokens": 10, '
+    '"min_chunk_tokens": 10, "section_level": 2}'
+)
 
 
 @pytest.fixture(scope="session")
@@ -47,11 +54,32 @@ def db_engine():
 
 @pytest.fixture
 def session_factory(db_engine):
-    # Start every test from empty document tables (the seeded dev user stays).
+    # Start every test from empty document tables (the seeded dev user stays) and with an
+    # active index version that matches FakeEmbedder.
     with db_engine.begin() as connection:
-        connection.execute(text("TRUNCATE document_pages, documents"))
+        connection.execute(text("TRUNCATE chunks, document_pages, documents"))
         connection.execute(text("DELETE FROM users WHERE email LIKE '%@test.local'"))
+        connection.execute(text("DELETE FROM index_versions WHERE name LIKE 'test-%'"))
+        connection.execute(text("UPDATE index_versions SET is_active = false"))
+        connection.execute(
+            text(
+                "INSERT INTO index_versions "
+                "(name, embedding_model, embedding_dim, chunking, contextual_header, is_active) "
+                "VALUES (:name, :model, :dim, CAST(:chunking AS jsonb), true, true)"
+            ),
+            {
+                "name": TEST_INDEX_VERSION,
+                "model": FakeEmbedder.model_name,
+                "dim": FakeEmbedder.dim,
+                "chunking": TEST_CHUNKING,
+            },
+        )
     return sessionmaker(bind=db_engine, expire_on_commit=False)
+
+
+@pytest.fixture
+def embedder():
+    return FakeEmbedder()
 
 
 @pytest.fixture
@@ -66,7 +94,7 @@ def blob_store(tmp_path):
 
 
 @pytest.fixture
-def client(session_factory, blob_store):
+def client(session_factory, blob_store, embedder):
     settings = Settings(
         _env_file=None, database_url=TEST_DATABASE_URL, max_upload_bytes=TEST_MAX_UPLOAD_BYTES
     )
@@ -75,9 +103,10 @@ def client(session_factory, blob_store):
         with session_factory() as session:
             yield session
 
-    app = create_app()
+    app = create_app(preload_models=False)
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_blob_store] = lambda: blob_store
+    app.dependency_overrides[get_embedder] = lambda: embedder
     app.dependency_overrides[get_settings] = lambda: settings
     with TestClient(app) as test_client:
         yield test_client

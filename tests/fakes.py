@@ -19,7 +19,7 @@ class FakeEmbedder:
     """
 
     model_name = "fake-bag-of-words"
-    dim = 64
+    dim = 384  # matches the vector(384) column, so fake vectors can be stored
     max_tokens = 512
 
     def embed_documents(self, texts: list[str]) -> np.ndarray:
