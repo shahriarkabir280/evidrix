@@ -51,8 +51,15 @@ class FakeLLM:
 
     model = "fake-llm"
 
-    def __init__(self, reply: str | Callable[[str, str], str] | None = None) -> None:
-        self._reply = reply
+    def __init__(
+        self,
+        reply: str | list[str] | Callable[[str, str], str] | None = None,
+        *,
+        finish_reason: str = "stop",
+    ) -> None:
+        # A list gives one reply per call, in order (e.g. bad JSON first, then a valid reply).
+        self._reply = list(reply) if isinstance(reply, list) else reply
+        self._finish_reason = finish_reason
         self.calls: list[dict] = []
 
     def generate(self, system, user, *, max_tokens, json_schema=None) -> LLMResult:
@@ -61,6 +68,8 @@ class FakeLLM:
         )
         if callable(self._reply):
             text = self._reply(system, user)
+        elif isinstance(self._reply, list):
+            text = self._reply.pop(0)
         else:
             text = self._reply or '{"answer": "", "citations": [], "abstain": true}'
         return LLMResult(
@@ -69,5 +78,5 @@ class FakeLLM:
             completion_tokens=len(text.split()),
             model=self.model,
             latency_ms=1.0,
-            finish_reason="stop",
+            finish_reason=self._finish_reason,
         )
