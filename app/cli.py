@@ -5,6 +5,7 @@ Component 2D (ingest-dir, reindex, search) · 5C (create-user).
     uv run python -m app.cli ingest-dir evals/corpus/raw
     uv run python -m app.cli reindex
     uv run python -m app.cli search "How do I declare a cookie parameter?"
+    uv run python -m app.cli search "OAuth2PasswordRequestForm" --mode keyword
 """
 
 import argparse
@@ -19,7 +20,7 @@ from app.db.models import Chunk, Document, DocumentStatus
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
-from app.rag.retrieval import dense_search
+from app.rag.retrieval import dense_search, keyword_search
 from app.services.ingestion import UploadRejected, ingest_upload, reindex_document
 from app.storage.blob import LocalBlobStore
 
@@ -87,19 +88,17 @@ def reindex() -> None:
         print(f"{len(documents)} documents reindexed into {index_version.name}")
 
 
-def search(question: str, k: int) -> None:
-    embedder = get_embedder()
+def search(question: str, k: int, mode: str) -> None:
     with get_session_factory()() as session:
         index_version = index_versions_repo.get_active(session)
-        started = time.perf_counter()
-        hits = dense_search(
-            session,
-            embedder,
-            owner_id=DEV_USER_ID,
-            index_version_id=index_version.id,
-            question=question,
-            k=k,
-        )
+        common = {"owner_id": DEV_USER_ID, "index_version_id": index_version.id, "k": k}
+        if mode == "dense":
+            embedder = get_embedder()
+            started = time.perf_counter()
+            hits = dense_search(session, embedder, question=question, **common)
+        else:
+            started = time.perf_counter()
+            hits = keyword_search(session, question=question, **common)
         elapsed_ms = (time.perf_counter() - started) * 1000
     print(f"{len(hits)} results in {elapsed_ms:.0f} ms\n")
     for hit in hits:
@@ -119,6 +118,7 @@ def main() -> None:
     query = commands.add_parser("search", help="dense search over your documents")
     query.add_argument("question")
     query.add_argument("-k", type=int, default=5)
+    query.add_argument("--mode", choices=["dense", "keyword"], default="dense")
     args = parser.parse_args()
 
     if args.command == "ingest-dir":
@@ -126,7 +126,7 @@ def main() -> None:
     elif args.command == "reindex":
         reindex()
     else:
-        search(args.question, args.k)
+        search(args.question, args.k, args.mode)
 
 
 if __name__ == "__main__":

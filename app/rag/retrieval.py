@@ -31,3 +31,23 @@ def dense_search(
         k=k,
         document_ids=document_ids,
     )
+
+
+def keyword_search(
+    session: Session,
+    *,
+    owner_id: uuid.UUID,
+    index_version_id: int,
+    question: str,
+    k: int = 5,
+    document_ids: list[uuid.UUID] | None = None,
+) -> list[ChunkHit]:
+    """Chunks sharing words with the question (Postgres full-text search)."""
+    return chunks_repo.search_keyword(
+        session,
+        owner_id=owner_id,
+        index_version_id=index_version_id,
+        query_text=question,
+        k=k,
+        document_ids=document_ids,
+    )
