@@ -194,3 +194,81 @@ def test_pdf_chunks_report_the_pages_they_span():
 
 def test_markdown_chunks_have_no_pages():
     assert all(c.page_start is None and c.page_end is None for c in chunk(LONG_GUIDE))
+
+
+# --- PDF section headings ----------------------------------------------------------------
+
+
+def pdf(*pages: str, title: str = "Paper") -> ExtractedDocument:
+    return ExtractedDocument(
+        title=title, pages=tuple(PageText(number=n, text=t) for n, t in enumerate(pages, start=1))
+    )
+
+
+PAPER = pdf(
+    "Paper Title\n\nWe study retrieval.\n\n1 Introduction\n\nRetrieval matters a lot.\n\n"
+    "2 Method\n\nOur method has two parts.",
+    "2.1 Training Details\n\nWe train for three epochs.\n\n"
+    "3. We evaluate on many datasets\n\nIt works well on all of them.\n\n"
+    "1.3 Logging to a file . . . . . . 3\n\nA table of contents line.\n\n"
+    "9 Not A Real Section\n\nNumbering cannot jump from 2 to 9.",
+    "References\n\nLewis, P. et al. Retrieval augmented generation. 2020.\n\n"
+    "A Implementation Details\n\nHyperparameters are listed here.",
+)
+SMALL = ChunkingConfig(chunk_size_tokens=12, max_tokens=20, overlap_tokens=4, min_chunk_tokens=1)
+
+
+def path_of(chunks: list[Chunk], phrase: str) -> str | None:
+    return next(c.section_path for c in chunks if phrase in c.text)
+
+
+def test_numbered_pdf_headings_build_the_section_path():
+    chunks = chunk(PAPER, SMALL)
+
+    assert path_of(chunks, "Retrieval matters") == "Paper > 1 Introduction"
+    assert path_of(chunks, "three epochs") == "Paper > 2 Method > 2.1 Training Details"
+
+
+def test_text_before_the_first_heading_belongs_to_the_document():
+    assert path_of(chunk(PAPER, SMALL), "We study retrieval") == "Paper"
+
+
+def test_list_items_toc_lines_and_jumps_are_not_headings():
+    chunks = chunk(PAPER, SMALL)
+
+    for phrase in ("works well on all", "table of contents line", "cannot jump"):
+        assert path_of(chunks, phrase) == "Paper > 2 Method > 2.1 Training Details"
+
+
+def test_references_and_lettered_appendices_are_sections():
+    chunks = chunk(PAPER, SMALL)
+
+    assert path_of(chunks, "Lewis, P.") == "Paper > References"
+    assert path_of(chunks, "Hyperparameters") == "Paper > A Implementation Details"
+
+
+def test_a_top_level_pdf_section_starts_a_new_chunk():
+    chunks = chunk(PAPER, SMALL)
+
+    assert any(c.text.startswith("2 Method") for c in chunks)
+
+
+def test_heading_sharing_a_text_box_with_its_paragraph_is_split_off():
+    document = pdf("1 INTRODUCTION\nLarge language models changed how we build search.\n\n"
+                   "2 RELATED WORK\nPrior systems used keyword search.")  # fmt: skip
+
+    chunks = chunk(document, SMALL)
+
+    assert path_of(chunks, "Large language models") == "Paper > 1 INTRODUCTION"
+    assert path_of(chunks, "Prior systems") == "Paper > 2 RELATED WORK"
+
+
+def test_numbering_restarts_after_a_table_of_contents():
+    document = pdf(
+        "1 Basics\n\n3 Levels\n\n8 Other resources",  # table of contents, no dot leaders
+        "1 Basics\n\nBasic usage of the logger.\n\n1.1 When to use it\n\nUse it for diagnostics.",
+    )
+
+    chunks = chunk(document, SMALL)
+
+    assert path_of(chunks, "diagnostics") == "Paper > 1 Basics > 1.1 When to use it"

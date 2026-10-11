@@ -84,7 +84,7 @@ def chunk_document(
 
 def _segment(document: ExtractedDocument, config: ChunkingConfig) -> list[_Unit]:
     if any(page.number is not None for page in document.pages):
-        return _segment_pages(document)
+        return _segment_pages(document, config.section_level)
     return _segment_markdown(document.text, config.section_level)
 
 
@@ -141,22 +141,109 @@ def _segment_markdown(text: str, section_level: int) -> list[_Unit]:
     return [_trim(text, unit) for unit in units if text[unit.start : unit.end].strip()]
 
 
-def _segment_pages(document: ExtractedDocument) -> list[_Unit]:
+def _segment_pages(document: ExtractedDocument, section_level: int) -> list[_Unit]:
     """PDF pages, split into paragraphs at blank lines (extraction separates text boxes).
 
+    Paragraphs that look like numbered section headings ("3 Model", "3.1 Training Details")
+    become heading units, so chunks get a section path such as "Title > 3 Model > 3.1 ...".
     A page without blank lines arrives as one unit and is cut at sentence boundaries by
     _split_oversized.
     """
-    units = []
+    text = document.text
+    paragraphs = []
     for span in document.page_spans():
-        page_text = document.text[span.char_start : span.char_end]
+        page_text = text[span.char_start : span.char_end]
         cursor = 0
         for gap in re.finditer(r"\n\s*\n", page_text):
-            units.append(_Unit(span.char_start + cursor, span.char_start + gap.start(), None))
+            paragraphs.append(_Unit(span.char_start + cursor, span.char_start + gap.start(), None))
             cursor = gap.end()
-        units.append(_Unit(span.char_start + cursor, span.char_end, None))
-    text = document.text
-    return [_trim(text, unit) for unit in units if text[unit.start : unit.end].strip()]
+        paragraphs.append(_Unit(span.char_start + cursor, span.char_end, None))
+    paragraphs = [_trim(text, u) for u in paragraphs if text[u.start : u.end].strip()]
+
+    detector = _PdfHeadingDetector()
+    headings: list[tuple[int, str]] = [(1, document.title)]
+    units = []
+    for paragraph in paragraphs:
+        content = text[paragraph.start : paragraph.end]
+        heading_end = paragraph.end
+        heading = detector.detect(content)
+        if heading is None and "\n" in content:
+            # Some layouts (e.g. ACM) put "1 INTRODUCTION" in the same text box as the
+            # paragraph below it; a short first line may be the heading on its own.
+            first_line = content[: content.index("\n")]
+            heading = detector.detect(first_line, max_words=MAX_RUN_IN_HEADING_WORDS)
+            heading_end = paragraph.start + len(first_line)
+        if heading is None:
+            units.append(_Unit(paragraph.start, paragraph.end, _join_path(headings)))
+            continue
+        level, title = heading
+        # The document title is level 1, so a top-level section ("3 Model") is level 2.
+        headings = [h for h in headings if h[0] < level + 1] + [(level + 1, title)]
+        units.append(
+            _Unit(
+                paragraph.start,
+                heading_end,
+                _join_path(headings),
+                starts_section=level + 1 <= section_level,
+                is_heading=True,
+            )
+        )
+        if heading_end < paragraph.end:
+            rest = _trim(text, _Unit(heading_end, paragraph.end, None))
+            units.append(_Unit(rest.start, rest.end, _join_path(headings)))
+    return units
+
+
+_PDF_HEADING = re.compile(r"(\d{1,2}(?:\.\d{1,2}){0,3})\s+([A-Z].*)")
+_APPENDIX_HEADING = re.compile(r"([A-H](?:\.\d{1,2}){0,3})\s+([A-Z].*)")
+_BACK_MATTER = re.compile(r"(references|bibliography|acknowledge?ments?)", re.IGNORECASE)
+_DOT_LEADERS = re.compile(r"\.\s?\.\s?\.")
+MAX_HEADING_WORDS = 12
+MAX_RUN_IN_HEADING_WORDS = 8  # stricter for a first line that shares a box with body text
+
+
+class _PdfHeadingDetector:
+    """Recognizes numbered section headings in PDF text, which has no heading markup.
+
+    A candidate must be one or two short lines, not end with a full stop, and continue the
+    section numbering plausibly (2 may follow 1 or 2.3, but 9 may not follow 2). "3. We
+    evaluate..." is a list item, not a heading: section numbers have no trailing dot. A missed
+    heading does not block its subsections: "2.1" may follow section 1, and "1 ..." restarts
+    the numbering (a table of contents may already have counted to 8). Lines with dot leaders
+    are table-of-contents entries. After References, lettered appendix headings
+    ("A Implementation Details") are accepted too.
+    """
+
+    def __init__(self) -> None:
+        self.top = 0  # number of the current top-level section
+        self.in_back_matter = False
+
+    def detect(self, paragraph: str, max_words: int = MAX_HEADING_WORDS) -> tuple[int, str] | None:
+        lines = paragraph.split("\n")
+        candidate = " ".join(line.strip() for line in lines)
+        if len(lines) > 2 or len(candidate.split()) > max_words:
+            return None
+        if candidate.endswith(".") or _DOT_LEADERS.search(candidate):
+            return None
+        if _BACK_MATTER.fullmatch(candidate):
+            self.in_back_matter = True
+            return 1, candidate
+        numbered = _PDF_HEADING.fullmatch(candidate)
+        if numbered and not self.in_back_matter:
+            parts = [int(n) for n in numbered.group(1).split(".")]
+            restart = parts == [1]  # body sections restart at 1 after a table of contents
+            if not (self.top <= parts[0] <= self.top + 2 or restart):
+                return None
+            self.top = parts[0]
+            return len(parts), candidate
+        lettered = _APPENDIX_HEADING.fullmatch(candidate)
+        if lettered and self.in_back_matter:
+            return lettered.group(1).count(".") + 1, candidate
+        return None
+
+
+def _join_path(headings: list[tuple[int, str]]) -> str | None:
+    return " > ".join(title for _, title in headings if title) or None
 
 
 # --- 2. Split units that are too big on their own ----------------------------------------
