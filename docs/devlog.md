@@ -65,3 +65,50 @@ One entry per part: what was built, what was measured, what surprised you, what'
 
 **Next**
 - Part 3: keyword search, hybrid fusion (RRF) and cross-encoder reranking.
+
+## Part 3 — Retrieval engineering (2026-10-11)
+
+**Built**
+- Keyword search: generated `tsvector` column (section path weighted above body, `english` config)
+  with a GIN index; OR query built with `plainto_tsquery`; `ts_rank_cd` ranking (ADR-0003).
+- Reciprocal Rank Fusion (`1 / (60 + rank)`, ties broken by chunk id) over dense + keyword pools.
+- Cross-encoder reranking (`cross-encoder/ms-marco-MiniLM-L-6-v2`) over the fused candidate pool.
+- `RetrievalConfig` with presets `dense`, `hybrid`, `hybrid_rerank` (`configs/retrieval/*.toml`);
+  one `retrieve()` entry point that times each stage and records each chunk's per-stage ranks.
+- `POST /retrieve` (no LLM call) and per-request retrieval overrides on `/chat`, validated as a whole.
+- Dense and keyword search share one function for the owner/status/index-version filters.
+
+**Measured (10 hand-picked questions — a preview, not the evaluation)**
+
+Rank of the document that answers the question, within the top 10:
+
+| Question | dense | keyword | hybrid | hybrid+rerank |
+|---|---|---|---|---|
+| Cleanup code after the response has been sent | 10 | 3 | 4 | **1** |
+| Return a 404 error | 3 | 1 | **1** | 2 |
+| Read a value from a cookie | 1 | 2 | 1 | 1 |
+| Allow requests from another origin | 1 | 1 | 1 | 1 |
+| Accept an uploaded file | 1 | 1 | 1 | 1 |
+| Sort strings case-insensitively | 1 | 1 | 1 | 1 |
+| Write log messages to a file | 1 | 5 | 1 | 1 |
+| Make a command-line option optional | 2 | 2 | **1** | 3 |
+| What does `jsonable_encoder` do | 1 | 1 | 1 | 1 |
+| Request body fails validation | 1 | 6 | 2 | **1** |
+| **MRR@10** | 0.793 | 0.670 | 0.875 | 0.883 |
+
+- Hybrid helped where one retriever was weak (cleanup: dense 10 → hybrid 4) and hurt where the
+  keyword leg was noisy (validation: dense 1 → hybrid 2).
+- Reranking fixed the hardest case (cleanup → 1, logit +4.55 vs +0.65 for the runner-up) and the
+  hybrid regression, but demoted two correct top results (404, argparse). The model was trained on
+  MS MARCO web queries, not technical docs; the Part 4 benchmark will decide whether it pays off.
+- Latency: keyword search ~2–7 ms, fusion <1 ms, reranking 20 candidates 156 ms on MPS (786 ms CPU).
+
+**Surprises**
+- `websearch_to_tsquery` ANDs all words: 10 matching chunks for a natural question, 0 after adding
+  one unknown word. OR + ranking matched 256.
+- Keyword search finding nothing (e.g. `HTTPBasicCredentials`, absent from the tutorial) is a useful
+  "probably unanswerable" signal; dense search always returns something plausible.
+
+**Next**
+- Part 4: labeled benchmark (dev/test split), retrieval and answer metrics, and the first real
+  comparison of `dense`, `hybrid` and `hybrid_rerank`.
