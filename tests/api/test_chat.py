@@ -54,7 +54,18 @@ def test_answer_comes_back_with_citations_and_the_evidence(client):
     assert "Declare cookie parameters" in citation["quote"]
     assert body["retrieved"][0]["chunk_id"] == citation["chunk_id"]
     assert [r["rank"] for r in body["retrieved"]] == list(range(1, len(body["retrieved"]) + 1))
-    assert set(body["timings_ms"]) == {"embed", "retrieve", "generate", "total"}
+    # The default preset is hybrid + rerank, so every stage reports its own time.
+    assert set(body["timings_ms"]) == {
+        "embed",
+        "retrieve_dense",
+        "retrieve_keyword",
+        "fuse",
+        "rerank",
+        "generate",
+        "total",
+    }
+    assert body["config"]["retrieval"]["mode"] == "hybrid"
+    assert body["config"]["reranker_model"] == "fake-word-overlap"
     assert body["usage"]["llm_calls"] == 1
     assert body["config"]["prompt_version"] == "answer_v1"
     assert "Declare cookie parameters" in llm.calls[0]["user"]

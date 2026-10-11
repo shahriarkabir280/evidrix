@@ -5,11 +5,12 @@ Component 1D · extended in 2G (chat) and 3D (retrieve).
 
 import uuid
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
 from app.db.models import DocumentStatus
+from app.rag.retrieval import RetrievalConfig
 
 
 class DocumentOut(BaseModel):
@@ -40,12 +41,32 @@ class DocumentList(BaseModel):
     offset: int
 
 
-class ChatRequest(BaseModel):
+class RetrievalOverride(BaseModel):
+    """Per-request changes to the server's retrieval preset; omitted fields keep the preset."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["dense", "keyword", "hybrid"] | None = None
+    rerank: bool | None = None
+    top_k: int | None = None
+    candidate_k: int | None = None
+
+
+class QuestionRequest(BaseModel):
     question: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)
     ]
     # Omit to search all of your completed documents.
     document_ids: Annotated[list[uuid.UUID], Field(min_length=1, max_length=100)] | None = None
+    retrieval: RetrievalOverride | None = None
+
+
+class ChatRequest(QuestionRequest):
+    pass
+
+
+class RetrieveRequest(QuestionRequest):
+    pass
 
 
 class SourceLocation(BaseModel):
@@ -66,6 +87,8 @@ class RetrievedOut(SourceLocation):
     rank: int
     score: float
     text: str
+    # How each stage saw the chunk: dense/keyword rank and score, rrf_score, rerank_score, ...
+    debug: dict[str, float]
 
 
 class Usage(BaseModel):
@@ -74,10 +97,14 @@ class Usage(BaseModel):
     llm_calls: int
 
 
-class ChatConfig(BaseModel):
-    top_k: int
+class RetrievalConfigOut(BaseModel):
+    retrieval: RetrievalConfig
     index_version: str
     embedding_model: str
+    reranker_model: str | None
+
+
+class ChatConfig(RetrievalConfigOut):
     llm_model: str
     prompt_version: str
 
@@ -91,3 +118,9 @@ class ChatResponse(BaseModel):
     usage: Usage
     timings_ms: dict[str, float]
     config: ChatConfig
+
+
+class RetrieveResponse(BaseModel):
+    hits: list[RetrievedOut]
+    timings_ms: dict[str, float]
+    config: RetrievalConfigOut

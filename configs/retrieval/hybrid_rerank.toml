@@ -1,0 +1,6 @@
+# Hybrid candidates (20), rescored by the cross-encoder; the best 5 go to the model.
+mode = "hybrid"
+rerank = true
+top_k = 5
+candidate_k = 20
+rrf_k = 60

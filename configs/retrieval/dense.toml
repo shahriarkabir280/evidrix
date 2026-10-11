@@ -1,0 +1,4 @@
+# Baseline: embedding similarity only.
+mode = "dense"
+rerank = false
+top_k = 5

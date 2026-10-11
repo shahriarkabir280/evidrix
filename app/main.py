@@ -8,16 +8,18 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.routes import chat, documents, health
+from app.api.routes import chat, documents, health, retrieve
 from app.rag.embeddings import get_embedder
+from app.rag.rerank import get_reranker
 
 
 def create_app(*, preload_models: bool = True) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         if preload_models:
-            # Load the embedding model at startup, so the first request isn't the slow one.
+            # Load the local models at startup, so the first request isn't the slow one.
             get_embedder()
+            get_reranker()
         yield
 
     app = FastAPI(
@@ -29,6 +31,7 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
     app.include_router(health.router)
     app.include_router(documents.router)
     app.include_router(chat.router)
+    app.include_router(retrieve.router)
     return app
 
 

@@ -10,13 +10,14 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from app.db.models import DocumentStatus
-from app.db.repositories import chunks as chunks_repo
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.repositories.chunks import ChunkHit
 from app.rag.embeddings import Embedder
 from app.rag.generation import GeneratedAnswer, generate_answer
 from app.rag.llm import LLMProvider
+from app.rag.rerank import Reranker
+from app.rag.retrieval import RetrievalConfig, retrieve
 from app.services.ingestion import ensure_compatible
 
 
@@ -38,21 +39,23 @@ class ChatResult:
     generated: GeneratedAnswer
     hits: list[ChunkHit]
     timings_ms: dict[str, float]
-    top_k: int
+    retrieval: RetrievalConfig
     index_version: str
     embedding_model: str
+    reranker_model: str | None
     llm_model: str
 
 
 def answer_question(
     session: Session,
     embedder: Embedder,
+    reranker: Reranker,
     llm: LLMProvider,
     *,
     owner_id: uuid.UUID,
     question: str,
     document_ids: list[uuid.UUID] | None,
-    top_k: int,
+    retrieval: RetrievalConfig,
     max_tokens: int,
     min_score: float | None = None,
 ) -> ChatResult:
@@ -63,29 +66,32 @@ def answer_question(
     index_version = index_versions_repo.get_active(session)
     ensure_compatible(index_version, embedder)
 
-    timings: dict[str, float] = {}
-    with _timer(timings, "embed"):
-        query_vector = embedder.embed_query(question)
-    with _timer(timings, "retrieve"):
-        hits = chunks_repo.search_dense(
-            session,
-            owner_id=owner_id,
-            index_version_id=index_version.id,
-            query_vector=query_vector,
-            k=top_k,
-            document_ids=document_ids,
-        )
-    with _timer(timings, "generate"):
-        generated = generate_answer(llm, question, hits, max_tokens=max_tokens, min_score=min_score)
+    found = retrieve(
+        session,
+        embedder,
+        reranker,
+        retrieval,
+        owner_id=owner_id,
+        index_version_id=index_version.id,
+        question=question,
+        document_ids=document_ids,
+    )
+    timings = dict(found.timings_ms)
+    generate_started = time.perf_counter()
+    generated = generate_answer(
+        llm, question, found.hits, max_tokens=max_tokens, min_score=min_score
+    )
+    timings["generate"] = round((time.perf_counter() - generate_started) * 1000, 1)
     timings["total"] = round((time.perf_counter() - started) * 1000, 1)
 
     return ChatResult(
         generated=generated,
-        hits=hits,
+        hits=found.hits,
         timings_ms=timings,
-        top_k=top_k,
+        retrieval=retrieval,
         index_version=index_version.name,
         embedding_model=embedder.model_name,
+        reranker_model=reranker.model_name if retrieval.rerank else None,
         llm_model=llm.model,
     )
 
@@ -103,16 +109,3 @@ def check_documents(session: Session, owner_id: uuid.UUID, document_ids: list[uu
             raise DocumentNotFoundError(document_id)
         if document.status is not DocumentStatus.COMPLETED:
             raise DocumentNotReadyError(document_id, document.status)
-
-
-class _timer:
-    """`with _timer(timings, "embed"):` records the block's duration in milliseconds."""
-
-    def __init__(self, timings: dict[str, float], name: str) -> None:
-        self._timings, self._name = timings, name
-
-    def __enter__(self) -> None:
-        self._started = time.perf_counter()
-
-    def __exit__(self, *exc_info: object) -> None:
-        self._timings[self._name] = round((time.perf_counter() - self._started) * 1000, 1)

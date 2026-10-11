@@ -1,17 +1,26 @@
 """Dense and keyword retrieval, and Reciprocal Rank Fusion.
 
-Component 2D (dense) · 3A (keyword) · 3B (fusion).
+Component 2D (dense) · 3A (keyword) · 3B (fusion) · 3D (configurable pipeline).
 """
 
+import time
+import tomllib
 import uuid
 from collections import defaultdict
-from dataclasses import replace
+from contextlib import contextmanager
+from dataclasses import dataclass, replace
+from pathlib import Path
+from typing import Literal
 
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy.orm import Session
 
 from app.db.repositories import chunks as chunks_repo
 from app.db.repositories.chunks import ChunkHit
 from app.rag.embeddings import Embedder
+from app.rag.rerank import Reranker, rerank
+
+PRESETS_DIR = Path(__file__).resolve().parents[2] / "configs" / "retrieval"
 
 
 def dense_search(
@@ -119,3 +128,98 @@ def hybrid_search(
         limit=k,
         rrf_k=rrf_k,
     )
+
+
+class RetrievalConfig(BaseModel):
+    """How to find evidence for a question. Presets live in configs/retrieval/*.toml."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    mode: Literal["dense", "keyword", "hybrid"] = "hybrid"
+    rerank: bool = False
+    top_k: int = Field(default=5, ge=1, le=20)
+    # How many chunks each retriever fetches before fusion and/or reranking.
+    candidate_k: int = Field(default=20, ge=1, le=100)
+    rrf_k: int = Field(default=RRF_K, ge=1, le=1000)
+
+    @model_validator(mode="after")
+    def _pool_holds_the_results(self) -> "RetrievalConfig":
+        if self.candidate_k < self.top_k:
+            raise ValueError("candidate_k must be at least top_k")
+        return self
+
+
+class UnknownPresetError(ValueError):
+    pass
+
+
+def load_preset(name: str) -> RetrievalConfig:
+    path = PRESETS_DIR / f"{name}.toml"
+    # Only plain names: a preset is chosen by name, never by a path.
+    if not name.replace("_", "").isalnum() or not path.is_file():
+        available = sorted(p.stem for p in PRESETS_DIR.glob("*.toml"))
+        raise UnknownPresetError(f"Unknown retrieval preset {name!r}; available: {available}")
+    return RetrievalConfig(**tomllib.loads(path.read_text()))
+
+
+@dataclass(frozen=True)
+class RetrievalResult:
+    hits: list[ChunkHit]
+    timings_ms: dict[str, float]
+
+
+def retrieve(
+    session: Session,
+    embedder: Embedder,
+    reranker: Reranker,
+    config: RetrievalConfig,
+    *,
+    owner_id: uuid.UUID,
+    index_version_id: int,
+    question: str,
+    document_ids: list[uuid.UUID] | None = None,
+) -> RetrievalResult:
+    """Run the pipeline `config` describes and time each stage.
+
+    With reranking, each retriever fetches the larger candidate pool and the reranker picks the
+    final top_k; without it, retrieval returns top_k directly.
+    """
+    timings: dict[str, float] = {}
+    fetch = config.candidate_k if (config.rerank or config.mode == "hybrid") else config.top_k
+    common = {
+        "owner_id": owner_id,
+        "index_version_id": index_version_id,
+        "k": fetch,
+        "document_ids": document_ids,
+    }
+    legs: dict[str, list[ChunkHit]] = {}
+
+    if config.mode in ("dense", "hybrid"):
+        with _timed(timings, "embed"):
+            query_vector = embedder.embed_query(question)
+        with _timed(timings, "retrieve_dense"):
+            legs["dense"] = chunks_repo.search_dense(session, query_vector=query_vector, **common)
+    if config.mode in ("keyword", "hybrid"):
+        with _timed(timings, "retrieve_keyword"):
+            legs["keyword"] = chunks_repo.search_keyword(session, query_text=question, **common)
+
+    if config.mode == "hybrid":
+        with _timed(timings, "fuse"):
+            pool_size = config.candidate_k if config.rerank else config.top_k
+            hits = reciprocal_rank_fusion(legs, limit=pool_size, rrf_k=config.rrf_k)
+    else:
+        (hits,) = legs.values()
+
+    if config.rerank:
+        with _timed(timings, "rerank"):
+            hits = rerank(reranker, question, hits, top_k=config.top_k)
+    return RetrievalResult(hits=hits[: config.top_k], timings_ms=timings)
+
+
+@contextmanager
+def _timed(timings: dict[str, float], name: str):
+    started = time.perf_counter()
+    try:
+        yield
+    finally:
+        timings[name] = round((time.perf_counter() - started) * 1000, 1)

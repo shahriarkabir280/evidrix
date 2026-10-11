@@ -5,7 +5,7 @@ Component 2D (ingest-dir, reindex, search) · 5C (create-user).
     uv run python -m app.cli ingest-dir evals/corpus/raw
     uv run python -m app.cli reindex
     uv run python -m app.cli search "How do I declare a cookie parameter?"
-    uv run python -m app.cli search "OAuth2PasswordRequestForm" --mode keyword
+    uv run python -m app.cli search "OAuth2PasswordRequestForm" --preset dense -k 3
 """
 
 import argparse
@@ -20,7 +20,8 @@ from app.db.models import Chunk, Document, DocumentStatus
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
-from app.rag.retrieval import dense_search, hybrid_search, keyword_search
+from app.rag.rerank import get_reranker
+from app.rag.retrieval import RetrievalConfig, load_preset, retrieve
 from app.services.ingestion import UploadRejected, ingest_upload, reindex_document
 from app.storage.blob import LocalBlobStore
 
@@ -88,26 +89,35 @@ def reindex() -> None:
         print(f"{len(documents)} documents reindexed into {index_version.name}")
 
 
-def search(question: str, k: int, mode: str) -> None:
+def search(question: str, preset: str, k: int | None) -> None:
+    config = load_preset(preset)
+    if k is not None:
+        config = RetrievalConfig(
+            **{**config.model_dump(), "top_k": k, "candidate_k": max(k, config.candidate_k)}
+        )
     with get_session_factory()() as session:
         index_version = index_versions_repo.get_active(session)
-        common = {"owner_id": DEV_USER_ID, "index_version_id": index_version.id, "k": k}
-        if mode in ("dense", "hybrid"):
-            embedder = get_embedder()
-            search_fn = dense_search if mode == "dense" else hybrid_search
-            started = time.perf_counter()
-            hits = search_fn(session, embedder, question=question, **common)
-        else:
-            started = time.perf_counter()
-            hits = keyword_search(session, question=question, **common)
-        elapsed_ms = (time.perf_counter() - started) * 1000
-    print(f"{len(hits)} results in {elapsed_ms:.0f} ms\n")
-    for hit in hits:
+        result = retrieve(
+            session,
+            get_embedder(),
+            get_reranker(),
+            config,
+            owner_id=DEV_USER_ID,
+            index_version_id=index_version.id,
+            question=question,
+        )
+    timings = ", ".join(f"{name} {ms:.0f} ms" for name, ms in result.timings_ms.items())
+    print(f"{len(result.hits)} results ({preset}: {timings})\n")
+    for hit in result.hits:
         where = hit.section_path or (f"page {hit.page_start}" if hit.page_start else "")
         if hit.page_start and hit.page_end != hit.page_start:
             where += f"-{hit.page_end}"
+        trail = " ".join(
+            f"{name}={value:g}" for name, value in hit.debug.items() if name.endswith("_rank")
+        )
         snippet = " ".join(hit.text.split())[:160]
-        print(f"{hit.rank}. [{hit.score:.3f}] {hit.document_title} · {where}\n   {snippet}\n")
+        print(f"{hit.rank}. [{hit.score:.3f}] {hit.document_title} · {where}  ({trail})")
+        print(f"   {snippet}\n")
 
 
 def main() -> None:
@@ -118,8 +128,10 @@ def main() -> None:
     commands.add_parser("reindex", help="build missing chunks for the active index version")
     query = commands.add_parser("search", help="dense search over your documents")
     query.add_argument("question")
-    query.add_argument("-k", type=int, default=5)
-    query.add_argument("--mode", choices=["dense", "keyword", "hybrid"], default="dense")
+    query.add_argument(
+        "--preset", default=get_settings().retrieval_preset, help="configs/retrieval/<name>.toml"
+    )
+    query.add_argument("-k", type=int, help="override the preset's top_k")
     args = parser.parse_args()
 
     if args.command == "ingest-dir":
@@ -127,7 +139,7 @@ def main() -> None:
     elif args.command == "reindex":
         reindex()
     else:
-        search(args.question, args.k, args.mode)
+        search(args.question, args.preset, args.k)
 
 
 if __name__ == "__main__":
