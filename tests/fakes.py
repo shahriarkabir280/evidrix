@@ -80,3 +80,13 @@ class FakeLLM:
             latency_ms=1.0,
             finish_reason=self._finish_reason,
         )
+
+
+class FakeReranker:
+    """Scores a passage by how many distinct question words it contains."""
+
+    model_name = "fake-word-overlap"
+
+    def score(self, question: str, passages: list[str]) -> list[float]:
+        words = set(_WORD.findall(question.lower()))
+        return [float(len(words & set(_WORD.findall(p.lower())))) for p in passages]

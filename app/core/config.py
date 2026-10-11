@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 120.0
     llm_max_retries: int = 1
 
+    # Cross-encoder that rescores the candidate pool (runs on embedding_device).
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
     # Each retrieved chunk adds ~1.8 s of prompt reading on the local 8B model.
     retrieval_top_k: int = 5
     # Below this top similarity the model isn't even asked. None = disabled until it is
