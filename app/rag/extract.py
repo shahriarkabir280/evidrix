@@ -19,6 +19,13 @@ PAGE_SEPARATOR = "\f"
 # (typically a scanned PDF, which would need OCR).
 MIN_TEXT_CHARS = 20
 
+# Typographic ligatures that some PDFs (often LaTeX) store as single characters: "ﬁne-tune" would
+# not match a search for "fine-tune". Only these are mapped; full NFKC normalization would also
+# rewrite superscripts and other symbols whose meaning matters.
+_LIGATURES = str.maketrans(
+    {"\ufb00": "ff", "\ufb01": "fi", "\ufb02": "fl", "\ufb03": "ffi", "\ufb04": "ffl",
+     "\ufb05": "st", "\ufb06": "st"}
+)  # fmt: skip
 _FRONT_MATTER = re.compile(r"\A---\n.*?\n---[ \t]*(?:\n|\Z)", re.DOTALL)
 _H1 = re.compile(r"#[ \t]+(.+?)[ \t#]*")
 _FENCE = re.compile(r"[ \t]{0,3}(```|~~~)")
@@ -90,9 +97,15 @@ def extract(data: bytes, filename: str, kind: DocumentKind) -> ExtractedDocument
 
 
 def normalize_pdf_text(text: str) -> str:
-    text = _clean(text)
-    # Re-join words that the PDF hyphenated across a line break ("retri-\neval").
-    text = re.sub(r"(\w)-\n([a-z])", r"\1\2", text)
+    text = _clean(text).translate(_LIGATURES)
+    # Re-join words that the PDF hyphenated across a line break ("retri-\neval" -> "retrieval"),
+    # but keep the hyphen of a compound that continues with more hyphens ("state-\nof-the-art").
+    # A compound broken at its only hyphen ("cosine-\nsimilarity") cannot be told apart.
+    text = re.sub(
+        r"(\w)-\n([a-z]\S*)",
+        lambda m: f"{m[1]}{'-' if '-' in m[2] else ''}{m[2]}",
+        text,
+    )
     text = re.sub(r"[ \t\xa0]+", " ", text)
     text = re.sub(r" ?\n ?", "\n", text)
     # Keep paragraph breaks (one blank line) but no larger gaps.

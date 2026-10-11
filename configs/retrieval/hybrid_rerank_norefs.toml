@@ -1,0 +1,8 @@
+# hybrid_rerank without chunks from References / Bibliography sections (Part 4b experiment).
+mode = "hybrid"
+rerank = true
+top_k = 5
+candidate_k = 20
+rrf_k = 60
+min_score = -2.84
+exclude_references = true

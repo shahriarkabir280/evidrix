@@ -2,7 +2,8 @@
 
 Component 4A/4B.
 
-    uv run python -m evals.benchmark   # check that every evidence quote is found in its source
+    uv run python -m evals.benchmark                               # documentation benchmark
+    uv run python -m evals.benchmark evals/questions_papers.jsonl  # research-paper benchmark
 
 Labels are quotes, not chunk IDs: a quote keeps pointing at the same text however the corpus is
 chunked, so the same benchmark can compare chunk sizes (plan §0, item 3).
@@ -30,7 +31,8 @@ from evals.metrics import SourceSpan
 QUESTIONS_PATH = Path(__file__).parent / "questions.jsonl"
 CORPUS_DIR = Path(__file__).parent / "corpus" / "raw"
 
-QuestionType = Literal["factual", "identifier", "multi_hop", "distractor", "unanswerable"]
+QuestionType = Literal["factual", "identifier", "table", "multi_hop", "distractor", "unanswerable"]
+PAPERS_QUESTIONS_PATH = Path(__file__).parent / "questions_papers.jsonl"
 
 
 class Evidence(BaseModel):
@@ -143,12 +145,14 @@ def check(questions: list[Question]) -> list[str]:
 
 
 def main() -> None:
-    questions = load_questions()
+    path = Path(sys.argv[1]) if len(sys.argv) > 1 else QUESTIONS_PATH
+    questions = load_questions(path)
     problems = check(questions)
     for problem in problems:
         print(problem)
     quotes = sum(len(q.evidence) for q in questions)
-    print(f"{len(questions)} questions, {quotes} evidence quotes, {len(problems)} problems")
+    summary = f"{len(questions)} questions, {quotes} evidence quotes, {len(problems)} problems"
+    print(f"{path.name}: {summary}")
     by_split = {s: sum(q.split == s for q in questions) for s in ("dev", "test")}
     print(f"splits: {json.dumps(by_split)}")
     sys.exit(1 if problems else 0)

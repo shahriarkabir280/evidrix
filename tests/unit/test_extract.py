@@ -200,5 +200,15 @@ def test_normalize_collapses_spaces_and_extra_blank_lines():
     assert normalize_pdf_text(raw) == "Title with gaps\n\nNext paragraph"
 
 
+def test_normalize_keeps_the_hyphen_of_a_compound_broken_across_lines():
+    assert normalize_pdf_text("a state-\nof-the-art model") == "a state-of-the-art model"
+
+
+def test_normalize_spells_out_typographic_ligatures():
+    assert normalize_pdf_text("we \ufb01ne-tune e\ufb03ciently on \ufb02oats") == (
+        "we fine-tune efficiently on floats"
+    )
+
+
 def test_normalize_removes_page_separator_characters():
     assert PAGE_SEPARATOR not in normalize_pdf_text(f"before{PAGE_SEPARATOR}after")

@@ -7,7 +7,7 @@ import uuid
 from dataclasses import dataclass, field
 
 import numpy as np
-from sqlalchemy import Select, Text, cast, func, literal_column, select, text
+from sqlalchemy import Select, Text, cast, func, literal_column, or_, select, text
 from sqlalchemy.dialects.postgresql import TSQUERY
 from sqlalchemy.orm import Session
 
@@ -46,13 +46,16 @@ def search_dense(
     k: int,
     document_ids: list[uuid.UUID] | None = None,
     exact: bool = False,
+    exclude_references: bool = False,
 ) -> list[ChunkHit]:
     """Nearest chunks by cosine distance, restricted to the owner's completed documents."""
     if document_ids is not None and not document_ids:
         return []
 
     distance = Chunk.embedding.cosine_distance(query_vector)
-    query = _searchable(owner_id, index_version_id, document_ids, distance.label("distance"))
+    query = _searchable(
+        owner_id, index_version_id, document_ids, distance.label("distance"), exclude_references
+    )
     query = query.order_by(distance).limit(k)
 
     if exact:
@@ -80,6 +83,7 @@ def search_keyword(
     query_text: str,
     k: int,
     document_ids: list[uuid.UUID] | None = None,
+    exclude_references: bool = False,
 ) -> list[ChunkHit]:
     """Chunks containing any of the question's words, best ts_rank_cd first.
 
@@ -91,7 +95,9 @@ def search_keyword(
 
     tsquery = or_tsquery(query_text)
     rank = func.ts_rank_cd(Chunk.tsv, tsquery)
-    query = _searchable(owner_id, index_version_id, document_ids, rank.label("rank_score"))
+    query = _searchable(
+        owner_id, index_version_id, document_ids, rank.label("rank_score"), exclude_references
+    )
     query = query.where(Chunk.tsv.op("@@")(tsquery)).order_by(rank.desc(), Chunk.id).limit(k)
     rows = session.execute(query).all()
     return [_hit(row, score=float(row.rank_score), rank=rank) for rank, row in enumerate(rows, 1)]
@@ -109,7 +115,11 @@ def or_tsquery(query_text: str):
 
 
 def _searchable(
-    owner_id: uuid.UUID, index_version_id: int, document_ids: list[uuid.UUID] | None, score
+    owner_id: uuid.UUID,
+    index_version_id: int,
+    document_ids: list[uuid.UUID] | None,
+    score,
+    exclude_references: bool = False,
 ) -> Select:
     """The columns of a hit plus the filters every search must apply, in one place.
 
@@ -138,6 +148,14 @@ def _searchable(
     )
     if document_ids is not None:
         query = query.where(Chunk.document_id.in_(document_ids))
+    if exclude_references:
+        path = func.lower(Chunk.section_path)
+        query = query.where(
+            or_(
+                Chunk.section_path.is_(None),
+                ~(path.like("%> references") | path.like("%> bibliography")),
+            )
+        )
     return query
 
 

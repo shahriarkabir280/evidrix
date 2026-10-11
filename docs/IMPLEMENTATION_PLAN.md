@@ -671,6 +671,8 @@ with actual numbers, including any configuration that turned out worse.
 
 Branch `feature/research-papers` · Milestone M3 · added 2026-10-11
 
+**Status: done (2026-10-11).** Results and findings are in docs/devlog.md (Part 4b) and the README.
+
 The goal names "technical documentation and research papers", but the Part 2 corpus has no papers.
 Papers are almost always PDFs and are harder to read than the HOWTO PDFs: two-column layouts,
 numbered section headings, references, tables, formulas, running headers. This part adds papers

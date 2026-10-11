@@ -157,3 +157,34 @@ Rank of the document that answers the question, within the top 10:
 
 **Next**
 - Part 4b: research papers (corpus, two-column PDFs, section headings, a paper benchmark).
+
+## Part 4b — Research papers (2026-10-11)
+
+**Built**
+- Corpus: eight retrieval/RAG papers from arXiv, chosen from 32 candidates for a license that
+  allows redistribution (CC BY 4.0 / CC BY-SA 4.0), pinned by version, recorded with license in
+  the manifest. Documents belong to a collection (docs / papers); each benchmark searches its own.
+- PDF reading: ligatures spelled out; hyphen kept when a compound continues with hyphens; numbered
+  section headings detected (also when sharing a text box with the paragraph, after a table of
+  contents, References and lettered appendices).
+- Paper benchmark: 24 questions (incl. a new `table` type and cross-paper multi-hop), 13 dev / 11
+  test. `exclude_references` retrieval option and `--benchmark papers` in the runner.
+
+**Measured**
+- Before fixing: two-column order already correct; ligatures 77–126 in three papers; PDF chunks had
+  no section path. After: 0 ligatures; 86–98% of PDF chunks in a section. The documentation
+  benchmark moved within noise (MRR −0.003).
+- Papers (dev, hybrid_rerank): Recall@5 0.712, MRR 0.712, correctness 0.818, faithfulness 1.000,
+  abstention 2/2 with no false abstentions. Excluding references: Recall@5 0.803, answers identical.
+
+**Surprises**
+- The predicted problem (two-column reading order) did not exist; the unpredicted ones
+  (ligatures, headings sharing a text box, a table of contents breaking the numbering) did.
+- Two identifier questions scored recall 0 but were answered correctly: the papers state the
+  answer in several places and the label covers one. Labels left frozen (extending them from
+  system output would bias the benchmark); future labels should mark every location.
+- A wrong number read from a scrambled table was graded fully faithful, because the number is in
+  the source.
+
+**Next**
+- Part 5: background ingestion jobs, API keys, rate limits, prompt-injection tests.
