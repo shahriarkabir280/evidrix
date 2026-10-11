@@ -140,6 +140,19 @@ What the data supports so far:
   question (see [Engineering notes](#engineering-notes)).
 - Generation dominates latency (p50 ≈ 17 s on a busy 16 GB M4); reranking adds ≈ 0.2 s.
 
+**Research papers** (8 CC-licensed arXiv papers, 13-question dev split, `hybrid_rerank`):
+
+| Benchmark | Recall@5 | MRR@5 | Correctness | Faithfulness | Abstention F1 |
+|---|---|---|---|---|---|
+| Documentation (29 + 7 dev) | 0.914 | 0.862 | 0.914 | 0.963 | 0.875 |
+| Research papers (11 + 2 dev) | 0.712 | 0.712 | 0.818 | 1.000 | 1.000 |
+
+Papers are harder, mainly because of tables and questions that span two papers. Retrieval
+numbers on papers are underestimated: two questions whose answers the paper states in several
+places were labeled at one place only, and the system answered both correctly from another.
+Leaving out reference sections raised Recall@5 to 0.803 but changed no answer, so it is an
+option (`exclude_references`), not the default.
+
 The 24-question test split stays untouched until the final report. A full LLM-judged run takes
 about 35 minutes per preset on an idle 16 GB M4 (answers ≈ 12 min, judging ≈ 20 min).
 
@@ -236,6 +249,18 @@ Things the measurements caught that the original plan didn't:
   never mentions it), the `hybrid` run answered "you can deploy FastAPI apps to any cloud
   provider, including Kubernetes [2]". Source [2] exists and was retrieved, so citation checks
   passed; the claim itself was invented. Only claim-level faithfulness grading catches this.
+- **Tables lose their structure, and the judge doesn't notice.** PDF text extraction reads tables
+  column by column, so numbers lose their rows. Asked for Ragas' context-relevance score, the
+  model answered 0.54 (another row's number). The faithfulness judge scored the answer 1.0,
+  because 0.54 does appear in the source: claim-level grading cannot catch a number attributed to
+  the wrong row.
+- **Measure before fixing.** The plan expected two-column research papers to scramble the reading
+  order; measured on eight papers, the order was already right. The real problems were
+  ligatures stored as single characters (`ﬁne-tune`, up to 126 per paper) and PDF chunks without
+  section paths (0% → 86–98% after detecting numbered headings).
+- **Labels can be too narrow.** A single labeled location undercounts when a paper repeats the
+  answer (introduction, method section, appendix). The labels were left unchanged rather than
+  extended from the system's own output, which would bias the benchmark.
 - **Memory is the limit of a 16 GB laptop.** The first full run thrashed for hours: the
   evaluation process kept the embedder and reranker in GPU memory next to a 12B judge. Runs now
   checkpoint the answers and hand judging to a fresh process (`os.execv`); Ollama keeps one
@@ -296,7 +321,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 2** — chunking, embeddings, dense retrieval, grounded answers with citations
 - [x] **Part 3** — keyword search, hybrid fusion, reranking, `/retrieve`
 - [x] **Part 4** — evaluation harness: benchmark, retrieval and answer metrics, judge calibration, abstention threshold
-- [ ] **Part 4b** — research papers: two-column PDFs, section headings, a paper benchmark
+- [x] **Part 4b** — research papers: CC-licensed arXiv corpus, ligatures and section headings in PDFs, a 24-question paper benchmark
 - [ ] **Part 5** — background ingestion jobs, API keys, rate limits, prompt-injection tests
 - [ ] **Part 6** — persisted chats, cost and latency tracking, load test
 - [ ] **Part 7** — Docker image, hosted deployment, smoke tests
@@ -304,10 +329,10 @@ docs/             plan, ADRs, devlog
 
 ## Limitations
 
-- The benchmark has 60 questions written by a single annotator (who also built the system), with
+- The benchmarks (60 documentation + 24 paper questions) were written by a single annotator (who also built the system), with
   no second-annotator review; small differences between configurations are not significant.
-- The corpus is one domain (FastAPI tutorial + four Python HOWTOs); research papers are not yet
-  covered.
+- The corpus covers technical documentation (FastAPI tutorial, four Python HOWTOs) and eight
+  retrieval/RAG papers; tables in PDFs lose their row/column structure.
 - Answers come from a local 8B model; generation dominates latency (~10–18 s on an Apple M4).
 - Keyword ranking uses Postgres `ts_rank_cd`, not BM25.
 - Scanned PDFs (no text layer) are rejected; there is no OCR.
