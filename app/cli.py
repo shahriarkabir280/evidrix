@@ -20,7 +20,7 @@ from app.db.models import Chunk, Document, DocumentStatus
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
-from app.rag.retrieval import dense_search, keyword_search
+from app.rag.retrieval import dense_search, hybrid_search, keyword_search
 from app.services.ingestion import UploadRejected, ingest_upload, reindex_document
 from app.storage.blob import LocalBlobStore
 
@@ -92,10 +92,11 @@ def search(question: str, k: int, mode: str) -> None:
     with get_session_factory()() as session:
         index_version = index_versions_repo.get_active(session)
         common = {"owner_id": DEV_USER_ID, "index_version_id": index_version.id, "k": k}
-        if mode == "dense":
+        if mode in ("dense", "hybrid"):
             embedder = get_embedder()
+            search_fn = dense_search if mode == "dense" else hybrid_search
             started = time.perf_counter()
-            hits = dense_search(session, embedder, question=question, **common)
+            hits = search_fn(session, embedder, question=question, **common)
         else:
             started = time.perf_counter()
             hits = keyword_search(session, question=question, **common)
@@ -118,7 +119,7 @@ def main() -> None:
     query = commands.add_parser("search", help="dense search over your documents")
     query.add_argument("question")
     query.add_argument("-k", type=int, default=5)
-    query.add_argument("--mode", choices=["dense", "keyword"], default="dense")
+    query.add_argument("--mode", choices=["dense", "keyword", "hybrid"], default="dense")
     args = parser.parse_args()
 
     if args.command == "ingest-dir":

@@ -4,7 +4,7 @@ Component 2D · keyword search in 3A.
 """
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 from sqlalchemy import Select, Text, cast, func, literal_column, select, text
@@ -28,8 +28,10 @@ class ChunkHit:
     section_path: str | None
     page_start: int | None
     page_end: int | None
-    score: float  # higher is better: cosine similarity (dense) or ts_rank_cd (keyword)
+    score: float  # higher is better: cosine (dense), ts_rank_cd (keyword) or RRF (hybrid)
     rank: int  # 1-based
+    # How each retrieval stage saw this chunk, e.g. {"dense_rank": 2, "keyword_score": 0.1}.
+    debug: dict[str, float] = field(default_factory=dict)
 
 
 def search_dense(
