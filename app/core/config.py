@@ -35,8 +35,9 @@ class Settings(BaseSettings):
     # A local 8B model reads ~150 prompt tokens/s; the first call also loads the model.
     llm_timeout_seconds: float = 120.0
     llm_max_retries: int = 1
-    # Evaluation only: a different model family from llm_model grades the answers.
-    judge_model: str = "llama3.1:8b"
+    # Evaluation only: a different model family from llm_model grades the answers. Calibration
+    # (evals/judge_calibration.jsonl, judge_correctness_v1): gemma3:12b 100%, llama3.1:8b 88%.
+    judge_model: str = "gemma3:12b"
 
     # Cross-encoder that rescores the candidate pool (runs on embedding_device).
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
