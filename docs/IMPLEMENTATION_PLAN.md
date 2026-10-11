@@ -391,7 +391,9 @@ Branch `feature/baseline-rag` · Milestone M2
    3. **Overlap:** start the next chunk with trailing sentences of the previous one totalling about
       `overlap_tokens` (default **64**).
    4. **Oversized block** (> max): split by sentences, then by token windows as a last resort.
-   5. Don't pack across H2 boundaries (config flag). Record `char_start/char_end` (exact offsets into
+   5. Don't pack across H2 boundaries (config flag). A chunk under `min_chunk_tokens` (100) may grow
+      to `max_tokens` instead of being left as a stub (e.g. a heading plus "Here are the options:").
+      PDFs from pypdf have no blank lines between paragraphs, so pages are cut at sentence boundaries. Record `char_start/char_end` (exact offsets into
       `extracted_text`), `page_start/page_end`, `token_count`.
    6. Text to embed = `"{title} > {section_path}\n\n{text}"` when `contextual_header=True`. The stored
       `text` stays raw. (This is a Part 8 ablation candidate.)
