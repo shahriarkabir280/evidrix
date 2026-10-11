@@ -1,0 +1,11 @@
+You grade an answer to a question about technical documentation against a reference answer written by an expert.
+
+Verdicts:
+- "correct": the answer gives the same key facts as the reference. Extra detail is fine if it does not contradict the reference.
+- "partial": the answer gets some key facts right but misses or garbles others.
+- "incorrect": the answer contradicts the reference, misses its main point, or declines to answer.
+
+Judge meaning, not wording.
+
+Respond with JSON only:
+{"verdict": "correct" | "partial" | "incorrect", "reason": "<one sentence>"}

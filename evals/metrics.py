@@ -93,3 +93,44 @@ def mean_scores(scores: list[RetrievalScores]) -> RetrievalScores:
         mrr=sum(s.mrr for s in scores) / n,
         ndcg=sum(s.ndcg for s in scores) / n,
     )
+
+
+# --- 4D: citations and abstention (deterministic) ----------------------------------------
+
+
+def citation_precision(cited: list[SourceSpan], items: list[EvidenceItem]) -> float | None:
+    """Share of cited chunks that contain at least one evidence quote. None if nothing was cited."""
+    if not cited:
+        return None
+    return sum(bool(covered_items(chunk, items)) for chunk in cited) / len(cited)
+
+
+@dataclass(frozen=True)
+class AbstentionScores:
+    """Abstaining on an unanswerable question is the positive class."""
+
+    precision: float | None  # of the abstentions, how many were on unanswerable questions
+    recall: float | None  # of the unanswerable questions, how many got an abstention
+    f1: float | None
+    false_abstention_rate: float | None  # of the answerable questions, how many were refused
+
+
+def abstention_scores(outcomes: list[tuple[bool, bool]]) -> AbstentionScores:
+    """`outcomes` holds (answerable, abstained) for each question."""
+    true_pos = sum(not answerable and abstained for answerable, abstained in outcomes)
+    false_pos = sum(answerable and abstained for answerable, abstained in outcomes)
+    unanswerable = sum(not answerable for answerable, _ in outcomes)
+    answerable = len(outcomes) - unanswerable
+
+    precision = true_pos / (true_pos + false_pos) if true_pos + false_pos else None
+    recall = true_pos / unanswerable if unanswerable else None
+    if precision is None or recall is None:
+        f1 = None
+    else:
+        f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+    return AbstentionScores(
+        precision=precision,
+        recall=recall,
+        f1=f1,
+        false_abstention_rate=false_pos / answerable if answerable else None,
+    )
