@@ -57,14 +57,18 @@ class CorpusNotIndexedError(Exception):
     pass
 
 
-def corpus_documents(session: Session) -> dict[Any, str]:
-    """Map document id -> corpus source path, for the evaluation corpus only.
+def corpus_documents(session: Session, collection: str = "docs") -> dict[Any, str]:
+    """Map document id -> corpus source path, for one collection of the evaluation corpus.
 
     Retrieval is restricted to these documents, so anything else uploaded to the same database
-    (manual tests, demos) cannot leak into the results.
+    (manual tests, demos, the other collection) cannot leak into the results.
     """
     manifest = json.loads(MANIFEST_PATH.read_text())
-    source_by_hash = {d["sha256"]: d["path"] for d in manifest["documents"]}
+    source_by_hash = {
+        d["sha256"]: d["path"]
+        for d in manifest["documents"]
+        if d.get("collection", "docs") == collection
+    }
     rows = session.execute(
         select(Document.id, Document.content_hash).where(
             Document.owner_id == DEV_USER_ID,

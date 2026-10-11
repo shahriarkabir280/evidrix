@@ -15,6 +15,7 @@ import shutil
 import sys
 import tarfile
 import tempfile
+import time
 import urllib.request
 import zipfile
 from collections.abc import Callable
@@ -32,6 +33,31 @@ PYTHON_DOCS_URL = (
     f"python-{PYTHON_DOCS_VERSION}-docs-pdf-a4.zip"
 )
 PYTHON_HOWTOS = ["howto-argparse.pdf", "howto-logging.pdf", "howto-regex.pdf", "howto-sorting.pdf"]
+
+# Research papers (Part 4b). Only papers whose arXiv license allows redistribution (CC BY or
+# CC BY-SA, checked on each abstract page); most arXiv papers use a licence that does not.
+# Versions are pinned so the text never changes under the benchmark.
+ARXIV_PAPERS = [
+    {"id": "2309.15217", "version": 2, "name": "ragas", "license": "CC-BY-4.0",
+     "title": "Ragas: Automated Evaluation of Retrieval Augmented Generation"},
+    {"id": "2311.09476", "version": 2, "name": "ares", "license": "CC-BY-4.0",
+     "title": "ARES: An Automated Evaluation Framework for Retrieval-Augmented Generation Systems"},
+    {"id": "2401.05856", "version": 1, "name": "rag-failure-points", "license": "CC-BY-4.0",
+     "title": "Seven Failure Points When Engineering a Retrieval Augmented Generation System"},
+    {"id": "2310.11511", "version": 1, "name": "self-rag", "license": "CC-BY-4.0",
+     "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection"},
+    {"id": "1908.10084", "version": 1, "name": "sentence-bert", "license": "CC-BY-SA-4.0",
+     "title": "Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks"},
+    {"id": "2212.03533", "version": 2, "name": "e5", "license": "CC-BY-4.0",
+     "title": "Text Embeddings by Weakly-Supervised Contrastive Pre-training"},
+    {"id": "2112.01488", "version": 3, "name": "colbertv2", "license": "CC-BY-4.0",
+     "title": "ColBERTv2: Effective and Efficient Retrieval via Lightweight Late Interaction"},
+    {"id": "2104.08663", "version": 4, "name": "beir", "license": "CC-BY-SA-4.0",
+     "title": "BEIR: A Heterogenous Benchmark for Zero-shot Evaluation of Information "
+              "Retrieval Models"},
+]  # fmt: skip
+# arXiv asks automated clients to wait between requests.
+ARXIV_DELAY_SECONDS = 3
 
 CORPUS_DIR = Path("evals/corpus")
 RAW_DIR = CORPUS_DIR / "raw"
@@ -119,6 +145,7 @@ def build(work_dir: Path) -> list[dict]:
     return [
         _build_fastapi(fastapi_archive),
         _build_python_howtos(python_archive),
+        _build_arxiv_papers(work_dir),
     ]
 
 
@@ -143,7 +170,9 @@ def _build_fastapi(archive: Path) -> dict:
                 raise CorpusError(f"Unsafe path in archive: {doc_path}")
             markdown = normalize_fastapi_markdown(read_file(doc_path), read_file)
             relative = "fastapi/" + doc_path.removeprefix("docs/en/docs/")
-            documents.append(_write(relative, markdown.encode("utf-8"), source="fastapi"))
+            documents.append(
+                _write(relative, markdown.encode("utf-8"), source="fastapi", collection="docs")
+            )
 
     return {
         "source": {
@@ -167,7 +196,9 @@ def _build_python_howtos(archive: Path) -> dict:
     with zipfile.ZipFile(archive) as zf:
         for name in PYTHON_HOWTOS:
             data = zf.read(f"docs-pdf/{name}")
-            documents.append(_write(f"python/{name}", data, source="python-howto"))
+            documents.append(
+                _write(f"python/{name}", data, source="python-howto", collection="docs")
+            )
     return {
         "source": {
             "name": "python-howto",
@@ -182,11 +213,43 @@ def _build_python_howtos(archive: Path) -> dict:
     }
 
 
-def _write(relative: str, data: bytes, *, source: str) -> dict:
+def _build_arxiv_papers(work_dir: Path) -> dict:
+    documents = []
+    for n, paper in enumerate(ARXIV_PAPERS):
+        if n:
+            time.sleep(ARXIV_DELAY_SECONDS)
+        versioned = f"{paper['id']}v{paper['version']}"
+        pdf = _download(f"https://arxiv.org/pdf/{versioned}", work_dir / f"{paper['name']}.pdf")
+        data = pdf.read_bytes()
+        if not data.startswith(b"%PDF-"):
+            raise CorpusError(f"arXiv did not return a PDF for {versioned}")
+        entry = _write(f"papers/{paper['name']}.pdf", data, source="arxiv", collection="papers")
+        entry |= {"arxiv": versioned, "title": paper["title"], "license": paper["license"]}
+        documents.append(entry)
+    return {
+        "source": {
+            "name": "arxiv",
+            "url": "https://arxiv.org",
+            "version": "pinned per paper",
+            "license": "per document (CC BY 4.0 or CC BY-SA 4.0)",
+            "selection": ", ".join(f"{p['id']}v{p['version']}" for p in ARXIV_PAPERS),
+            "preprocessing": "none (original PDFs)",
+        },
+        "documents": documents,
+    }
+
+
+def _write(relative: str, data: bytes, *, source: str, collection: str) -> dict:
     path = RAW_DIR / relative
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
-    return {"path": relative, "source": source, "sha256": _sha256(data), "bytes": len(data)}
+    return {
+        "path": relative,
+        "source": source,
+        "collection": collection,
+        "sha256": _sha256(data),
+        "bytes": len(data),
+    }
 
 
 def _download(url: str, destination: Path) -> Path:
