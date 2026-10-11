@@ -25,6 +25,17 @@ class Settings(BaseSettings):
     embedding_device: Literal["auto", "cpu", "mps", "cuda"] = "auto"
     embedding_batch_size: int = 32
 
+    # Any OpenAI-compatible endpoint; the default is a local Ollama server.
+    llm_base_url: str = "http://localhost:11434/v1"
+    llm_api_key: str = "ollama"  # Ollama ignores it, but the client requires a value
+    llm_model: str = "qwen3-vl:8b-instruct"
+    # Must match the server: start Ollama with OLLAMA_CONTEXT_LENGTH=8192.
+    llm_context_tokens: int = 8192
+    llm_max_output_tokens: int = 512
+    # A local 8B model reads ~150 prompt tokens/s; the first call also loads the model.
+    llm_timeout_seconds: float = 120.0
+    llm_max_retries: int = 1
+
 
 @lru_cache
 def get_settings() -> Settings:

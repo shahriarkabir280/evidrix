@@ -5,8 +5,11 @@ Component 2B/2C onward.
 
 import re
 import zlib
+from collections.abc import Callable
 
 import numpy as np
+
+from app.rag.llm import LLMResult
 
 _WORD = re.compile(r"[a-z0-9_]+")
 
@@ -41,3 +44,30 @@ class FakeEmbedder:
             vector[zlib.crc32(word.encode()) % self.dim] += 1.0
         norm = np.linalg.norm(vector)
         return vector / norm if norm else vector
+
+
+class FakeLLM:
+    """Returns scripted text and records every call, so tests can inspect the prompt sent."""
+
+    model = "fake-llm"
+
+    def __init__(self, reply: str | Callable[[str, str], str] | None = None) -> None:
+        self._reply = reply
+        self.calls: list[dict] = []
+
+    def generate(self, system, user, *, max_tokens, json_schema=None) -> LLMResult:
+        self.calls.append(
+            {"system": system, "user": user, "max_tokens": max_tokens, "json_schema": json_schema}
+        )
+        if callable(self._reply):
+            text = self._reply(system, user)
+        else:
+            text = self._reply or '{"answer": "", "citations": [], "abstain": true}'
+        return LLMResult(
+            text=text,
+            prompt_tokens=len((system + user).split()),
+            completion_tokens=len(text.split()),
+            model=self.model,
+            latency_ms=1.0,
+            finish_reason="stop",
+        )
