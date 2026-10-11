@@ -298,8 +298,10 @@ Branch `feature/ingestion` · Milestone M1
    `delete(key)`. Implement `LocalBlobStore` (key = sha256). Swap in S3 in Part 7.
 6. **Extraction** (`app/rag/extract.py`) returns
    `ExtractedDocument(title, pages: list[PageText(number: int | None, text: str)])`.
-   - PDF: `pypdf.PdfReader`. If encrypted, raise `ExtractionError("encrypted_pdf")`. Use
-     `page.extract_text()` per page and normalize whitespace (collapse runs, de-hyphenate line breaks).
+   - PDF: `pypdf.PdfReader` for the encryption check and metadata title; **pdfminer.six** for page text
+     (component 2D found pypdf drops spaces between words for Type0/Identity-H fonts, 4–8% of words in
+     the Python HOWTO PDFs). If encrypted, raise `ExtractionError("encrypted_pdf")`. Join each page's
+     text boxes (`extract_pages`) and normalize whitespace (collapse runs, de-hyphenate line breaks).
    - Markdown/TXT: decode UTF-8 strictly (`invalid_encoding` on failure), strip YAML front-matter,
      title = first `# ` heading, else filename.
    - If total non-whitespace chars < 20, raise `ExtractionError("no_extractable_text")` (likely a scanned PDF; OCR is out of scope).
@@ -393,7 +395,7 @@ Branch `feature/baseline-rag` · Milestone M2
    4. **Oversized block** (> max): split by sentences, then by token windows as a last resort.
    5. Don't pack across H2 boundaries (config flag). A chunk under `min_chunk_tokens` (100) may grow
       to `max_tokens` instead of being left as a stub (e.g. a heading plus "Here are the options:").
-      PDFs from pypdf have no blank lines between paragraphs, so pages are cut at sentence boundaries. Record `char_start/char_end` (exact offsets into
+      PDF pages split into paragraphs at the blank lines pdfminer puts between text boxes. Record `char_start/char_end` (exact offsets into
       `extracted_text`), `page_start/page_end`, `token_count`.
    6. Text to embed = `"{title} > {section_path}\n\n{text}"` when `contextual_header=True`. The stored
       `text` stays raw. (This is a Part 8 ablation candidate.)

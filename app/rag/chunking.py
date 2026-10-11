@@ -142,10 +142,10 @@ def _segment_markdown(text: str, section_level: int) -> list[_Unit]:
 
 
 def _segment_pages(document: ExtractedDocument) -> list[_Unit]:
-    """PDF pages: paragraphs where blank lines exist, otherwise the whole page.
+    """PDF pages, split into paragraphs at blank lines (extraction separates text boxes).
 
-    pypdf rarely emits blank lines between paragraphs, so most pages arrive as one unit
-    and are cut at sentence boundaries by _split_oversized.
+    A page without blank lines arrives as one unit and is cut at sentence boundaries by
+    _split_oversized.
     """
     units = []
     for span in document.page_spans():

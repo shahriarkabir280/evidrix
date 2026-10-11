@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import pytest
+from fpdf import FPDF
 
 from app.rag.extract import (
     PAGE_SEPARATOR,
@@ -76,6 +79,29 @@ def test_pdf_encrypted_only_against_editing_is_still_read():
     document = extract(restricted, "restricted.pdf", DocumentKind.PDF)
 
     assert PAGE_ONE in document.text
+
+
+def test_pdf_keeps_spaces_between_words_in_cid_fonts():
+    # Real page from the Python docs where pypdf glued words ("Filtersarecoveredin...").
+    data = (Path(__file__).parents[1] / "fixtures" / "glued-words-cid-fonts.pdf").read_bytes()
+
+    text = extract(data, "logging.pdf", DocumentKind.PDF).text
+
+    assert "Filters are covered in more detail" in text
+    assert not [word for word in text.split() if len(word) > 40]
+
+
+def test_pdf_paragraphs_are_separated_by_a_blank_line():
+    first, second = "First paragraph about handlers.", "Second paragraph about formatters."
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Helvetica", size=12)
+    pdf.text(20, 30, first)
+    pdf.text(20, 80, second)  # far below: a separate text block
+
+    text = extract(bytes(pdf.output()), "two.pdf", DocumentKind.PDF).text
+
+    assert f"{first}\n\n{second}" in text
 
 
 def test_corrupt_pdf_is_reported_as_invalid():
