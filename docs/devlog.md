@@ -112,3 +112,39 @@ Rank of the document that answers the question, within the top 10:
 **Next**
 - Part 4: labeled benchmark (dev/test split), retrieval and answer metrics, and the first real
   comparison of `dense`, `hybrid` and `hybrid_rerank`.
+
+## Part 4 — Evaluation (in progress, 2026-10-11)
+
+**Built**
+- Benchmark: 60 questions (20 factual, 10 identifier, 10 multi-hop, 8 distractor, 12 unanswerable)
+  written from the source documents only, labeled with verbatim quotes; 36 dev / 24 test,
+  stratified and fixed before any experiment. Single annotator; the second-annotator review was
+  skipped.
+- Label resolver (whitespace-insensitive quote matching → character ranges) and retrieval
+  metrics (Recall, all-evidence, Hit, MRR, nDCG@5) with hand-computed tests; a chunk contains a
+  quote when it holds at least half of it.
+- Answer metrics: citation precision and abstention (deterministic); correctness and
+  claim-level faithfulness from an LLM judge with versioned prompts.
+- Runner with provenance, checkpointed answers and a separate judge process; report with
+  bootstrap CIs and paired differences; the test split needs `--final`.
+
+**Measured (dev split)**
+- Judge calibration on 16 hand-labeled cases: llama3.1:8b 88% (v1) / 81% (v2), qwen3-vl 94% / 100%
+  (not used: it writes the answers), gemma3:12b 100% / 94%. Judge: gemma3:12b with v1.
+- hybrid_rerank vs dense: MRR +0.155 [+0.03, +0.29] and nDCG +0.117 [+0.01, +0.24] — significant.
+  Correctness 0.862 → 0.914, faithfulness 0.923 → 0.963, citation precision 0.788 → 0.926,
+  false abstentions 3 → 2 of 29: same direction, not significant at n = 29.
+- hybrid vs dense: no significant difference on any metric.
+
+**Surprises**
+- The 10-question preview said reranking barely helped (MRR 0.875 → 0.883); the benchmark says
+  it is the only significant gain.
+- A valid citation is not a supported claim: hybrid answered the Kubernetes question (absent from
+  the corpus) with "…including Kubernetes [2]" — [2] was a real source, the claim was invented.
+- The first full run thrashed for ~5 hours on a 16 GB Mac: the evaluation process held the
+  embedder and reranker in GPU memory next to the 12B judge. A child process for judging did not
+  help (the waiting parent kept the memory); `os.execv` does. Ollama now runs with
+  `OLLAMA_MAX_LOADED_MODELS=1`. Lesson: checkpoint long jobs, and budget memory before running.
+
+**Next**
+- 4F: calibrate the pre-generation abstention threshold on the dev split.

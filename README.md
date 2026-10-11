@@ -11,9 +11,9 @@ compared on a labeled benchmark with confidence intervals, and every stage of th
 tested. It runs fully locally (Postgres + pgvector, sentence-transformers on Apple MPS, and a
 local LLM through Ollama).
 
-> **Status:** retrieval, generation and the evaluation harness work end to end. Production
-> hardening (background jobs, auth, observability) and deployment are next — see
-> [Roadmap](#roadmap).
+> **Status:** retrieval, generation and the evaluation harness work end to end, with measured
+> results on the dev split. Production hardening (background jobs, auth, observability) and
+> deployment are next — see [Roadmap](#roadmap).
 
 ---
 
@@ -29,6 +29,9 @@ local LLM through Ollama).
   confidence intervals for every comparison.
 - **Security in the query, not the prompt.** Owner, status and index-version filters are part of
   the SQL of every retrieval leg; another user's chunks are never candidates.
+- **Answers measured, not assumed.** With the default preset, answers score 0.914 correctness
+  and 0.963 faithfulness (claims supported by the sources) on the dev split, graded by a
+  calibrated LLM judge; every unanswerable dev question abstained.
 - **Honest failure modes.** Unanswerable questions abstain; a model reply cut off or not in the
   required JSON is retried once, then reported (502), never passed off as an answer.
 - **Tested.** 282 tests (unit + integration against real Postgres) plus live tests against the
@@ -107,8 +110,11 @@ would otherwise drop the start of the prompt silently.
 
 ## Results
 
-Dev split, 29 answerable questions, top 5. Mean with 95% bootstrap CI; Δ is the paired
-difference against `dense`, and **bold** marks a difference whose interval excludes zero.
+Dev split (36 questions, 29 answerable), top 5, answers from `qwen3-vl:8b-instruct`, graded by
+`gemma3:12b`. Mean with 95% bootstrap CI; Δ is the paired difference against `dense`, and
+**bold** marks a difference whose interval excludes zero.
+
+**Retrieval**
 
 | Preset | Recall@5 | MRR@5 | nDCG@5 | All evidence@5 |
 |---|---|---|---|---|
@@ -116,10 +122,26 @@ difference against `dense`, and **bold** marks a difference whose interval exclu
 | `hybrid` | 0.805 (Δ −0.023) | 0.770 (Δ +0.063) | 0.716 (Δ +0.030) | 0.724 (Δ −0.069) |
 | `hybrid_rerank` | 0.914 (Δ +0.086) | **0.862 (Δ +0.155)** | **0.803 (Δ +0.117)** | 0.862 (Δ +0.069) |
 
-What the data supports so far: reranking puts the right passage higher (MRR, nDCG). Hybrid vs
-dense and the recall gains are within noise at this sample size. Answer quality (correctness,
-faithfulness, abstention) is being measured next; the test split stays untouched until the final
-report.
+**Answers**
+
+| Preset | Correctness | Faithfulness | Citation precision | Abstention F1 | False abstentions |
+|---|---|---|---|---|---|
+| `dense` | 0.862 [0.72, 0.97] | 0.923 | 0.788 | 0.824 | 3 / 29 |
+| `hybrid` | 0.879 (Δ +0.017) | 0.917 | 0.769 | 0.750 | 3 / 29 |
+| `hybrid_rerank` | 0.914 (Δ +0.052) | 0.963 | 0.926 | 0.875 | 2 / 29 |
+
+What the data supports so far:
+
+- Reranking puts the right passage higher (MRR, nDCG): significant.
+- With reranking every answer metric moves the same way, most visibly citation precision
+  (0.79 → 0.93), but with 29 answerable questions the answer-level differences are not yet
+  significant. `hybrid_rerank` is the default.
+- Hybrid without reranking is not distinguishable from dense, and it answered one unanswerable
+  question (see [Engineering notes](#engineering-notes)).
+- Generation dominates latency (p50 ≈ 17 s on a busy 16 GB M4); reranking adds ≈ 0.2 s.
+
+The 24-question test split stays untouched until the final report. A full LLM-judged run takes
+about 35 minutes per preset on an idle 16 GB M4 (answers ≈ 12 min, judging ≈ 20 min).
 
 ## Quickstart
 
@@ -201,9 +223,18 @@ Things the measurements caught that the original plan didn't:
   so a real page is kept as a regression fixture and pdfminer.six extracts the text.
 - **AND vs OR keyword queries.** `websearch_to_tsquery` ANDs every word: 10 matching chunks for a
   natural question, 0 after adding one unknown word. Evidrix ORs the lexemes and lets ranking decide.
-- **The judge needs calibrating.** `llama3.1:8b` agreed with 88% of hand-labeled verdicts and
-  systematically penalized correct extra detail; prompt changes traded one error for another,
-  so a stronger judge model is being calibrated.
+- **The judge needs calibrating.** On 16 hand-labeled cases, `llama3.1:8b` agreed with 88% of
+  the verdicts and systematically penalized correct extra detail; rewriting the prompt only
+  traded one error for another. `gemma3:12b` agreed with 100% using the original prompt, so it
+  is the judge — and it is a different model family from the one writing the answers.
+- **A valid citation is not a supported claim.** Asked how to deploy to Kubernetes (the corpus
+  never mentions it), the `hybrid` run answered "you can deploy FastAPI apps to any cloud
+  provider, including Kubernetes [2]". Source [2] exists and was retrieved, so citation checks
+  passed; the claim itself was invented. Only claim-level faithfulness grading catches this.
+- **Memory is the limit of a 16 GB laptop.** The first full run thrashed for hours: the
+  evaluation process kept the embedder and reranker in GPU memory next to a 12B judge. Runs now
+  checkpoint the answers and hand judging to a fresh process (`os.execv`); Ollama keeps one
+  model loaded at a time.
 - **Previews mislead.** On 10 hand-picked questions reranking looked useless (MRR 0.875 → 0.883);
   on the benchmark it is the only change with a significant gain.
 
@@ -259,7 +290,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 1** — API, Postgres + pgvector, document upload and extraction
 - [x] **Part 2** — chunking, embeddings, dense retrieval, grounded answers with citations
 - [x] **Part 3** — keyword search, hybrid fusion, reranking, `/retrieve`
-- [ ] **Part 4** — evaluation harness *(retrieval metrics done; answer metrics in progress)*
+- [ ] **Part 4** — evaluation harness *(retrieval and answer metrics done; abstention threshold next)*
 - [ ] **Part 4b** — research papers: two-column PDFs, section headings, a paper benchmark
 - [ ] **Part 5** — background ingestion jobs, API keys, rate limits, prompt-injection tests
 - [ ] **Part 6** — persisted chats, cost and latency tracking, load test
