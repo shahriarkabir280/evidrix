@@ -8,7 +8,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, status
 
-from app.api.deps import BlobStoreDep, CurrentUserId, DbSession, SettingsDep
+from app.api.deps import BlobStoreDep, CurrentUserId, DbSession, EmbedderDep, SettingsDep
 from app.api.schemas import DocumentList, DocumentOut, DocumentUploadOut
 from app.db.repositories import documents as documents_repo
 from app.services.ingestion import UploadRejected, ingest_upload, read_limited
@@ -26,13 +26,19 @@ def upload_document(
     response: Response,
     session: DbSession,
     blob_store: BlobStoreDep,
+    embedder: EmbedderDep,
     owner_id: CurrentUserId,
     settings: SettingsDep,
 ) -> DocumentUploadOut:
     try:
         data = read_limited(file.file, settings.max_upload_bytes)
         result = ingest_upload(
-            session, blob_store, owner_id=owner_id, filename=file.filename or "", data=data
+            session,
+            blob_store,
+            embedder,
+            owner_id=owner_id,
+            filename=file.filename or "",
+            data=data,
         )
     except UploadRejected as exc:
         raise HTTPException(exc.status_code, {"code": exc.code, "message": str(exc)}) from exc

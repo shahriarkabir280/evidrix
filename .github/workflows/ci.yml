@@ -51,4 +51,5 @@ jobs:
         run: uv run alembic upgrade head
       - name: Check models match migrations
         run: uv run alembic check
-      - run: uv run pytest
+      # Real-model tests download ~130 MB of weights and live tests need Ollama; both run locally.
+      - run: uv run pytest -m "not model and not live"

@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import PurePath
 
+from pdfminer.high_level import extract_pages
+from pdfminer.layout import LTPage, LTTextContainer
 from pypdf import PdfReader
 
 # Pages are joined with a form feed, so page boundaries survive in Document.extracted_text.
@@ -99,16 +101,22 @@ def normalize_pdf_text(text: str) -> str:
 
 
 def _extract_pdf(data: bytes, filename: str) -> ExtractedDocument:
+    """pypdf checks encryption and reads metadata; pdfminer.six extracts the text.
+
+    pypdf's text extraction drops the spaces between words for some fonts (Type0 /
+    Identity-H, common in LaTeX/Sphinx PDFs such as the Python docs). pdfminer places words by
+    their measured positions, keeps the spacing, and separates paragraphs with blank lines.
+    """
     try:
         reader = PdfReader(io.BytesIO(data))
         # Many PDFs are encrypted only to restrict editing and open with an empty password.
         if reader.is_encrypted and not reader.decrypt(""):
             raise ExtractionError("encrypted_pdf", "The PDF is password-protected.")
-        pages = tuple(
-            PageText(number=i, text=normalize_pdf_text(page.extract_text() or ""))
-            for i, page in enumerate(reader.pages, start=1)
-        )
         metadata_title = reader.metadata.title if reader.metadata else None
+        pages = tuple(
+            PageText(number=i, text=normalize_pdf_text(_page_text(layout)))
+            for i, layout in enumerate(extract_pages(io.BytesIO(data)), start=1)
+        )
     except ExtractionError:
         raise
     except Exception as exc:
@@ -117,6 +125,11 @@ def _extract_pdf(data: bytes, filename: str) -> ExtractedDocument:
 
     title = (metadata_title or "").strip() or _stem(filename)
     return ExtractedDocument(title=title, pages=pages)
+
+
+def _page_text(layout: LTPage) -> str:
+    # One text box per paragraph-like block; a blank line between boxes keeps paragraphs apart.
+    return "\n".join(box.get_text() for box in layout if isinstance(box, LTTextContainer))
 
 
 def _extract_markdown(data: bytes, filename: str) -> ExtractedDocument:

@@ -11,12 +11,12 @@ pytestmark = pytest.mark.integration
 
 
 def test_concurrent_duplicate_upload_returns_the_winning_document(
-    session_factory, blob_store, monkeypatch
+    session_factory, blob_store, embedder, monkeypatch
 ):
     data = b"# Race\n\nTwo requests upload this exact file at the same moment."
     with session_factory() as session:
         winner = ingestion.ingest_upload(
-            session, blob_store, owner_id=DEV_USER_ID, filename="race.md", data=data
+            session, blob_store, embedder, owner_id=DEV_USER_ID, filename="race.md", data=data
         ).document
 
     # Simulate the race: the second request checked for a duplicate before the first
@@ -32,7 +32,7 @@ def test_concurrent_duplicate_upload_returns_the_winning_document(
 
     with session_factory() as session:
         result = ingestion.ingest_upload(
-            session, blob_store, owner_id=DEV_USER_ID, filename="race.md", data=data
+            session, blob_store, embedder, owner_id=DEV_USER_ID, filename="race.md", data=data
         )
         count = session.scalar(select(func.count()).select_from(Document))
 
@@ -42,7 +42,7 @@ def test_concurrent_duplicate_upload_returns_the_winning_document(
 
 
 def test_unexpected_error_marks_document_failed_without_partial_pages(
-    session_factory, blob_store, monkeypatch
+    session_factory, blob_store, embedder, monkeypatch
 ):
     def explode(*args, **kwargs):
         raise RuntimeError("bug in the extractor")
@@ -52,7 +52,7 @@ def test_unexpected_error_marks_document_failed_without_partial_pages(
 
     with session_factory() as session:
         result = ingestion.ingest_upload(
-            session, blob_store, owner_id=DEV_USER_ID, filename="boom.pdf", data=data
+            session, blob_store, embedder, owner_id=DEV_USER_ID, filename="boom.pdf", data=data
         )
         page_count = session.scalar(select(func.count()).select_from(DocumentPage))
 
@@ -61,7 +61,9 @@ def test_unexpected_error_marks_document_failed_without_partial_pages(
     assert page_count == 0
 
 
-def test_status_is_processing_while_extraction_runs(session_factory, blob_store, monkeypatch):
+def test_status_is_processing_while_extraction_runs(
+    session_factory, blob_store, embedder, monkeypatch
+):
     seen_statuses = []
     real_extract = ingestion.extract
 
@@ -77,6 +79,7 @@ def test_status_is_processing_while_extraction_runs(session_factory, blob_store,
         result = ingestion.ingest_upload(
             session,
             blob_store,
+            embedder,
             owner_id=DEV_USER_ID,
             filename="notes.md",
             data=b"# Notes\n\nSome notes about background tasks.",
