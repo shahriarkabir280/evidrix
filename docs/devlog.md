@@ -26,3 +26,42 @@ One entry per part: what was built, what was measured, what surprised you, what'
 
 **Next**
 - Part 2, component 2A: fetch and pin the evaluation corpus (FastAPI docs + a few PDFs).
+
+## Part 2 — Baseline RAG (2026-10-11)
+
+**Built**
+- Pinned corpus: FastAPI 0.143.0 `tutorial/` (51 pages, MkDocs dialect normalized: code includes
+  inlined, anchors/admonitions/HTML removed) + 4 Python 3.12 HOWTO PDFs; manifest with sha256.
+- Structure-aware chunker (headings, paragraphs, atomic code blocks; ≤480 bge tokens; whole-sentence
+  overlap within a section; exact character offsets; section paths; page ranges).
+- `Embedder` protocol with bge-small-en-v1.5 (MPS/CPU), explicit query instruction, FakeEmbedder.
+- Migration 0002: `index_versions` + `chunks` (vector(384), HNSW). Ingestion chunks and embeds in
+  the same transaction; CLI `ingest-dir`, `reindex`, `search`.
+- `LLMProvider` for any OpenAI-compatible endpoint (local Ollama, qwen3-vl:8b-instruct), JSON
+  schema output, context guard, versioned prompt `answer_v1` with neutralized `<source>` tags.
+- Answer validation: abstain before calling the model when there is no evidence, one retry on
+  unusable JSON, citations kept only if they point at a retrieved source and appear in the text.
+- `POST /chat` with citations, retrieved passages, timings, usage and config; `scripts/ask.py`.
+
+**Measured**
+- 670 chunks from 55 documents (median 299 tokens, max 480); ingest 17.6 s on MPS.
+- HNSW vs exact top-5 agreement 1.000 — because at 714 chunks Postgres chooses a sequential scan.
+- Local LLM: prompt reading ~157 tokens/s, generation ~15 tokens/s; each retrieved chunk adds
+  ~1.8 s. A `/chat` call: embed ~0.4 s, retrieve ~0.04 s, generate ~10–13 s.
+- 168 tests (unit + integration on real Postgres) + 2 live tests against Ollama.
+
+**Surprises**
+- MiniLM silently ignores everything after 256 tokens (cosine 1.0000 with/without extra text).
+- FastAPI's docs keep code in separate files; without inlining includes the corpus had no code.
+- pypdf dropped spaces between words for Type0/Identity-H fonts (4–8% of words glued in 3 of 4
+  PDFs). Generated PDFs could not reproduce it; a real page is now a regression fixture and
+  pdfminer.six extracts the text.
+- bge's own config leaves the query prompt empty, so `encode_query()` would skip the instruction.
+- Alembic autogenerate used `pgvector...VECTOR` without importing pgvector.
+- qwen answered "admin dashboard?" without citing anything; citation validation turned it into an
+  abstention.
+- "Cleanup code after the response" retrieves Background Tasks instead of Dependencies with yield:
+  a retrieval failure with a faithful answer.
+
+**Next**
+- Part 3: keyword search, hybrid fusion (RRF) and cross-encoder reranking.
