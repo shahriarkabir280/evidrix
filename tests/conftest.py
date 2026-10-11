@@ -14,12 +14,12 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 
-from app.api.deps import get_blob_store, get_db, get_embedder, get_settings
+from app.api.deps import get_blob_store, get_db, get_embedder, get_llm, get_settings
 from app.core.config import Settings
 from app.db.models import User
 from app.main import create_app
 from app.storage.blob import LocalBlobStore
-from tests.fakes import FakeEmbedder
+from tests.fakes import FakeEmbedder, FakeLLM
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix_test"
@@ -83,6 +83,12 @@ def embedder():
 
 
 @pytest.fixture
+def llm():
+    """Abstains by default; tests that need an answer override get_llm with their own FakeLLM."""
+    return FakeLLM()
+
+
+@pytest.fixture
 def db_session(session_factory):
     with session_factory() as session:
         yield session
@@ -94,7 +100,7 @@ def blob_store(tmp_path):
 
 
 @pytest.fixture
-def client(session_factory, blob_store, embedder):
+def client(session_factory, blob_store, embedder, llm):
     settings = Settings(
         _env_file=None, database_url=TEST_DATABASE_URL, max_upload_bytes=TEST_MAX_UPLOAD_BYTES
     )
@@ -107,6 +113,7 @@ def client(session_factory, blob_store, embedder):
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_blob_store] = lambda: blob_store
     app.dependency_overrides[get_embedder] = lambda: embedder
+    app.dependency_overrides[get_llm] = lambda: llm
     app.dependency_overrides[get_settings] = lambda: settings
     with TestClient(app) as test_client:
         yield test_client

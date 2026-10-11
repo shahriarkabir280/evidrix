@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 120.0
     llm_max_retries: int = 1
 
+    # Each retrieved chunk adds ~1.8 s of prompt reading on the local 8B model.
+    retrieval_top_k: int = 5
+    # Below this top similarity the model isn't even asked. None = disabled until it is
+    # calibrated on the dev split (Part 4); bge scores sit around 0.6-0.8.
+    abstain_min_score: float | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

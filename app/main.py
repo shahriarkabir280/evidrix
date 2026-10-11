@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.routes import documents, health
+from app.api.routes import chat, documents, health
 from app.rag.embeddings import get_embedder
 
 
@@ -28,6 +28,7 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(documents.router)
+    app.include_router(chat.router)
     return app
 
 

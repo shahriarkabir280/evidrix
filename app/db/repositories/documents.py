@@ -32,3 +32,13 @@ def list_for_owner(
         owned.order_by(Document.created_at.desc(), Document.id.desc()).limit(limit).offset(offset)
     ).all()
     return list(documents), total
+
+
+def get_many_for_owner(
+    session: Session, owner_id: uuid.UUID, document_ids: list[uuid.UUID]
+) -> list[Document]:
+    return list(
+        session.scalars(
+            select(Document).where(Document.owner_id == owner_id, Document.id.in_(document_ids))
+        )
+    )
