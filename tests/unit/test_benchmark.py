@@ -1,7 +1,14 @@
 import pytest
 from pydantic import ValidationError
 
-from evals.benchmark import CORPUS_DIR, Question, check, find_quote, load_questions
+from evals.benchmark import (
+    CORPUS_DIR,
+    PAPERS_QUESTIONS_PATH,
+    Question,
+    check,
+    find_quote,
+    load_questions,
+)
 
 # --- Quote matching ----------------------------------------------------------------------
 
@@ -76,3 +83,17 @@ def test_benchmark_has_the_planned_shape():
 @pytest.mark.skipif(not CORPUS_DIR.is_dir(), reason="corpus not downloaded (make corpus)")
 def test_every_evidence_quote_is_found_in_its_source():
     assert check(load_questions()) == []
+
+
+def test_paper_benchmark_has_the_planned_shape():
+    questions = load_questions(PAPERS_QUESTIONS_PATH)
+
+    assert len(questions) == 24
+    assert {q.split for q in questions} == {"dev", "test"}
+    assert all(e.source.startswith("papers/") for q in questions for e in q.evidence)
+    assert sum(q.type == "table" for q in questions) == 4
+
+
+@pytest.mark.skipif(not CORPUS_DIR.is_dir(), reason="corpus not downloaded (make corpus)")
+def test_every_paper_evidence_quote_is_found_in_its_source():
+    assert check(load_questions(PAPERS_QUESTIONS_PATH)) == []
