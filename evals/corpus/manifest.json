@@ -1,0 +1,355 @@
+{
+  "generated_by": "uv run python -m scripts.fetch_corpus",
+  "sources": [
+    {
+      "name": "fastapi",
+      "url": "https://codeload.github.com/fastapi/fastapi/tar.gz/refs/tags/0.143.0",
+      "version": "0.143.0",
+      "license": "MIT",
+      "archive_sha256": "a0202c48c37dbad7f9c05f7b01358f35c3a3d2ba5448cf9b01a09407f9a3623e",
+      "selection": "docs/en/docs/tutorial/**/*.md",
+      "preprocessing": "MkDocs includes inlined as fenced code; heading anchors, admonition markers and presentational HTML tags removed (see normalize_fastapi_markdown)"
+    },
+    {
+      "name": "python-howto",
+      "url": "https://docs.python.org/3.12/archives/python-3.12-docs-pdf-a4.zip",
+      "version": "3.12",
+      "license": "PSF-2.0",
+      "archive_sha256": "0aa8f54825a192326de0e1f51bada27b27aee7c977884216426f814582dd2218",
+      "selection": "howto-argparse.pdf, howto-logging.pdf, howto-regex.pdf, howto-sorting.pdf",
+      "preprocessing": "none (original PDFs)"
+    }
+  ],
+  "documents": [
+    {
+      "path": "fastapi/tutorial/background-tasks.md",
+      "source": "fastapi",
+      "sha256": "8810c80fc9a5175b4cccb77db1041bacfea154831c609c4436439200d4fcd02d",
+      "bytes": 6614
+    },
+    {
+      "path": "fastapi/tutorial/bigger-applications.md",
+      "source": "fastapi",
+      "sha256": "259d53811b9ecc18d33592d865a971fb03397513e30165728e1eea485379f36a",
+      "bytes": 25870
+    },
+    {
+      "path": "fastapi/tutorial/body-fields.md",
+      "source": "fastapi",
+      "sha256": "028fcd73df7b8f9deca65c532aa27fbb32e94a48a1eaee314b71a6369526d82e",
+      "bytes": 3286
+    },
+    {
+      "path": "fastapi/tutorial/body-multiple-params.md",
+      "source": "fastapi",
+      "sha256": "7412c4607905e2403fe2fe5bff39cca40179e19b181d7b817d4f969e7ffa4550",
+      "bytes": 7024
+    },
+    {
+      "path": "fastapi/tutorial/body-nested-models.md",
+      "source": "fastapi",
+      "sha256": "01779b1375faffdbaed002d2f8fbe544bf7c11cd35d69ef6f2b828c78c790a6a",
+      "bytes": 9642
+    },
+    {
+      "path": "fastapi/tutorial/body-updates.md",
+      "source": "fastapi",
+      "sha256": "ed3821cc86eccc86a4f5743d70fb0f34f57a4db3945f677078893843ff4fbe92",
+      "bytes": 7528
+    },
+    {
+      "path": "fastapi/tutorial/body.md",
+      "source": "fastapi",
+      "sha256": "1d2a35d8203f454177de079aa972df61b7d6911078d18923d8cc7f7bdba03637",
+      "bytes": 7813
+    },
+    {
+      "path": "fastapi/tutorial/cookie-param-models.md",
+      "source": "fastapi",
+      "sha256": "ac2acf333f75318f5739470f0d2a1abfa1c958277c918a9301c93d848b6f2102",
+      "bytes": 3083
+    },
+    {
+      "path": "fastapi/tutorial/cookie-params.md",
+      "source": "fastapi",
+      "sha256": "2b918fccae6ea0995bca468f78beab08388629625a46bec64bd63fbc176eaacb",
+      "bytes": 1810
+    },
+    {
+      "path": "fastapi/tutorial/cors.md",
+      "source": "fastapi",
+      "sha256": "93099af6cca05f0744b48014d86214836084373d8cefc2fffefbae9003425ba8",
+      "bytes": 5553
+    },
+    {
+      "path": "fastapi/tutorial/debugging.md",
+      "source": "fastapi",
+      "sha256": "c273f963e3af5c5ba70e2524753c7900b75328f7913ecf52fc42462942735781",
+      "bytes": 2374
+    },
+    {
+      "path": "fastapi/tutorial/dependencies/classes-as-dependencies.md",
+      "source": "fastapi",
+      "sha256": "7c25d2f747178e62c600ac66f1e63ec0a0327f56e6aa50ffc251dd5fe4fc9c4a",
+      "bytes": 10376
+    },
+    {
+      "path": "fastapi/tutorial/dependencies/dependencies-in-path-operation-decorators.md",
+      "source": "fastapi",
+      "sha256": "05766faa13df4d7844e22d11b2fd5fe12b9ea9990009c919715c06c924bb25d8",
+      "bytes": 4966
+    },
+    {
+      "path": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+      "source": "fastapi",
+      "sha256": "ba3f88dceeb70cfd916b3a4f3f554072fda2232e4ea4f0b73029a44afb43bf63",
+      "bytes": 15788
+    },
+    {
+      "path": "fastapi/tutorial/dependencies/global-dependencies.md",
+      "source": "fastapi",
+      "sha256": "98beb2b93c2d50ed1d2d544b7d48785e629c384c02f88e7330c26f78de2a1326",
+      "bytes": 1676
+    },
+    {
+      "path": "fastapi/tutorial/dependencies/index.md",
+      "source": "fastapi",
+      "sha256": "10dd9664a6b1f34c50a37ef68a8548d652c8e10cce806e7dbb0b3b5e56930f0c",
+      "bytes": 10801
+    },
+    {
+      "path": "fastapi/tutorial/dependencies/sub-dependencies.md",
+      "source": "fastapi",
+      "sha256": "55e9a7911258a2ec1c0ba59cc7d513eb6557669c2637bde88adfa0f9e9202289",
+      "bytes": 4856
+    },
+    {
+      "path": "fastapi/tutorial/encoder.md",
+      "source": "fastapi",
+      "sha256": "aed2e8752b5037090d5177018fe7aa9ab868e73308b8cd12f84326bbaf116f61",
+      "bytes": 1925
+    },
+    {
+      "path": "fastapi/tutorial/extra-data-types.md",
+      "source": "fastapi",
+      "sha256": "d800ae542ed324846097786959ce6c4fdf2f2330fbf952e12e2394eac92ab3b9",
+      "bytes": 4090
+    },
+    {
+      "path": "fastapi/tutorial/extra-models.md",
+      "source": "fastapi",
+      "sha256": "5acb99515471c969955d18360797a10e77219f19a8bcc19c256e74ccf6171455",
+      "bytes": 9061
+    },
+    {
+      "path": "fastapi/tutorial/first-steps.md",
+      "source": "fastapi",
+      "sha256": "0bcb2418c027275c3bb4935db4f47369f497c0dc25a7b809514ac6c86574cda4",
+      "bytes": 13795
+    },
+    {
+      "path": "fastapi/tutorial/frontend.md",
+      "source": "fastapi",
+      "sha256": "fd53d2638abd7da126e788481c9d052957b5451cf62232c0f533fce346531520",
+      "bytes": 6623
+    },
+    {
+      "path": "fastapi/tutorial/handling-errors.md",
+      "source": "fastapi",
+      "sha256": "3e5c32cf916c70fc511b2e1b159c60fc8390ba87b31ba8ee6f3e76007243d8d6",
+      "bytes": 13228
+    },
+    {
+      "path": "fastapi/tutorial/header-param-models.md",
+      "source": "fastapi",
+      "sha256": "e193af11a48df9a4f3ddc6a0da8930584d4265ef589ed9e00c052a7ebec012cd",
+      "bytes": 3477
+    },
+    {
+      "path": "fastapi/tutorial/header-params.md",
+      "source": "fastapi",
+      "sha256": "e3d0e89d4f721d2bcc94308119d291a8d42341295ab620b76e082516edf186da",
+      "bytes": 3592
+    },
+    {
+      "path": "fastapi/tutorial/index.md",
+      "source": "fastapi",
+      "sha256": "25b1f5305bfbf9966a462feed11fd335663643b71d8ea61d1a5f0e5722cb8e4d",
+      "bytes": 7234
+    },
+    {
+      "path": "fastapi/tutorial/metadata.md",
+      "source": "fastapi",
+      "sha256": "64ee3e443cb018b3b91789847cc94c0c3d5d15b95ad08b711a381eb2431c020d",
+      "bytes": 8564
+    },
+    {
+      "path": "fastapi/tutorial/middleware.md",
+      "source": "fastapi",
+      "sha256": "2f209a06770dd066228b5f628652700ebbe5982c36f869c1d62659da5cd0b0df",
+      "bytes": 4363
+    },
+    {
+      "path": "fastapi/tutorial/path-operation-configuration.md",
+      "source": "fastapi",
+      "sha256": "ed52c9933b841ceec7f7067a3023b56d27d0548493bf136d3789df9355fc6e9d",
+      "bytes": 6186
+    },
+    {
+      "path": "fastapi/tutorial/path-params-numeric-validations.md",
+      "source": "fastapi",
+      "sha256": "3bad3869181a44a059185ff2ff34e4008909a9fbdb2ca1e47365cc1adaa531bc",
+      "bytes": 8031
+    },
+    {
+      "path": "fastapi/tutorial/path-params.md",
+      "source": "fastapi",
+      "sha256": "31f845762844aeb65389090d6158573144eb63582fe7d15d01665da61fa76745",
+      "bytes": 11076
+    },
+    {
+      "path": "fastapi/tutorial/query-param-models.md",
+      "source": "fastapi",
+      "sha256": "b4fc059ae7439d6524952863bbc81b8c739220712dd69daaee1357ad2528bde6",
+      "bytes": 2789
+    },
+    {
+      "path": "fastapi/tutorial/query-params-str-validations.md",
+      "source": "fastapi",
+      "sha256": "8a865b253b35b52f952f5c1394547f048cb39b17a4df0e5151214dc04c4b56a3",
+      "bytes": 20557
+    },
+    {
+      "path": "fastapi/tutorial/query-params.md",
+      "source": "fastapi",
+      "sha256": "d3d4a40cdc4c7f17146beb97553584544491dac326c88b0e6aa81bbb8edd3c03",
+      "bytes": 5776
+    },
+    {
+      "path": "fastapi/tutorial/request-files.md",
+      "source": "fastapi",
+      "sha256": "79ab50cfa05e81c60803e546b9e223994d27b737b684d2ae91c8fba115ecffd8",
+      "bytes": 9969
+    },
+    {
+      "path": "fastapi/tutorial/request-form-models.md",
+      "source": "fastapi",
+      "sha256": "a92ab3898cd80c524f5e6e087e26413398f74050247941c42ebcb2bb26579ae2",
+      "bytes": 2291
+    },
+    {
+      "path": "fastapi/tutorial/request-forms-and-files.md",
+      "source": "fastapi",
+      "sha256": "78b781e9dc5b7af073ced0a58944c369253d63f629979e35b75b2526ba6bd913",
+      "bytes": 1885
+    },
+    {
+      "path": "fastapi/tutorial/request-forms.md",
+      "source": "fastapi",
+      "sha256": "0f53db6a8631014fea36b0d5d98fc67eb486d905a40aa6bd1df9b8026c0c7e51",
+      "bytes": 2670
+    },
+    {
+      "path": "fastapi/tutorial/response-model.md",
+      "source": "fastapi",
+      "sha256": "08aea008826bc8ed9e0178c9a6f2fbae06076273b827362f215d9ba934e07cce",
+      "bytes": 21369
+    },
+    {
+      "path": "fastapi/tutorial/response-status-code.md",
+      "source": "fastapi",
+      "sha256": "302443681d40aecbe0d8df4f5acf9ddfaa7f74928df1763b4a98b19e9fbfe1c3",
+      "bytes": 3977
+    },
+    {
+      "path": "fastapi/tutorial/schema-extra-example.md",
+      "source": "fastapi",
+      "sha256": "1c163ef3c550d947c2b68d076ad7988668f007e5505d588f4c49c7b6cfc1e615",
+      "bytes": 12242
+    },
+    {
+      "path": "fastapi/tutorial/security/first-steps.md",
+      "source": "fastapi",
+      "sha256": "286f1ed7f18e86d553738edbd17759cd3b9255ba67e75fd9a70035a5b8ad734f",
+      "bytes": 8754
+    },
+    {
+      "path": "fastapi/tutorial/security/get-current-user.md",
+      "source": "fastapi",
+      "sha256": "4669943d78da231c63369ce67c478c0f1cb0a6d01939705420d17b1c5643892c",
+      "bytes": 7723
+    },
+    {
+      "path": "fastapi/tutorial/security/index.md",
+      "source": "fastapi",
+      "sha256": "eaf13eae187166bd17104a1a756b9445f9821e12839f6adb01f94c270a94145b",
+      "bytes": 4397
+    },
+    {
+      "path": "fastapi/tutorial/security/oauth2-jwt.md",
+      "source": "fastapi",
+      "sha256": "21bafc92339c288d7cb5435ea46257495888d2192b6aac9c9f95de0a59c5cf34",
+      "bytes": 26922
+    },
+    {
+      "path": "fastapi/tutorial/security/simple-oauth2.md",
+      "source": "fastapi",
+      "sha256": "e63e4c8c62ce2c3284535815b30164b6418bf489278f10cadae9293d7c48ebe0",
+      "bytes": 21184
+    },
+    {
+      "path": "fastapi/tutorial/server-sent-events.md",
+      "source": "fastapi",
+      "sha256": "5104f8d7b5d445e707247b8951ccc6b9d27c8703a6d84d6b7850450b936972fa",
+      "bytes": 7947
+    },
+    {
+      "path": "fastapi/tutorial/sql-databases.md",
+      "source": "fastapi",
+      "sha256": "fd4fdd0dc2f796c647e63e893a086bf3274c4a4f17fbcce71b40bc43253b6e18",
+      "bytes": 17752
+    },
+    {
+      "path": "fastapi/tutorial/static-files.md",
+      "source": "fastapi",
+      "sha256": "665f82108ec1ea43a9b5501544a46a0f256f351da487131184dec8c6222873e6",
+      "bytes": 1932
+    },
+    {
+      "path": "fastapi/tutorial/stream-json-lines.md",
+      "source": "fastapi",
+      "sha256": "fd5f2dc209576760f21e6682e32cb581a6b793e9a99f0c398fb6f58aab7c2e7a",
+      "bytes": 5315
+    },
+    {
+      "path": "fastapi/tutorial/testing.md",
+      "source": "fastapi",
+      "sha256": "6a68fff20f47e30857171232aa3560d5429c67d934567874696beebf5725e8c3",
+      "bytes": 8816
+    },
+    {
+      "path": "python/howto-argparse.pdf",
+      "source": "python-howto",
+      "sha256": "c2b2227494b58c8efd6e88633958ae578604051ca4b6193947633a2b2126f6ae",
+      "bytes": 87100
+    },
+    {
+      "path": "python/howto-logging.pdf",
+      "source": "python-howto",
+      "sha256": "85a2d5e0eff7d4800c1fa1c46a27c231427d60934b6353258bfea6ce3660e30e",
+      "bytes": 161169
+    },
+    {
+      "path": "python/howto-regex.pdf",
+      "source": "python-howto",
+      "sha256": "28ae2287d3e4c9bb22c479b20517d3b14b432c8c3319f7e18ca9b0a6361ce833",
+      "bytes": 130538
+    },
+    {
+      "path": "python/howto-sorting.pdf",
+      "source": "python-howto",
+      "sha256": "ebac862c610191b68f8f1ebaefa1ecf91b9c25edaf2c523332eae695ec9e2352",
+      "bytes": 59733
+    }
+  ]
+}

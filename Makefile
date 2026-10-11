@@ -1,4 +1,4 @@
-.PHONY: up down migrate dev test lint fmt psql
+.PHONY: up down migrate dev test lint fmt psql corpus
 
 up:        ## Start Postgres (and later Redis) in Docker
 	docker compose up -d --wait
@@ -23,3 +23,6 @@ fmt:       ## Auto-format and fix lint
 
 psql:      ## Open a psql shell on the dev database
 	docker compose exec db psql -U postgres -d evidrix
+
+corpus:    ## Download the pinned evaluation corpus and check it against the manifest
+	uv run python -m scripts.fetch_corpus && uv run python -m scripts.fetch_corpus --verify
