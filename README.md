@@ -208,6 +208,11 @@ uv run python -m evals.report evals/results/<a>.json evals/results/<b>.json
 - **Answer metrics:** correctness and faithfulness (claim by claim) graded by an LLM judge from a
   different model family, citation precision, and abstention precision/recall/false-abstention
   rate. The judge is calibrated on hand-labeled cases first (`python -m evals.calibrate_judge`).
+- **Abstention threshold:** below a calibrated top score the system abstains without calling the
+  model. Only the reranker's logits separate some unanswerable questions (threshold −2.84 catches
+  2 of 7 on dev, blocking no answerable one); dense cosine scores overlap completely, so dense
+  gets no threshold. Most unanswerable questions still retrieve on-topic passages, so the model's
+  own abstention remains the main defense.
 - **Provenance:** every results file records the git commit, preset, models, prompt versions and
   the sha256 of the benchmark and corpus manifest.
 
@@ -290,7 +295,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 1** — API, Postgres + pgvector, document upload and extraction
 - [x] **Part 2** — chunking, embeddings, dense retrieval, grounded answers with citations
 - [x] **Part 3** — keyword search, hybrid fusion, reranking, `/retrieve`
-- [ ] **Part 4** — evaluation harness *(retrieval and answer metrics done; abstention threshold next)*
+- [x] **Part 4** — evaluation harness: benchmark, retrieval and answer metrics, judge calibration, abstention threshold
 - [ ] **Part 4b** — research papers: two-column PDFs, section headings, a paper benchmark
 - [ ] **Part 5** — background ingestion jobs, API keys, rate limits, prompt-injection tests
 - [ ] **Part 6** — persisted chats, cost and latency tracking, load test

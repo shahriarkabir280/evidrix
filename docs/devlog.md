@@ -113,7 +113,7 @@ Rank of the document that answers the question, within the top 10:
 - Part 4: labeled benchmark (dev/test split), retrieval and answer metrics, and the first real
   comparison of `dense`, `hybrid` and `hybrid_rerank`.
 
-## Part 4 — Evaluation (in progress, 2026-10-11)
+## Part 4 — Evaluation (2026-10-11)
 
 **Built**
 - Benchmark: 60 questions (20 factual, 10 identifier, 10 multi-hop, 8 distractor, 12 unanswerable)
@@ -146,5 +146,14 @@ Rank of the document that answers the question, within the top 10:
   help (the waiting parent kept the memory); `os.execv` does. Ollama now runs with
   `OLLAMA_MAX_LOADED_MODELS=1`. Lesson: checkpoint long jobs, and budget memory before running.
 
+**4F: abstention threshold**
+- The threshold moved from one global setting into each preset: the top score is a cosine for
+  dense, an RRF score for hybrid and a logit after reranking, so one number cannot fit all.
+- dense: unanswerable top scores (0.71–0.79) sit inside the answerable range (0.69–0.89), so no
+  threshold. hybrid_rerank: the two lowest logits are unanswerable (−4.22, −3.72), the lowest
+  answerable is −1.95; threshold −2.84 (largest margin) catches 2 of 7 unanswerable questions and
+  blocks none. The model already abstained on both, so quality is unchanged; 2 of 36 LLM calls
+  are saved. The other five unanswerable questions retrieve on-topic passages (logits up to +5.7).
+
 **Next**
-- 4F: calibrate the pre-generation abstention threshold on the dev split.
+- Part 4b: research papers (corpus, two-column PDFs, section headings, a paper benchmark).
