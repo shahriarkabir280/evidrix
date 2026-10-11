@@ -141,6 +141,11 @@ class RetrievalConfig(BaseModel):
     # How many chunks each retriever fetches before fusion and/or reranking.
     candidate_k: int = Field(default=20, ge=1, le=100)
     rrf_k: int = Field(default=RRF_K, ge=1, le=1000)
+    # Abstain without calling the model when the best chunk scores below this. It is on the scale
+    # of the pipeline's final score (cosine for dense, RRF for hybrid, reranker logit with
+    # rerank), so each preset needs its own value, calibrated on the dev split (evals/
+    # calibrate_abstention.py). None disables the gate.
+    min_score: float | None = None
 
     @model_validator(mode="after")
     def _pool_holds_the_results(self) -> "RetrievalConfig":

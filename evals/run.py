@@ -129,7 +129,6 @@ def evaluate_question(
                 document_ids=document_ids,
                 retrieval=config,
                 max_tokens=settings.llm_max_output_tokens,
-                min_score=settings.abstain_min_score,
             )
         except (LLMError, BadModelOutputError) as exc:
             row["errors"].append(f"{type(exc).__name__}: {exc}")
@@ -140,8 +139,8 @@ def evaluate_question(
     items = evidence_items(question) if question.answerable else []
     row["timings_ms"] = timings
     row["retrieved"] = [
-        {"rank": h.rank, "source": s.source, "start": s.char_start, "end": s.char_end,
-         "relevant": bool(items and covered_items(s, items))}
+        {"rank": h.rank, "score": round(h.score, 4), "source": s.source, "start": s.char_start,
+         "end": s.char_end, "relevant": bool(items and covered_items(s, items))}
         for h, s in zip(hits, spans, strict=True)
     ]  # fmt: skip
     if question.answerable:
@@ -266,7 +265,6 @@ def provenance(preset: str, config, split: str, mode: str, k: int, index_version
         info |= {
             "llm_model": settings.llm_model,
             "prompt_version": PROMPT_VERSION,
-            "abstain_min_score": settings.abstain_min_score,
             "judge_model": settings.judge_model,
             "judge_prompts": [FAITHFULNESS_PROMPT, CORRECTNESS_PROMPT],
         }

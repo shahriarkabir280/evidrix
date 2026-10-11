@@ -198,3 +198,19 @@ def test_unusable_model_output_is_bad_gateway(client):
 
     assert response.status_code == 502
     assert response.json()["detail"]["code"] == "llm_bad_output"
+
+
+def test_preset_threshold_abstains_without_calling_the_model(client, monkeypatch):
+    from app.api import deps
+    from app.rag.retrieval import RetrievalConfig
+
+    upload(client, "cookies.md", COOKIES)
+    llm = use_llm(client, FakeLLM(reply("never used", [1])))
+    strict = RetrievalConfig(mode="dense", rerank=False, min_score=2.0)  # cosine never reaches 2
+    monkeypatch.setattr(deps, "load_preset", lambda name: strict)
+
+    body = ask(client, "How do I declare cookie parameters?").json()
+
+    assert body["abstain_reason"] == "low_retrieval_score"
+    assert body["config"]["retrieval"]["min_score"] == 2.0
+    assert llm.calls == []

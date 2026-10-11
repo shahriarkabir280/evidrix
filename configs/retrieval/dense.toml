@@ -2,3 +2,4 @@
 mode = "dense"
 rerank = false
 top_k = 5
+# No abstention threshold: cosine scores of answerable and unanswerable dev questions overlap.

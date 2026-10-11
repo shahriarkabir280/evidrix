@@ -4,3 +4,4 @@ rerank = false
 top_k = 5
 candidate_k = 20
 rrf_k = 60
+# No abstention threshold: RRF scores reflect rank agreement, not relevance.

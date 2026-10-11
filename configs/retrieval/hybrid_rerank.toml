@@ -4,3 +4,6 @@ rerank = true
 top_k = 5
 candidate_k = 20
 rrf_k = 60
+# Reranker logit below which the model is not asked (calibrated on dev, evals/calibrate_abstention.py):
+# catches 2 of 7 unanswerable dev questions, blocks no answerable one, margin 0.88 to both sides.
+min_score = -2.84
