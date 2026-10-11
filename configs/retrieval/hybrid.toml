@@ -1,0 +1,6 @@
+# Dense + keyword, each fetching candidate_k chunks, merged with reciprocal rank fusion.
+mode = "hybrid"
+rerank = false
+top_k = 5
+candidate_k = 20
+rrf_k = 60

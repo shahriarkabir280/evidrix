@@ -36,8 +36,13 @@ class Settings(BaseSettings):
     llm_timeout_seconds: float = 120.0
     llm_max_retries: int = 1
 
-    # Each retrieved chunk adds ~1.8 s of prompt reading on the local 8B model.
-    retrieval_top_k: int = 5
+    # Cross-encoder that rescores the candidate pool (runs on embedding_device).
+    reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+    # Name of a file in configs/retrieval/. Tentative default: hybrid + rerank fixed the hardest
+    # preview question; the Part 4 evaluation decides. Each chunk sent to the local 8B model adds
+    # ~1.8 s of prompt reading, so top_k is also a latency setting.
+    retrieval_preset: str = "hybrid_rerank"
     # Below this top similarity the model isn't even asked. None = disabled until it is
     # calibrated on the dev split (Part 4); bge scores sit around 0.6-0.8.
     abstain_min_score: float | None = None
