@@ -731,6 +731,8 @@ It comes after Part 4 so the existing benchmark and its splits stay untouched.
 
 Branch `feature/production-hardening` · Milestone M4
 
+**Status: done (2026-10-12).** Measurements and deviations from this plan are in docs/devlog.md (Part 5) and docs/security.md.
+
 **Components**
 - **5A** Redis + RQ: async upload and worker (steps 1–3)
 - **5B** Retries, backoff, idempotent job processing (step 3)
@@ -806,9 +808,9 @@ Branch `feature/production-hardening` · Milestone M4
   test with the real LLM asserts the canary is absent from the answer.
 
 **DoD**
-- [ ] Uploads return 202 immediately. The worker processes jobs with `queued → processing → completed/failed`.
-- [ ] All failure-mode tests pass. No path lets user B retrieve user A's content.
-- [ ] Every log line carries `request_id`. Job logs share the request ID that created the job.
+- [x] Uploads return 202 immediately. The worker processes jobs with `queued → processing → completed/failed`.
+- [x] All failure-mode tests pass. No path lets user B retrieve user A's content.
+- [x] Every log line carries `request_id`. Job logs share the request ID that created the job.
 
 
 **Check your understanding**

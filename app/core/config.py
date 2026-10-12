@@ -14,9 +14,27 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    log_json: bool = True  # false: one readable line per event, for a terminal
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix"
     max_upload_bytes: int = 10_000_000
     blob_dir: Path = Path("data/uploads")
+
+    redis_url: str = "redis://localhost:6379/0"
+
+    # Requests per user per minute (fixed window). Each /chat costs a model call, so it is the
+    # tightest; /retrieve is cheap; uploads cost embedding time in the worker.
+    rate_limit_chat_per_minute: int = 20
+    rate_limit_retrieve_per_minute: int = 60
+    rate_limit_upload_per_minute: int = 10
+    # A job running longer than this is killed by RQ (plan: Part 5, step 7).
+    ingestion_job_timeout_seconds: int = 600
+    # 1 attempt + 3 retries for transient errors, waiting 10 s, 1 min, 5 min between them.
+    ingestion_max_attempts: int = 4
+    ingestion_retry_delays_seconds: list[int] = [10, 60, 300]
+    # A job still "processing" after this long lost its worker: RQ would have killed it at
+    # ingestion_job_timeout_seconds, so the lease must be longer than that.
+    ingestion_lease_seconds: int = 900
 
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     # bge-v1.5 retrieves better when queries (not documents) carry this instruction.
@@ -32,12 +50,19 @@ class Settings(BaseSettings):
     # Must match the server: start Ollama with OLLAMA_CONTEXT_LENGTH=8192.
     llm_context_tokens: int = 8192
     llm_max_output_tokens: int = 512
-    # A local 8B model reads ~150 prompt tokens/s; the first call also loads the model.
-    llm_timeout_seconds: float = 120.0
+    # A version in app/rag/prompts. answer_v2 adds a reminder after the sources: it stopped an
+    # injected "citation rule" that v1 followed, with no measurable change on the benchmarks
+    # (docs/security.md).
+    answer_prompt_version: str = "answer_v2"
+    # Per model call. Measured on the dev split: generation p95 is ~25 s warm, and loading the
+    # model on the first call adds 10-20 s. Worst case for one /chat: 2 calls (one retry for
+    # unusable output) x 2 attempts (llm_max_retries) x 60 s = 4 min.
+    llm_timeout_seconds: float = 60.0
     llm_max_retries: int = 1
     # Evaluation only: a different model family from llm_model grades the answers. Calibration
     # (evals/judge_calibration.jsonl, judge_correctness_v1): gemma3:12b 100%, llama3.1:8b 88%.
     judge_model: str = "gemma3:12b"
+    judge_timeout_seconds: float = 120.0  # a 12B model grading long answers, offline
 
     # Cross-encoder that rescores the candidate pool (runs on embedding_device).
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"

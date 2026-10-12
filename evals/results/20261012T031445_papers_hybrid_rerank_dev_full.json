@@ -1,0 +1,1342 @@
+{
+  "provenance": {
+    "created_at": "2026-10-12T03:05:30+00:00",
+    "git_commit": "b1c780819c97ccdfbb07102b4c5ac2a1db57a2a7",
+    "git_dirty": true,
+    "benchmark": "papers",
+    "preset": "hybrid_rerank",
+    "retrieval": {
+      "mode": "hybrid",
+      "rerank": true,
+      "top_k": 5,
+      "candidate_k": 20,
+      "rrf_k": 60,
+      "min_score": -2.84,
+      "exclude_references": false
+    },
+    "split": "dev",
+    "mode": "full",
+    "k": 5,
+    "index_version": "bge-small_c400_o64",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "benchmark_sha256": "790854ce6b3c5dbd98cbb076b133b6c30ee234060ffa4af927c5878eda402ee5",
+    "corpus_manifest_sha256": "9216ea461e5f02049d788d5f8f58689fd7d16f2e46705c404805f25e3f2b22d0",
+    "llm_model": "qwen3-vl:8b-instruct",
+    "prompt_version": "answer_v2",
+    "judge_model": "gemma3:12b",
+    "judge_prompts": [
+      "judge_faithfulness_v1",
+      "judge_correctness_v1"
+    ],
+    "duration_s": 346.8,
+    "judge_duration_s": 553.9
+  },
+  "summary": {
+    "questions": 13,
+    "errors": 0,
+    "retrieval": {
+      "recall": 0.7121,
+      "all_evidence": 0.6364,
+      "hit": 0.8182,
+      "mrr": 0.7121,
+      "ndcg": 0.5854
+    },
+    "retrieval_by_type": {
+      "distractor": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.3333,
+        "ndcg": 0.5
+      },
+      "factual": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.875,
+        "ndcg": 0.9077
+      },
+      "identifier": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "multi_hop": {
+        "recall": 0.4167,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.5412
+      },
+      "table": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131
+      }
+    },
+    "latency_ms": {
+      "embed": {
+        "p50": 230.8,
+        "p95": 317.7
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.1
+      },
+      "generate": {
+        "p50": 24050.7,
+        "p95": 28356.1
+      },
+      "rerank": {
+        "p50": 192.9,
+        "p95": 256.8
+      },
+      "retrieve_dense": {
+        "p50": 13.9,
+        "p95": 30.6
+      },
+      "retrieve_keyword": {
+        "p50": 10.7,
+        "p95": 14.1
+      },
+      "total": {
+        "p50": 24564.8,
+        "p95": 28770.6
+      }
+    },
+    "answers": {
+      "correctness": 0.8182,
+      "faithfulness": 1.0,
+      "citation_precision": 0.6061,
+      "abstention": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "false_abstention_rate": 0.0
+      },
+      "prompt_tokens": 2213.7692,
+      "completion_tokens": 61.6923
+    }
+  },
+  "questions": [
+    {
+      "id": "p002",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 370.2,
+        "retrieve_dense": 50.0,
+        "retrieve_keyword": 12.9,
+        "fuse": 0.1,
+        "rerank": 256.8,
+        "generate": 36328.0,
+        "total": 37027.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 4.9064,
+          "source": "papers/ragas.pdf",
+          "start": 14000,
+          "end": 15705,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 3.243,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 3.1032,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 2.8167,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 2.1896,
+          "source": "papers/ragas.pdf",
+          "start": 26326,
+          "end": 27614,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "The WikiEval dataset was constructed by selecting 50 Wikipedia pages covering events since early 2022, prioritizing those with recent edits. For each page, ChatGPT was used to generate a question based on the introductory section, following specific rules. ChatGPT also generated answers using the context. Human annotators then evaluated the answers and contexts along three quality dimensions: faithfulness, answer relevance, and context relevance. For context relevance, back-links were scraped to add related but less relevant information. Disagreements among annotators were resolved through discussion [1][3][4].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2242,
+        "completion_tokens": 146
+      },
+      "citations": [
+        1,
+        3,
+        4
+      ],
+      "citation_precision": 0.3333333333333333,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer correctly identifies the source (Wikipedia pages about events since 2022) but introduces details about ChatGPT and human evaluation that are not mentioned in the reference."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The WikiEval dataset was constructed by selecting 50 Wikipedia pages covering events since early 2022.",
+            "supported": true
+          },
+          {
+            "claim": "The pages were prioritized based on recent edits.",
+            "supported": true
+          },
+          {
+            "claim": "ChatGPT was used to generate a question based on the introductory section of each page.",
+            "supported": true
+          },
+          {
+            "claim": "ChatGPT also generated answers using the context.",
+            "supported": true
+          },
+          {
+            "claim": "Human annotators evaluated the answers and contexts along three quality dimensions: faithfulness, answer relevance, and context relevance.",
+            "supported": true
+          },
+          {
+            "claim": "For context relevance, back-links were scraped to add related but less relevant information.",
+            "supported": true
+          },
+          {
+            "claim": "Disagreements among annotators were resolved through discussion.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p003",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 101.0,
+        "retrieve_dense": 12.9,
+        "retrieve_keyword": 10.2,
+        "fuse": 0.1,
+        "rerank": 181.3,
+        "generate": 21773.5,
+        "total": 22082.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 5.3585,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 17833,
+          "end": 19864,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 3.8992,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 19534,
+          "end": 20205,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 2.3616,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 21827,
+          "end": 23269,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 2.188,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 0,
+          "end": 1782,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 1.21,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 5893,
+          "end": 7016,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "Failure point FP4, 'Not Extracted', occurs when the answer is present in the context but the large language model fails to extract the correct answer, typically due to too much noise or contradicting information in the context [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2162,
+        "completion_tokens": 67
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes failure point FP4 as the model failing to extract information from the context due to noise or contradicting information, matching the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Failure point FP4, 'Not Extracted', occurs when the answer is present in the context but the large language model fails to extract the correct answer.",
+            "supported": true
+          },
+          {
+            "claim": "This typically occurs due to too much noise or contradicting information in the context.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p005",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 92.4,
+        "retrieve_dense": 9.7,
+        "retrieve_keyword": 14.1,
+        "fuse": 0.1,
+        "rerank": 176.0,
+        "generate": 19980.3,
+        "total": 20274.6
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.5294,
+          "source": "papers/sentence-bert.pdf",
+          "start": 2533,
+          "end": 4227,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 6.8102,
+          "source": "papers/sentence-bert.pdf",
+          "start": 0,
+          "end": 1456,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 6.4865,
+          "source": "papers/sentence-bert.pdf",
+          "start": 1186,
+          "end": 2814,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 5.3285,
+          "source": "papers/sentence-bert.pdf",
+          "start": 4004,
+          "end": 5521,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 2.5264,
+          "source": "papers/sentence-bert.pdf",
+          "start": 31695,
+          "end": 32802,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      "answer": "About 65 hours with BERT [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2202,
+        "completion_tokens": 31
+      },
+      "citations": [
+        2
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the approximate time of 65 hours, which aligns with the information provided in the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "On a modern V100 GPU, finding the most similar pair in a collection of 10,000 sentences requires about 65 hours with BERT.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p006",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 125.8,
+        "retrieve_dense": 11.3,
+        "retrieve_keyword": 10.7,
+        "fuse": 0.1,
+        "rerank": 177.1,
+        "generate": 26085.2,
+        "total": 26412.2
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 5.585,
+          "source": "papers/e5.pdf",
+          "start": 8830,
+          "end": 10625,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 3.4767,
+          "source": "papers/e5.pdf",
+          "start": 27454,
+          "end": 28728,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 3.2208,
+          "source": "papers/e5.pdf",
+          "start": 52363,
+          "end": 53762,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 2.7362,
+          "source": "papers/e5.pdf",
+          "start": 2506,
+          "end": 4237,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.4824,
+          "source": "papers/e5.pdf",
+          "start": 29243,
+          "end": 30187,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "E5 filters its noisy web text pairs using a consistency-based filter: a model is first trained on the noisy text pairs, then used to rank each pair against a pool of 1 million random passages; a text pair is kept only if it falls in the top-k ranked lists. Here, k = 2 [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2242,
+        "completion_tokens": 86
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes E5's filtering process, including the consistency-based approach, ranking against random passages, and the top-k selection criteria."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "E5 filters its noisy web text pairs using a consistency-based filter.",
+            "supported": true
+          },
+          {
+            "claim": "A model is first trained on the noisy text pairs.",
+            "supported": true
+          },
+          {
+            "claim": "Then used to rank each pair against a pool of 1 million random passages.",
+            "supported": true
+          },
+          {
+            "claim": "A text pair is kept only if it falls in the top-k ranked lists.",
+            "supported": true
+          },
+          {
+            "claim": "Here, k = 2.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p008",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 180.9,
+        "retrieve_dense": 14.3,
+        "retrieve_keyword": 9.6,
+        "fuse": 0.1,
+        "rerank": 206.2,
+        "generate": 28356.1,
+        "total": 28770.6
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 4.7983,
+          "source": "papers/e5.pdf",
+          "start": 54939,
+          "end": 56275,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": -0.6353,
+          "source": "papers/e5.pdf",
+          "start": 53631,
+          "end": 54937,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": -1.6567,
+          "source": "papers/e5.pdf",
+          "start": 41063,
+          "end": 42202,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": -1.8963,
+          "source": "papers/ares.pdf",
+          "start": 10282,
+          "end": 12054,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": -1.949,
+          "source": "papers/e5.pdf",
+          "start": 56148,
+          "end": 57121,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "For the Quora duplicate retrieval task in the BEIR benchmark, E5 adds the prefix “query: ” to all the questions. For other retrieval tasks, it uses “query: ” and “passage: ” prefixes correspondingly [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2568,
+        "completion_tokens": 70
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "the answer accurately states that E5 uses \"query: \" for queries and \"passage: \" for passages, even elaborating on its usage in the Quora task."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "For the Quora duplicate retrieval task in the BEIR benchmark, E5 adds the prefix “query: ” to all the questions.",
+            "supported": true
+          },
+          {
+            "claim": "For other retrieval tasks, E5 uses “query: ” and “passage: ” prefixes correspondingly.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p010",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 271.6,
+        "retrieve_dense": 30.6,
+        "retrieve_keyword": 9.9,
+        "fuse": 0.1,
+        "rerank": 199.0,
+        "generate": 24050.7,
+        "total": 24564.8
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 5.6391,
+          "source": "papers/colbertv2.pdf",
+          "start": 5750,
+          "end": 6408,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 5.1246,
+          "source": "papers/colbertv2.pdf",
+          "start": 21175,
+          "end": 22885,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 3.6483,
+          "source": "papers/colbertv2.pdf",
+          "start": 22662,
+          "end": 23865,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 3.6423,
+          "source": "papers/colbertv2.pdf",
+          "start": 74527,
+          "end": 75460,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 3.5551,
+          "source": "papers/colbertv2.pdf",
+          "start": 73159,
+          "end": 74865,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "LoTTE (pronounced latte) is a new dataset for Long-Tail Topic-stratified Evaluation for IR, introduced in the ColBERTv2 paper to evaluate retrievers on natural user queries pertaining to long-tail topics, which are not covered by entity-centric knowledge bases like Wikipedia [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2002,
+        "completion_tokens": 82
+      },
+      "citations": [
+        2
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes LoTTE as a dataset for Long-Tail Topic-stratified Evaluation and explains its purpose in evaluating retrievers on long-tail topics, aligning with the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "LoTTE is a new dataset for Long-Tail Topic-stratified Evaluation for IR.",
+            "supported": true
+          },
+          {
+            "claim": "LoTTE is pronounced latte.",
+            "supported": true
+          },
+          {
+            "claim": "LoTTE was introduced in the ColBERTv2 paper.",
+            "supported": true
+          },
+          {
+            "claim": "LoTTE is used to evaluate retrievers on natural user queries.",
+            "supported": true
+          },
+          {
+            "claim": "LoTTE focuses on long-tail topics.",
+            "supported": true
+          },
+          {
+            "claim": "Long-tail topics are not covered by entity-centric knowledge bases like Wikipedia.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p012",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 212.7,
+        "retrieve_dense": 14.1,
+        "retrieve_keyword": 12.1,
+        "fuse": 0.1,
+        "rerank": 184.4,
+        "generate": 24615.0,
+        "total": 25040.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.0584,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 7.0121,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 5.4436,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 5.0289,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 4.477,
+          "source": "papers/ares.pdf",
+          "start": 27574,
+          "end": 28952,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "On context relevance, Ragas had an agreement of 0.54 with human annotators, while GPT Score had 0.40 [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2287,
+        "completion_tokens": 53
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "incorrect",
+        "score": 0.0,
+        "reason": "The answer provides incorrect agreement scores for both Ragas and GPT Score, contradicting the reference answer's values."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "On context relevance, Ragas had an agreement of 0.54 with human annotators.",
+            "supported": true
+          },
+          {
+            "claim": "GPT Score had an agreement of 0.40 with human annotators.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p013",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 243.2,
+        "retrieve_dense": 16.9,
+        "retrieve_keyword": 10.8,
+        "fuse": 0.1,
+        "rerank": 192.9,
+        "generate": 21219.8,
+        "total": 21689.6
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.7823,
+          "source": "papers/sentence-bert.pdf",
+          "start": 30879,
+          "end": 31693,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 5.2633,
+          "source": "papers/sentence-bert.pdf",
+          "start": 29682,
+          "end": 31121,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 1.8656,
+          "source": "papers/sentence-bert.pdf",
+          "start": 4004,
+          "end": 5521,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 1.7164,
+          "source": "papers/sentence-bert.pdf",
+          "start": 1186,
+          "end": 2814,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 1.6169,
+          "source": "papers/sentence-bert.pdf",
+          "start": 2533,
+          "end": 4227,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "2042 sentences per second [1]",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2163,
+        "completion_tokens": 29
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer precisely matches the reference answer, indicating complete accuracy."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "SBERT-base achieved 2042 sentences per second on GPU.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p016",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 244.5,
+        "retrieve_dense": 9.4,
+        "retrieve_keyword": 6.8,
+        "fuse": 0.1,
+        "rerank": 208.1,
+        "generate": 25857.5,
+        "total": 26333.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 6.8788,
+          "source": "papers/beir.pdf",
+          "start": 15048,
+          "end": 16551,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 6.4484,
+          "source": "papers/beir.pdf",
+          "start": 14365,
+          "end": 15271,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 6.1707,
+          "source": "papers/beir.pdf",
+          "start": 12241,
+          "end": 13752,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 5.6485,
+          "source": "papers/beir.pdf",
+          "start": 66660,
+          "end": 68221,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 5.4961,
+          "source": "papers/beir.pdf",
+          "start": 37813,
+          "end": 39528,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      },
+      "answer": "The BEIR benchmark includes 18 English zero-shot evaluation datasets [3].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2435,
+        "completion_tokens": 36
+      },
+      "citations": [
+        3
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the number of datasets included in the BEIR benchmark, even with the added detail about language and evaluation type."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The BEIR benchmark includes 18 English zero-shot evaluation datasets.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p017",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 317.7,
+        "retrieve_dense": 13.8,
+        "retrieve_keyword": 9.5,
+        "fuse": 0.1,
+        "rerank": 262.0,
+        "generate": 23268.3,
+        "total": 23874.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 6.5555,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 13646,
+          "end": 14871,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 5.642,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 5893,
+          "end": 7016,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 5.5849,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 26412,
+          "end": 27251,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 5.1225,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 16544,
+          "end": 17831,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 4.5663,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 0,
+          "end": 1782,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.3333333333333333,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.46927872602275644
+      },
+      "answer": "The paper is based on three case studies: Cognitive Reviewer (research), AI Tutor (education), and BioASQ (biomedical) [1][2][4].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2001,
+        "completion_tokens": 61
+      },
+      "citations": [
+        1,
+        2,
+        4
+      ],
+      "citation_precision": 0.3333333333333333,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately lists the three case studies mentioned in the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The paper is based on three case studies.",
+            "supported": true
+          },
+          {
+            "claim": "The three case studies are Cognitive Reviewer (research), AI Tutor (education), and BioASQ (biomedical).",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p020",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 267.0,
+        "retrieve_dense": 13.9,
+        "retrieve_keyword": 13.9,
+        "fuse": 0.1,
+        "rerank": 214.7,
+        "generate": 26125.5,
+        "total": 26640.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.5854,
+          "source": "papers/self-rag.pdf",
+          "start": 3736,
+          "end": 4687,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 6.5106,
+          "source": "papers/self-rag.pdf",
+          "start": 4403,
+          "end": 6182,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 6.4425,
+          "source": "papers/self-rag.pdf",
+          "start": 14342,
+          "end": 16020,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 6.2055,
+          "source": "papers/self-rag.pdf",
+          "start": 12273,
+          "end": 13533,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 5.8494,
+          "source": "papers/self-rag.pdf",
+          "start": 13344,
+          "end": 14620,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "SELF-RAG checks whether generated text is supported by retrieved passages using critique tokens: it generates critique tokens to evaluate if the information in the response segment is supported by the passage (ISSUP) and ranks the output based on relevance (ISREL) and usefulness (ISUSE) [4][5]. Ragas is not mentioned in the provided sources, so its method cannot be described.",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2102,
+        "completion_tokens": 99
+      },
+      "citations": [
+        4,
+        5
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer correctly describes Self-RAG's critique tokens but fails to mention Ragas's method of splitting answers into statements and checking them against the context, as stated in the reference."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "SELF-RAG checks whether generated text is supported by retrieved passages using critique tokens.",
+            "supported": true
+          },
+          {
+            "claim": "SELF-RAG generates critique tokens to evaluate if the information in the response segment is supported by the passage (ISSUP).",
+            "supported": true
+          },
+          {
+            "claim": "SELF-RAG ranks the output based on relevance (ISREL).",
+            "supported": true
+          },
+          {
+            "claim": "SELF-RAG ranks the output based on usefulness (ISUSE).",
+            "supported": true
+          },
+          {
+            "claim": "SELF-RAG uses ISREL to determine if a passage provides direct evidence.",
+            "supported": true
+          },
+          {
+            "claim": "SELF-RAG uses ISSUP to determine if a passage fully supports a statement.",
+            "supported": true
+          },
+          {
+            "claim": "SELF-RAG uses ISUSE to determine if a response is useful.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p021",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 230.8,
+        "retrieve_dense": 12.0,
+        "retrieve_keyword": 9.8,
+        "fuse": 0.1,
+        "rerank": 183.0,
+        "generate": 20100.4,
+        "total": 20538.8
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 5.4087,
+          "source": "papers/ragas.pdf",
+          "start": 0,
+          "end": 1472,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 4.0407,
+          "source": "papers/ragas.pdf",
+          "start": 20168,
+          "end": 21100,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 3.8784,
+          "source": "papers/ragas.pdf",
+          "start": 2930,
+          "end": 4664,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 3.678,
+          "source": "papers/ares.pdf",
+          "start": 2386,
+          "end": 4339,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 3.3267,
+          "source": "papers/ares.pdf",
+          "start": 1082,
+          "end": 2725,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 2113,
+        "completion_tokens": 21
+      },
+      "citations": []
+    },
+    {
+      "id": "p024",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 219.3,
+        "retrieve_dense": 15.2,
+        "retrieve_keyword": 17.2,
+        "fuse": 0.2,
+        "rerank": 179.3,
+        "generate": 21801.8,
+        "total": 22240.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 2.8965,
+          "source": "papers/ares.pdf",
+          "start": 31136,
+          "end": 32686,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 2.2894,
+          "source": "papers/ares.pdf",
+          "start": 5487,
+          "end": 6789,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 2.1491,
+          "source": "papers/ares.pdf",
+          "start": 24821,
+          "end": 26600,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 1.3865,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 1.1269,
+          "source": "papers/ares.pdf",
+          "start": 30250,
+          "end": 31349,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 2260,
+        "completion_tokens": 21
+      },
+      "citations": []
+    }
+  ]
+}

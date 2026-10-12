@@ -5,19 +5,20 @@ Component 2E · Plan: Part 2, step 8.
 Only this module imports the vendor SDK; the rest of the app depends on LLMProvider.
 """
 
-import logging
 import math
 import time
 from dataclasses import dataclass
 from functools import lru_cache
 from typing import TYPE_CHECKING, Any, Protocol
 
+import structlog
+
 from app.core.config import get_settings
 
 if TYPE_CHECKING:
     import httpx
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Measured with qwen3 on our prompts: 3.7-4.2 characters per token (code-heavy text is lower).
 # Dividing by 3.0 overestimates the token count, so the guard errs on the safe side.
@@ -136,9 +137,9 @@ class OpenAICompatibleProvider:
         prompt_tokens = usage.prompt_tokens if usage else 0
         if prompt_tokens + max_tokens > self.context_tokens:
             logger.warning(
-                "Prompt used %d of %d context tokens; the estimate let it through",
-                prompt_tokens,
-                self.context_tokens,
+                "prompt_near_context_limit",
+                prompt_tokens=prompt_tokens,
+                context_tokens=self.context_tokens,
             )
         return LLMResult(
             text=choice.message.content or "",

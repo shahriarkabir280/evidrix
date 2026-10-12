@@ -1,4 +1,4 @@
-"""FastAPI dependencies: get_db, get_settings, get_current_user, model providers.
+"""FastAPI dependencies: get_db, get_settings, get_current_user, model and queue providers.
 
 Component 1D · auth added in 5C.
 """
@@ -7,23 +7,28 @@ import uuid
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
+from app.core.security import looks_like_api_key
+from app.db.repositories import users as users_repo
 from app.db.session import get_session_factory
 from app.rag.embeddings import Embedder, get_embedder
 from app.rag.llm import LLMProvider, get_llm
 from app.rag.rerank import Reranker, get_reranker
 from app.rag.retrieval import RetrievalConfig, load_preset
 from app.storage.blob import BlobStore, LocalBlobStore
+from app.worker.queue import IngestionQueue, get_ingestion_queue
 
 if TYPE_CHECKING:
     from app.api.schemas import RetrievalOverride
 
-# Seeded by migration 0001. Replaced by real API-key authentication in component 5C.
-DEV_USER_ID = uuid.UUID("00000000-0000-0000-0000-000000000001")
+# auto_error=False: a missing header reaches get_current_user_id, which answers with our own
+# 401 body (FastAPI's default would be a 403 with a different shape).
+_bearer = HTTPBearer(auto_error=False, description="An API key: `Authorization: Bearer evx_…`")
 
 
 def get_db() -> Iterator[Session]:
@@ -35,17 +40,37 @@ def get_blob_store(settings: Annotated[Settings, Depends(get_settings)]) -> Blob
     return LocalBlobStore(settings.blob_dir)
 
 
-def get_current_user_id() -> uuid.UUID:
-    return DEV_USER_ID
-
-
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 DbSession = Annotated[Session, Depends(get_db)]
+
+
+def get_current_user_id(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
+    session: DbSession,
+    request: Request,
+) -> uuid.UUID:
+    """The user the request's API key belongs to; 401 for a missing, unknown or revoked key.
+
+    The three cases get the same answer, so a caller can't learn whether a key ever existed.
+    """
+    key = credentials.credentials if credentials else ""
+    user_id = users_repo.user_id_for_key(session, key) if looks_like_api_key(key) else None
+    if user_id is None:
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            {"code": "invalid_api_key", "message": "Missing, invalid or revoked API key."},
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    request.state.user_id = user_id  # for the access log line (app/api/middleware.py)
+    return user_id
+
+
 BlobStoreDep = Annotated[BlobStore, Depends(get_blob_store)]
 CurrentUserId = Annotated[uuid.UUID, Depends(get_current_user_id)]
 EmbedderDep = Annotated[Embedder, Depends(get_embedder)]
 LLMDep = Annotated[LLMProvider, Depends(get_llm)]
 RerankerDep = Annotated[Reranker, Depends(get_reranker)]
+IngestionQueueDep = Annotated[IngestionQueue, Depends(get_ingestion_queue)]
 
 
 def retrieval_config(settings: Settings, override: "RetrievalOverride | None") -> RetrievalConfig:

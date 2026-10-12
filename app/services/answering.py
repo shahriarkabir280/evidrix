@@ -14,7 +14,7 @@ from app.db.repositories import documents as documents_repo
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.repositories.chunks import ChunkHit
 from app.rag.embeddings import Embedder
-from app.rag.generation import GeneratedAnswer, generate_answer
+from app.rag.generation import PROMPT_VERSION, GeneratedAnswer, generate_answer
 from app.rag.llm import LLMProvider
 from app.rag.rerank import Reranker
 from app.rag.retrieval import RetrievalConfig, retrieve
@@ -57,6 +57,7 @@ def answer_question(
     document_ids: list[uuid.UUID] | None,
     retrieval: RetrievalConfig,
     max_tokens: int,
+    prompt_version: str = PROMPT_VERSION,
 ) -> ChatResult:
     started = time.perf_counter()
     if document_ids is not None:
@@ -78,7 +79,12 @@ def answer_question(
     timings = dict(found.timings_ms)
     generate_started = time.perf_counter()
     generated = generate_answer(
-        llm, question, found.hits, max_tokens=max_tokens, min_score=retrieval.min_score
+        llm,
+        question,
+        found.hits,
+        max_tokens=max_tokens,
+        min_score=retrieval.min_score,
+        prompt_version=prompt_version,
     )
     timings["generate"] = round((time.perf_counter() - generate_started) * 1000, 1)
     timings["total"] = round((time.perf_counter() - started) * 1000, 1)

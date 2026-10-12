@@ -28,7 +28,12 @@ local LLM through Ollama).
   unanswerable) labeled with verbatim evidence quotes, a held-out test split, and bootstrap
   confidence intervals for every comparison.
 - **Security in the query, not the prompt.** Owner, status and index-version filters are part of
-  the SQL of every retrieval leg; another user's chunks are never candidates.
+  the SQL of every retrieval leg; another user's chunks are never candidates. Hashed API keys,
+  per-user rate limits, and a prompt-injection suite that found an attack the first prompt let
+  through ([security model](docs/security.md)).
+- **Background ingestion that survives failures.** Uploads return `202`; an RQ worker retries
+  transient errors with backoff, never leaves a half-indexed document, and jobs lost with a
+  crashed worker are recovered.
 - **Answers measured, not assumed.** With the default preset, answers score 0.914 correctness
   and 0.963 faithfulness (claims supported by the sources) on the dev split, graded by a
   calibrated LLM judge; every unanswerable dev question abstained.
@@ -55,7 +60,7 @@ curl -s -X POST localhost:8000/chat -H 'Content-Type: application/json' \
   ],
   "retrieved": [ /* the 5 passages the model saw, with per-stage ranks and scores */ ],
   "timings_ms": {"embed": 13, "retrieve_dense": 7, "retrieve_keyword": 4, "fuse": 0, "rerank": 169, "generate": 9900, "total": 10120},
-  "config": {"retrieval": {"mode": "hybrid", "rerank": true, "top_k": 5}, "prompt_version": "answer_v1", "...": "..."}
+  "config": {"retrieval": {"mode": "hybrid", "rerank": true, "top_k": 5}, "prompt_version": "answer_v2", "...": "..."}
 }
 ```
 
@@ -72,7 +77,8 @@ A: I couldn't find this in the selected documents.   (abstain_reason: no_valid_c
 flowchart LR
     subgraph Ingestion
         U[Upload PDF / MD / TXT] --> V[Validate: size, type,<br/>magic bytes, dedup by sha256]
-        V --> X[Extract text<br/>pdfminer.six · page offsets]
+        V --> J[202 + job id<br/>queued in Redis · RQ]
+        J --> X[Worker: extract text<br/>pdfminer.six · page offsets]
         X --> C[Chunk ≤480 tokens<br/>headings · code blocks · overlap]
         C --> E[Embed<br/>bge-small-en-v1.5]
         E --> DB[(Postgres + pgvector<br/>HNSW + GIN)]
@@ -91,7 +97,12 @@ flowchart LR
 ```
 
 **Ingestion.** Uploads are checked by extension *and* content (a renamed binary is rejected),
-deduplicated per user by sha256, and stored content-addressed. PDF text comes from pdfminer.six
+deduplicated per user by sha256, and stored content-addressed. The API answers `202` with a job
+id right away; an RQ worker does the slow part (extract, chunk, embed) and writes all of a
+document's results in one transaction, so a crash never leaves a half-indexed document.
+Transient errors (timeouts, lost connections) are retried up to 3 times with backoff
+(10 s, 1 min, 5 min); permanent ones (a broken PDF) fail at once. A job left "processing" by a
+worker that died is requeued by `app.cli reap-jobs`, which `make worker` runs first. PDF text comes from pdfminer.six
 (pypdf dropped the spaces between words for some fonts — see [Engineering notes](#engineering-notes)).
 The chunker splits by headings, paragraphs and fenced code blocks, never cuts a code block that
 fits, keeps whole-sentence overlap within a section, and records each chunk's exact character
@@ -102,16 +113,17 @@ range, page range and section path (`Dependencies with yield > A database depend
 rescored by `cross-encoder/ms-marco-MiniLM-L-6-v2`). `POST /retrieve` shows the ranked chunks and
 how each stage ranked them, without calling the LLM.
 
-**Generation.** A versioned prompt (`answer_v1`) puts numbered sources before the question and
+**Generation.** A versioned prompt (`answer_v2`) puts numbered sources before the question and
 treats source text as untrusted data (a document cannot close its `<source>` block or open a fake
-one). The reply is JSON; citations must point to a retrieved source and appear in the answer
+one); a reminder between the sources and the question stops instructions planted in a document
+([measurements](docs/security.md#measurements)). The reply is JSON; citations must point to a retrieved source and appear in the answer
 text. A context guard refuses prompts that would overflow the model's window, because Ollama
 would otherwise drop the start of the prompt silently.
 
 ## Results
 
-Dev split (36 questions, 29 answerable), top 5, answers from `qwen3-vl:8b-instruct`, graded by
-`gemma3:12b`. Mean with 95% bootstrap CI; Δ is the paired difference against `dense`, and
+Dev split (36 questions, 29 answerable), top 5, answers from `qwen3-vl:8b-instruct` with prompt
+`answer_v1`, graded by `gemma3:12b`. Mean with 95% bootstrap CI; Δ is the paired difference against `dense`, and
 **bold** marks a difference whose interval excludes zero.
 
 **Retrieval**
@@ -147,6 +159,11 @@ What the data supports so far:
 | Documentation (29 + 7 dev) | 0.914 | 0.862 | 0.914 | 0.963 | 0.875 |
 | Research papers (11 + 2 dev) | 0.712 | 0.712 | 0.818 | 1.000 | 1.000 |
 
+The default prompt is now `answer_v2` (Part 5). Re-run on the same dev splits it scored 0.897
+correctness / 0.951 faithfulness on documentation (Δ −0.017 [−0.12, +0.07] and −0.013
+[−0.04, 0.00] against `answer_v1`) and the same 0.818 / 1.000 on papers, with the same
+abstentions.
+
 Papers are harder, mainly because of tables and questions that span two papers. Retrieval
 numbers on papers are underestimated: two questions whose answers the paper states in several
 places were labeled at one place only, and the system answered both correctly from another.
@@ -166,13 +183,14 @@ git clone https://github.com/shahriarkabir280/evidrix.git && cd evidrix
 uv sync                      # Python 3.12 + locked dependencies
 cp .env.example .env
 
-make up                      # Postgres 17 + pgvector on localhost:5433
+make up                      # Postgres 17 + pgvector on :5433, Redis on :6379
 make migrate                 # create the schema
 
 ollama pull qwen3-vl:8b-instruct
 OLLAMA_CONTEXT_LENGTH=8192 ollama serve      # in its own terminal
 
 make dev                     # API on http://127.0.0.1:8000 (docs at /docs)
+make worker                  # ingestion worker, in its own terminal
 ```
 
 Load the evaluation corpus (FastAPI tutorial + Python HOWTO PDFs) and ask a question:
@@ -180,13 +198,17 @@ Load the evaluation corpus (FastAPI tutorial + Python HOWTO PDFs) and ask a ques
 ```bash
 make corpus                                          # download + verify against the manifest
 uv run python -m app.cli ingest-dir evals/corpus/raw # chunk + embed (~20 s on Apple MPS)
+uv run python -m app.cli create-key --email dev@evidrix.local   # prints an API key once
+export EVIDRIX_API_KEY=evx_...
 uv run python -m scripts.ask "How do I declare a cookie parameter?"
 ```
 
 Or upload your own file:
 
 ```bash
-curl -s -F "file=@guide.pdf" localhost:8000/documents
+AUTH="Authorization: Bearer $EVIDRIX_API_KEY"
+curl -s -H "$AUTH" -F "file=@guide.pdf" localhost:8000/documents   # 202 {"id", "job_id", "status": "queued"}
+curl -s -H "$AUTH" localhost:8000/jobs/<job_id>                     # queued → processing → completed / failed
 ```
 
 ## API
@@ -194,10 +216,30 @@ curl -s -F "file=@guide.pdf" localhost:8000/documents
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/health` | Liveness |
-| `POST` | `/documents` | Upload a PDF, Markdown or text file (deduplicated) |
+| `POST` | `/documents` | Upload a PDF, Markdown or text file (deduplicated); `202` + job id |
 | `GET` | `/documents`, `/documents/{id}` | List your documents / one document with its status |
+| `GET` | `/jobs/{id}` | Ingestion job status, attempts and last error |
 | `POST` | `/retrieve` | Retrieval only, with per-stage ranks and scores |
 | `POST` | `/chat` | Answer with citations, retrieved passages, timings and token usage |
+
+Every endpoint except `/health` needs `Authorization: Bearer evx_…`. Keys are created with
+`app.cli create-user` / `create-key`, stored only as a sha256 hash, and revoked with
+`app.cli revoke-key` ([ADR-0004](docs/adr/0004-api-key-storage.md)). A missing, unknown or
+revoked key gets `401`; another user's document or job is a `404`, never a `403`. Access
+control is a `WHERE owner_id = …` in the SQL of every query a request can reach, so another
+user's chunks are never even retrieval candidates; a test fails if a repository function
+without `owner_id` is added.
+
+Requests are limited per user per minute (fixed window in Redis): `/chat` 20, `/retrieve` 60,
+uploads 10. Over the limit: `429` with `Retry-After`; every response carries
+`X-RateLimit-Limit` / `X-RateLimit-Remaining`. If Redis is down the limiter lets requests
+through (fail open) rather than taking the API down with it; uploads then answer `503`, since
+they need the queue. Uploading a file that failed earlier queues it again.
+
+Every response carries `X-Request-ID` (a client's own is kept if it is short and plain). Logs
+are JSON lines, and every line of a request, including the worker's lines for the job it
+created, carries that ID. Questions are logged as length and hash; keys, questions, answers and
+document text are never logged.
 
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
 e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still
@@ -261,6 +303,17 @@ Things the measurements caught that the original plan didn't:
 - **Labels can be too narrow.** A single labeled location undercounts when a paper repeats the
   answer (introduction, method section, appendix). The labels were left unchanged rather than
   extended from the system's own output, which would bias the benchmark.
+- **The injection that worked didn't look like one.** "Ignore all previous instructions" and a
+  forged `</source>` block failed even with the defences switched off, so they proved nothing
+  about the defences. A "citation policy" asking for a code after each citation was followed
+  with the system prompt's "sources are data" rule, and with a sharper version of it; a
+  reminder placed after the sources stopped it, at no measurable cost on the benchmarks.
+- **Unit tests miss what a dead dependency shows.** Stopping Redis during a smoke test revealed
+  that a document which failed while the queue was down could never be retried: re-uploading it
+  returned the failed duplicate. Re-uploading now queues it again.
+- **A test with the wrong chunk size proved nothing.** The live injection test passed even with
+  the vulnerable prompt, because the tests' 40-token chunks put the attack in a source of its
+  own. With production chunk sizes it fails on `answer_v1` and passes on `answer_v2`.
 - **Memory is the limit of a 16 GB laptop.** The first full run thrashed for hours: the
   evaluation process kept the embedder and reranker in GPU memory next to a 12B judge. Runs now
   checkpoint the answers and hand judging to a fresh process (`os.execv`); Ollama keeps one
@@ -270,7 +323,8 @@ Things the measurements caught that the original plan didn't:
 
 Design decisions are recorded as ADRs: [pgvector](docs/adr/0001-postgres-pgvector.md) ·
 [embedding model and chunk size](docs/adr/0002-embedding-model-and-chunk-size.md) ·
-[keyword search](docs/adr/0003-keyword-search.md). The full build log is in
+[keyword search](docs/adr/0003-keyword-search.md) ·
+[API key storage](docs/adr/0004-api-key-storage.md). The full build log is in
 [docs/devlog.md](docs/devlog.md) and the plan in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Testing
@@ -297,16 +351,21 @@ Settings come from environment variables (see `.env.example`):
 | `LLM_CONTEXT_TOKENS` | `8192` | Must match the server (`OLLAMA_CONTEXT_LENGTH`) |
 | `RETRIEVAL_PRESET` | `hybrid_rerank` | A file in `configs/retrieval/` |
 | `MAX_UPLOAD_BYTES` | `10000000` | Upload size limit |
+| `REDIS_URL` | `redis://localhost:6379/0` | Job queue and rate-limit counters |
+| `RATE_LIMIT_CHAT_PER_MINUTE` | `20` | Also `RATE_LIMIT_RETRIEVE_…` (60) and `RATE_LIMIT_UPLOAD_…` (10) |
+| `LLM_TIMEOUT_SECONDS` | `60` | Per model call; generation p95 is ~25 s on the dev split |
+| `LOG_JSON` / `LOG_LEVEL` | `true` / `INFO` | JSON lines with `request_id`; `false` for readable lines |
 
 ## Project structure
 
 ```text
 app/
-  api/            routes (documents, chat, retrieve), schemas, dependencies
+  api/            routes (documents, jobs, chat, retrieve), schemas, dependencies
   rag/            extract · chunking · embeddings · retrieval · rerank · llm · generation
   services/       ingestion and answering pipelines
   db/             SQLAlchemy models and repositories (all SQL lives here)
   storage/        content-addressed blob store
+  worker/         RQ queue and job functions (background ingestion)
 configs/retrieval/  dense · hybrid · hybrid_rerank presets
 evals/            benchmark, metrics, judge, runner, report, results
 migrations/       Alembic migrations
@@ -322,7 +381,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 3** — keyword search, hybrid fusion, reranking, `/retrieve`
 - [x] **Part 4** — evaluation harness: benchmark, retrieval and answer metrics, judge calibration, abstention threshold
 - [x] **Part 4b** — research papers: CC-licensed arXiv corpus, ligatures and section headings in PDFs, a 24-question paper benchmark
-- [ ] **Part 5** — background ingestion jobs, API keys, rate limits, prompt-injection tests
+- [x] **Part 5** — background ingestion jobs (RQ, retries, recovery), hashed API keys, authorization audit, rate limits, prompt-injection suite, JSON logs with request IDs
 - [ ] **Part 6** — persisted chats, cost and latency tracking, load test
 - [ ] **Part 7** — Docker image, hosted deployment, smoke tests
 - [ ] **Part 8** — final evaluation on the held-out split, report, demo

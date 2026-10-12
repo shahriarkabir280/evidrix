@@ -2,9 +2,9 @@ import numpy as np
 import pytest
 from sqlalchemy import func, select, text
 
-from app.api.deps import DEV_USER_ID
 from app.db.models import Chunk, Document, DocumentStatus
 from app.db.repositories import index_versions as index_versions_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.rag.extract import DocumentKind, extract
 from app.services import ingestion
 from tests.factories import make_pdf

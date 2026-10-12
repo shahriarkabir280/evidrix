@@ -1,8 +1,8 @@
 import pytest
 
-from app.api.deps import DEV_USER_ID
 from app.db.models import Document, DocumentStatus
 from app.db.repositories import index_versions as index_versions_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.rag.extract import ExtractedDocument, PageText
 from app.rag.retrieval import RetrievalConfig, retrieve
 from app.services import ingestion

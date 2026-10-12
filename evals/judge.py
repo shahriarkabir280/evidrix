@@ -133,7 +133,7 @@ def get_judge() -> Judge:
             api_key=settings.llm_api_key,
             model=settings.judge_model,
             context_tokens=settings.llm_context_tokens,
-            timeout_seconds=settings.llm_timeout_seconds,
+            timeout_seconds=settings.judge_timeout_seconds,
             max_retries=settings.llm_max_retries,
         )
     )

@@ -1,15 +1,17 @@
-"""Deterministic fakes: FakeEmbedder, FakeLLM, FakeReranker.
+"""Deterministic fakes: FakeEmbedder, FakeLLM, FakeReranker, FakeQueue, FailingEmbedder.
 
-Component 2B/2C onward.
+Component 2B/2C onward · FakeQueue in 5A · FailingEmbedder in 5B.
 """
 
 import re
+import uuid
 import zlib
 from collections.abc import Callable
 
 import numpy as np
 
 from app.rag.llm import LLMResult
+from app.worker.queue import QueueUnavailableError
 
 _WORD = re.compile(r"[a-z0-9_]+")
 
@@ -44,6 +46,21 @@ class FakeEmbedder:
             vector[zlib.crc32(word.encode()) % self.dim] += 1.0
         norm = np.linalg.norm(vector)
         return vector / norm if norm else vector
+
+
+class FailingEmbedder(FakeEmbedder):
+    """Raises `error` on the first `failures` calls to embed_documents, then works."""
+
+    def __init__(self, error: Exception, failures: int = 1_000) -> None:
+        self.error = error
+        self.failures = failures
+        self.calls = 0
+
+    def embed_documents(self, texts: list[str]) -> np.ndarray:
+        self.calls += 1
+        if self.calls <= self.failures:
+            raise self.error
+        return super().embed_documents(texts)
 
 
 class FakeLLM:
@@ -94,3 +111,16 @@ class FakeReranker:
         self.calls.append(passages)
         words = set(_WORD.findall(question.lower()))
         return [float(len(words & set(_WORD.findall(p.lower())))) for p in passages]
+
+
+class FakeQueue:
+    """Records enqueued job ids instead of sending them to Redis; run_worker runs them."""
+
+    def __init__(self, *, available: bool = True) -> None:
+        self.job_ids: list[uuid.UUID] = []
+        self.available = available
+
+    def enqueue(self, job_id: uuid.UUID) -> None:
+        if not self.available:
+            raise QueueUnavailableError("Redis is down")
+        self.job_ids.append(job_id)
