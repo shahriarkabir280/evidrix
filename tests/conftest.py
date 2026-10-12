@@ -71,7 +71,9 @@ def session_factory(db_engine):
     # active index version that matches FakeEmbedder.
     with db_engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE api_keys, ingestion_jobs, chunks, document_pages, documents")
+            text(
+                "TRUNCATE chat_queries, api_keys, ingestion_jobs, chunks, document_pages, documents"
+            )
         )
         connection.execute(text("DELETE FROM users WHERE email LIKE '%@test.local'"))
         connection.execute(text("DELETE FROM index_versions WHERE name LIKE 'test-%'"))

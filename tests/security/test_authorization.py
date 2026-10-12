@@ -11,6 +11,7 @@ import uuid
 import numpy as np
 import pytest
 
+from app.db.repositories import chats as chats_repo
 from app.db.repositories import chunks as chunks_repo
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import index_versions as index_versions_repo
@@ -149,7 +150,7 @@ SYSTEM_ONLY = {"jobs.claim", "jobs.stale", "chunks.or_tsquery"}
 
 
 @pytest.mark.parametrize(
-    "module", [documents_repo, chunks_repo, jobs_repo], ids=lambda m: m.__name__
+    "module", [documents_repo, chunks_repo, jobs_repo, chats_repo], ids=lambda m: m.__name__
 )
 def test_repository_reads_of_user_data_require_owner_id(module):
     short = module.__name__.rsplit(".", 1)[1]

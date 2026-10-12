@@ -3,11 +3,9 @@
 Component 2D (dense) · 3A (keyword) · 3B (fusion) · 3D (configurable pipeline).
 """
 
-import time
 import tomllib
 import uuid
 from collections import defaultdict
-from contextlib import contextmanager
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Literal
@@ -15,6 +13,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy.orm import Session
 
+from app.core.timing import StageTimer
 from app.db.repositories import chunks as chunks_repo
 from app.db.repositories.chunks import ChunkHit
 from app.rag.embeddings import Embedder
@@ -186,13 +185,14 @@ def retrieve(
     index_version_id: int,
     question: str,
     document_ids: list[uuid.UUID] | None = None,
+    timer: StageTimer | None = None,
 ) -> RetrievalResult:
-    """Run the pipeline `config` describes and time each stage.
+    """Run the pipeline `config` describes and time each stage (into `timer`, if given).
 
     With reranking, each retriever fetches the larger candidate pool and the reranker picks the
     final top_k; without it, retrieval returns top_k directly.
     """
-    timings: dict[str, float] = {}
+    timer = timer or StageTimer()
     fetch = config.candidate_k if (config.rerank or config.mode == "hybrid") else config.top_k
     common = {
         "owner_id": owner_id,
@@ -204,31 +204,22 @@ def retrieve(
     legs: dict[str, list[ChunkHit]] = {}
 
     if config.mode in ("dense", "hybrid"):
-        with _timed(timings, "embed"):
+        with timer.stage("embed"):
             query_vector = embedder.embed_query(question)
-        with _timed(timings, "retrieve_dense"):
+        with timer.stage("retrieve_dense"):
             legs["dense"] = chunks_repo.search_dense(session, query_vector=query_vector, **common)
     if config.mode in ("keyword", "hybrid"):
-        with _timed(timings, "retrieve_keyword"):
+        with timer.stage("retrieve_keyword"):
             legs["keyword"] = chunks_repo.search_keyword(session, query_text=question, **common)
 
     if config.mode == "hybrid":
-        with _timed(timings, "fuse"):
+        with timer.stage("fuse"):
             pool_size = config.candidate_k if config.rerank else config.top_k
             hits = reciprocal_rank_fusion(legs, limit=pool_size, rrf_k=config.rrf_k)
     else:
         (hits,) = legs.values()
 
     if config.rerank:
-        with _timed(timings, "rerank"):
+        with timer.stage("rerank"):
             hits = rerank(reranker, question, hits, top_k=config.top_k)
-    return RetrievalResult(hits=hits[: config.top_k], timings_ms=timings)
-
-
-@contextmanager
-def _timed(timings: dict[str, float], name: str):
-    started = time.perf_counter()
-    try:
-        yield
-    finally:
-        timings[name] = round((time.perf_counter() - started) * 1000, 1)
+    return RetrievalResult(hits=hits[: config.top_k], timings_ms=dict(timer.timings_ms))

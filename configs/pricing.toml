@@ -1,0 +1,13 @@
+# US dollars per million tokens, per model. Used to put a cost on every /chat (component 6B).
+#
+# The local Ollama models cost nothing per token; what they cost is time and memory on the
+# machine, which docs/perf.md measures. A hosted model gets a real price here. A model that is
+# not listed gets no cost (null), never a guessed one.
+
+["qwen3-vl:8b-instruct"]
+input_per_million = 0.0
+output_per_million = 0.0
+
+["gemma3:12b"]
+input_per_million = 0.0
+output_per_million = 0.0
