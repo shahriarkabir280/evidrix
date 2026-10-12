@@ -7,7 +7,7 @@ import uuid
 from collections.abc import Iterator
 from typing import TYPE_CHECKING, Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
@@ -47,6 +47,7 @@ DbSession = Annotated[Session, Depends(get_db)]
 def get_current_user_id(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer)],
     session: DbSession,
+    request: Request,
 ) -> uuid.UUID:
     """The user the request's API key belongs to; 401 for a missing, unknown or revoked key.
 
@@ -60,6 +61,7 @@ def get_current_user_id(
             {"code": "invalid_api_key", "message": "Missing, invalid or revoked API key."},
             headers={"WWW-Authenticate": "Bearer"},
         )
+    request.state.user_id = user_id  # for the access log line (app/api/middleware.py)
     return user_id
 
 

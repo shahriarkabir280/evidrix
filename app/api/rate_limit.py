@@ -12,7 +12,6 @@ Unauthenticated requests never reach the limiter (the 401 comes first); flooding
 is for a limit by IP at the reverse proxy (Part 7).
 """
 
-import logging
 import math
 import time
 from collections.abc import Callable
@@ -20,13 +19,14 @@ from dataclasses import dataclass
 from functools import lru_cache
 from typing import Annotated, Literal
 
+import structlog
 from fastapi import Depends, HTTPException, Response, status
 from redis import Redis, RedisError
 
 from app.api.deps import CurrentUserId, SettingsDep
 from app.core.config import get_settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 Route = Literal["chat", "retrieve", "upload"]
 WINDOW_SECONDS = 60
@@ -60,7 +60,7 @@ class RateLimiter:
         except RedisError:
             # Fail open: a Redis outage shouldn't take reading and chatting down with it.
             # The trade-off is that limits aren't enforced until Redis is back.
-            logger.warning("Rate limiter unavailable; allowing the request", exc_info=True)
+            logger.warning("rate_limiter_unavailable", exc_info=True)
             return Decision(True, limit, limit, retry_after)
         return Decision(count <= limit, limit, max(0, limit - count), retry_after)
 
@@ -89,6 +89,7 @@ def rate_limit(route: Route) -> Callable[..., None]:
             "X-RateLimit-Remaining": str(decision.remaining),
         }
         if not decision.allowed:
+            logger.info("rate_limited", route=route, limit=limit)
             raise HTTPException(
                 status.HTTP_429_TOO_MANY_REQUESTS,
                 {

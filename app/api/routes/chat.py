@@ -3,6 +3,7 @@
 Component 2G · configurable retrieval in 3D · history endpoints in 6A.
 """
 
+import structlog
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import (
@@ -23,6 +24,7 @@ from app.api.schemas import (
     RetrievedOut,
     Usage,
 )
+from app.core.logging import text_fingerprint
 from app.db.repositories.chunks import ChunkHit
 from app.rag.generation import BadModelOutputError
 from app.rag.llm import LLMError, PromptTooLongError
@@ -34,6 +36,7 @@ from app.services.answering import (
 )
 
 router = APIRouter(tags=["chat"])
+logger = structlog.get_logger(__name__)
 
 QUOTE_CHARS = 300
 
@@ -75,6 +78,20 @@ def chat(
     except BadModelOutputError as exc:
         # The model answered, but with something unusable: a bad upstream reply, so 502.
         raise error(status.HTTP_502_BAD_GATEWAY, "llm_bad_output", exc) from exc
+    generated = result.generated
+    logger.info(
+        "chat_answered",
+        question=text_fingerprint(request.question),
+        document_filter=len(request.document_ids or []),
+        hits=len(result.hits),
+        abstained=generated.abstained,
+        abstain_reason=generated.abstain_reason,
+        citations=len(generated.citations),
+        prompt_tokens=sum(c.prompt_tokens for c in generated.llm_calls),
+        completion_tokens=sum(c.completion_tokens for c in generated.llm_calls),
+        prompt_version=generated.prompt_version,
+        total_ms=result.timings_ms.get("total"),
+    )
     return to_response(result)
 
 

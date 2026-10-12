@@ -8,7 +8,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from app.api.middleware import RequestContextMiddleware
 from app.api.routes import chat, documents, health, jobs, retrieve
+from app.core.config import get_settings
+from app.core.logging import configure_logging
 from app.rag.embeddings import get_embedder
 from app.rag.rerank import get_reranker
 
@@ -16,6 +19,8 @@ from app.rag.rerank import get_reranker
 def create_app(*, preload_models: bool = True) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        # Here rather than at import: uvicorn sets up its own loggers after importing the app.
+        configure_logging(get_settings())
         if preload_models:
             # Load the local models at startup, so the first request isn't the slow one.
             get_embedder()
@@ -28,6 +33,7 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+    app.add_middleware(RequestContextMiddleware)
     app.include_router(health.router)
     app.include_router(documents.router)
     app.include_router(jobs.router)

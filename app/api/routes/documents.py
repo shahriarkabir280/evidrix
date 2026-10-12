@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response, UploadFi
 from app.api.deps import BlobStoreDep, CurrentUserId, DbSession, IngestionQueueDep, SettingsDep
 from app.api.rate_limit import rate_limit
 from app.api.schemas import DocumentList, DocumentOut, DocumentUploadOut
+from app.core.logging import current_request_id
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import jobs as jobs_repo
 from app.services.ingestion import UploadRejected, accept_upload, mark_failed, read_limited
@@ -44,6 +45,7 @@ def upload_document(
             filename=file.filename or "",
             data=data,
             max_attempts=settings.ingestion_max_attempts,
+            request_id=current_request_id(),
         )
     except UploadRejected as exc:
         raise HTTPException(exc.status_code, {"code": exc.code, "message": str(exc)}) from exc

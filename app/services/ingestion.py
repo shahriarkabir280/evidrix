@@ -7,13 +7,14 @@ in one transaction. The slow part (extract, chunk, embed) runs later in the work
 run_ingestion_job. ingest_upload does both in one call, for the CLI and tests.
 """
 
-import logging
+import time
 import uuid
 from dataclasses import dataclass
 from datetime import timedelta
 from pathlib import PurePath
 from typing import BinaryIO
 
+import structlog
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
@@ -42,7 +43,7 @@ from app.rag.extract import (
 )
 from app.storage.blob import BlobStore, content_key
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 READ_CHUNK_BYTES = 1024 * 1024
 SNIFF_BYTES = 8192
@@ -202,8 +203,14 @@ def run_ingestion_job(
     """
     job = jobs_repo.claim(session, job_id)
     if job is None:
-        logger.info("Job %s is not claimable (duplicate delivery or already done)", job_id)
+        logger.info("ingestion_job_skipped", job_id=str(job_id), reason="not claimable")
         return None
+    # The request that created the job, so worker lines can be found by the API's request ID.
+    structlog.contextvars.bind_contextvars(
+        job_id=str(job_id), request_id=job.request_id, document_id=str(job.document_id)
+    )
+    started = time.perf_counter()
+    logger.info("ingestion_job_started", attempt=job.attempts, max_attempts=job.max_attempts)
     document = job.document
     document.status = DocumentStatus.PROCESSING
     session.commit()
@@ -234,15 +241,21 @@ def run_ingestion_job(
         job.last_error = None
         job.finished_at = func.now()
         session.commit()
+        logger.info(
+            "ingestion_job_completed",
+            chunks=len(document.chunks),
+            pages=document.page_count,
+            duration_ms=round((time.perf_counter() - started) * 1000, 1),
+        )
     except ExtractionError as exc:
+        logger.info("ingestion_job_failed", error_code=exc.code, retry=False)
         mark_failed(session, job, exc.code, str(exc))
     except TRANSIENT_ERRORS as exc:
         logger.warning(
-            "Ingestion job %s: transient error on attempt %d of %d: %r",
-            job_id,
-            job.attempts,
-            job.max_attempts,
-            exc,
+            "ingestion_job_transient_error",
+            attempt=job.attempts,
+            max_attempts=job.max_attempts,
+            error=repr(exc),
         )
         if job.attempts >= job.max_attempts:
             mark_failed(
@@ -252,10 +265,10 @@ def run_ingestion_job(
             mark_retrying(session, job, repr(exc))
     except IndexConfigurationError:
         # A deployment mistake, not the document's fault; the details go to the log only.
-        logger.exception("Ingestion job %s: embedder does not match the index", job_id)
+        logger.exception("ingestion_job_failed", error_code="index_mismatch", retry=False)
         mark_failed(session, job, "index_mismatch", "The worker cannot index documents right now.")
     except Exception:
-        logger.exception("Unexpected error in ingestion job %s", job_id)
+        logger.exception("ingestion_job_failed", error_code="internal_error", retry=False)
         mark_failed(session, job, "internal_error", "Unexpected error while processing.")
     return job.status
 

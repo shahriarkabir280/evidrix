@@ -5,7 +5,6 @@ Component 2E (prompt) · 2F (parsing and validation) · versions chosen by setti
 
 import html
 import json
-import logging
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
@@ -13,10 +12,12 @@ from functools import cache
 from pathlib import Path
 from typing import Literal
 
+import structlog
+
 from app.db.repositories.chunks import ChunkHit
 from app.rag.llm import LLMProvider, LLMResult
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 # Bump the version (new file) whenever the wording changes, so evaluation results can say
 # exactly which prompt produced them. A version is prompts/<version>.txt (the system message)
@@ -161,7 +162,8 @@ def generate_answer(
             raw = parse_answer(result.text)
             break
         except BadModelOutputError:
-            logger.warning("Unusable model output (attempt %d): %.200r", len(calls), result.text)
+            # The length only: the output may quote document text, which is never logged.
+            logger.warning("unusable_model_output", attempt=len(calls), chars=len(result.text))
     if raw is None:
         raise BadModelOutputError("The model did not return valid JSON after a retry.")
 
@@ -170,7 +172,7 @@ def generate_answer(
 
     answer, valid, dropped = validate_citations(raw, len(hits))
     if dropped:
-        logger.info("Dropped invalid citations %s (only %d sources)", dropped, len(hits))
+        logger.info("invalid_citations_dropped", dropped=dropped, sources=len(hits))
     if not valid:
         return _abstain("no_valid_citations", prompt_version, llm_calls=calls, dropped=dropped)
     return GeneratedAnswer(

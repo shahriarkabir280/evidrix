@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_env: Literal["development", "test", "production"] = "development"
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+    log_json: bool = True  # false: one readable line per event, for a terminal
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix"
     max_upload_bytes: int = 10_000_000
     blob_dir: Path = Path("data/uploads")

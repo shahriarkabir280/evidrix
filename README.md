@@ -225,6 +225,11 @@ uploads 10. Over the limit: `429` with `Retry-After`; every response carries
 through (fail open) rather than taking the API down with it; uploads then answer `503`, since
 they need the queue. Uploading a file that failed earlier queues it again.
 
+Every response carries `X-Request-ID` (a client's own is kept if it is short and plain). Logs
+are JSON lines, and every line of a request, including the worker's lines for the job it
+created, carries that ID. Questions are logged as length and hash; keys, questions, answers and
+document text are never logged.
+
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
 e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still
 processing, 422 invalid request, 502 unusable model output, 503 model unavailable.
@@ -327,6 +332,7 @@ Settings come from environment variables (see `.env.example`):
 | `REDIS_URL` | `redis://localhost:6379/0` | Job queue and rate-limit counters |
 | `RATE_LIMIT_CHAT_PER_MINUTE` | `20` | Also `RATE_LIMIT_RETRIEVE_…` (60) and `RATE_LIMIT_UPLOAD_…` (10) |
 | `LLM_TIMEOUT_SECONDS` | `60` | Per model call; generation p95 is ~25 s on the dev split |
+| `LOG_JSON` / `LOG_LEVEL` | `true` / `INFO` | JSON lines with `request_id`; `false` for readable lines |
 
 ## Project structure
 

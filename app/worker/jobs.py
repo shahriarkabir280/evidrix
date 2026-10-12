@@ -12,12 +12,18 @@ between jobs. --with-scheduler lets the worker run the delayed retries.
 
 import uuid
 
+import structlog
+
 from app.core.config import get_settings
+from app.core.logging import configure_logging
 from app.db.models import JobStatus
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
 from app.services.ingestion import run_ingestion_job
 from app.storage.blob import LocalBlobStore
+
+# The worker process imports this module before running its first job.
+configure_logging(get_settings())
 
 
 class JobWillRetryError(Exception):
@@ -25,6 +31,8 @@ class JobWillRetryError(Exception):
 
 
 def process_ingestion(job_id: str) -> str | None:
+    # One worker process runs many jobs: drop the previous job's context first.
+    structlog.contextvars.clear_contextvars()
     settings = get_settings()
     with get_session_factory()() as session:
         status: JobStatus | None = run_ingestion_job(
