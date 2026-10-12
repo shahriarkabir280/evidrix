@@ -130,3 +130,22 @@ def test_health_needs_nothing(client):
         _env_file=None, database_url=TEST_DATABASE_URL
     )
     assert client.get("/health").json() == {"status": "ok"}
+
+
+def test_503_busy_model_says_when_to_retry(client, ingest):
+    from app.api.deps import get_llm
+    from app.rag.llm import LLMBusyError
+
+    class BusyLLM:
+        model = "busy"
+
+        def generate(self, *args, **kwargs):
+            raise LLMBusyError("No free slot within 120 s.")
+
+    ingest("cookies.md", b"# Cookies\n\nDeclare cookie parameters with Cookie.\n")
+    client.app.dependency_overrides[get_llm] = lambda: BusyLLM()
+
+    response = client.post("/chat", json={"question": "How do I declare cookies?"})
+
+    assert_envelope(response, 503, "llm_busy")
+    assert response.headers["Retry-After"] == "30"

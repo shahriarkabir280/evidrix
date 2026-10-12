@@ -35,7 +35,7 @@ from app.core.timing import StageTimer
 from app.db.repositories import chats as chats_repo
 from app.db.repositories.chunks import ChunkHit
 from app.rag.generation import BadModelOutputError
-from app.rag.llm import LLMError, PromptTooLongError
+from app.rag.llm import LLMBusyError, LLMError, PromptTooLongError
 from app.rag.pricing import cost_usd
 from app.rag.retrieval import RetrievalConfig
 from app.services.answering import (
@@ -49,6 +49,7 @@ router = APIRouter(tags=["chat"])
 logger = structlog.get_logger(__name__)
 
 QUOTE_CHARS = 300
+LLM_BUSY_RETRY_AFTER_SECONDS = 30  # about two generations at the measured p95
 
 # Checked in order, so a subclass (PromptTooLongError is an LLMError) comes before its parent.
 DOMAIN_ERRORS: list[tuple[type[Exception], int, str]] = [
@@ -56,6 +57,8 @@ DOMAIN_ERRORS: list[tuple[type[Exception], int, str]] = [
     (DocumentNotReadyError, status.HTTP_409_CONFLICT, "document_not_ready"),
     # Too many or too long sources for the model's context window: ask for a smaller top_k.
     (PromptTooLongError, status.HTTP_422_UNPROCESSABLE_CONTENT, "prompt_too_long"),
+    # Every model slot stayed busy: overloaded, so 503 with a hint when to retry.
+    (LLMBusyError, status.HTTP_503_SERVICE_UNAVAILABLE, "llm_busy"),
     # The model server is down or timed out: a temporary condition, so 503.
     (LLMError, status.HTTP_503_SERVICE_UNAVAILABLE, "llm_unavailable"),
     # The model answered, but with something unusable: a bad upstream reply, so 502.
@@ -99,7 +102,8 @@ def chat(
         record_failure(session, owner_id, request, config, code, timer.finish(), llm.model)
         if code == "internal_error":
             raise  # the 500 handler logs the stack trace
-        raise error(status_code, code, exc) from exc
+        busy = {"Retry-After": str(LLM_BUSY_RETRY_AFTER_SECONDS)} if code == "llm_busy" else None
+        raise error(status_code, code, exc, headers=busy) from exc
 
     response = to_response(result)
     chat_record = chats_repo.create(
@@ -243,5 +247,7 @@ def location(hit: ChunkHit) -> dict:
     }
 
 
-def error(status_code: int, code: str, exc: Exception) -> HTTPException:
-    return HTTPException(status_code, {"code": code, "message": str(exc)})
+def error(
+    status_code: int, code: str, exc: Exception, headers: dict[str, str] | None = None
+) -> HTTPException:
+    return HTTPException(status_code, {"code": code, "message": str(exc)}, headers=headers)

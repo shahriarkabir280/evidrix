@@ -1,0 +1,604 @@
+{
+  "provenance": {
+    "created_at": "2026-10-12T15:50:42+00:00",
+    "endpoint": "retrieve",
+    "concurrency": 4,
+    "questions": "dev splits: documentation + papers",
+    "machine": {
+      "platform": "macOS-15.7.7-arm64-arm-64bit",
+      "cpu": "Apple M4",
+      "cpu_cores": 10,
+      "memory_gb": 16.0
+    },
+    "config": null
+  },
+  "summary": {
+    "requests": 49,
+    "ok": 49,
+    "errors": {},
+    "wall_s": 7.7,
+    "throughput_per_min": 383.25,
+    "client_ms": {
+      "p50": 619.3,
+      "p95": 664.4,
+      "max": 668.4
+    },
+    "server_stage_ms": {
+      "embed": {
+        "p50": 182.1,
+        "p95": 452.3,
+        "max": 466.4
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.2,
+        "max": 0.3
+      },
+      "rerank": {
+        "p50": 324.6,
+        "p95": 579.8,
+        "max": 595.8
+      },
+      "retrieve_dense": {
+        "p50": 7.5,
+        "p95": 11.1,
+        "max": 12.1
+      },
+      "retrieve_keyword": {
+        "p50": 7.0,
+        "p95": 12.1,
+        "max": 14.8
+      }
+    },
+    "peak_rss_mb": {
+      "api": 133.0,
+      "worker": 0.0,
+      "ollama": 7040.6
+    },
+    "docker_memory": {
+      "evidrix-redis-1": "21.88MiB / 7.75GiB",
+      "evidrix-db-1": "138.1MiB / 7.75GiB"
+    }
+  },
+  "requests": [
+    {
+      "status": 200,
+      "client_ms": 663.0,
+      "timings_ms": {
+        "embed": 53.9,
+        "retrieve_dense": 6.0,
+        "retrieve_keyword": 7.8,
+        "fuse": 0.1,
+        "rerank": 572.7
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 503.7,
+      "timings_ms": {
+        "embed": 43.9,
+        "retrieve_dense": 6.1,
+        "retrieve_keyword": 4.4,
+        "fuse": 0.1,
+        "rerank": 428.5
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 226.8,
+      "timings_ms": {
+        "embed": 32.9,
+        "retrieve_dense": 11.1,
+        "retrieve_keyword": 8.9,
+        "fuse": 0.1,
+        "rerank": 161.4
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 370.5,
+      "timings_ms": {
+        "embed": 45.9,
+        "retrieve_dense": 8.0,
+        "retrieve_keyword": 5.5,
+        "fuse": 0.1,
+        "rerank": 299.5
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 630.5,
+      "timings_ms": {
+        "embed": 437.1,
+        "retrieve_dense": 6.3,
+        "retrieve_keyword": 4.9,
+        "fuse": 0.1,
+        "rerank": 167.5
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 638.3,
+      "timings_ms": {
+        "embed": 306.4,
+        "retrieve_dense": 5.2,
+        "retrieve_keyword": 7.5,
+        "fuse": 0.3,
+        "rerank": 306.1
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 668.4,
+      "timings_ms": {
+        "embed": 182.1,
+        "retrieve_dense": 4.9,
+        "retrieve_keyword": 4.8,
+        "fuse": 0.1,
+        "rerank": 463.9
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 655.2,
+      "timings_ms": {
+        "embed": 38.6,
+        "retrieve_dense": 6.9,
+        "retrieve_keyword": 4.0,
+        "fuse": 0.1,
+        "rerank": 595.8
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 664.4,
+      "timings_ms": {
+        "embed": 466.4,
+        "retrieve_dense": 12.1,
+        "retrieve_keyword": 8.1,
+        "fuse": 0.2,
+        "rerank": 163.1
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 666.7,
+      "timings_ms": {
+        "embed": 329.6,
+        "retrieve_dense": 9.4,
+        "retrieve_keyword": 8.2,
+        "fuse": 0.1,
+        "rerank": 306.7
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 659.6,
+      "timings_ms": {
+        "embed": 175.3,
+        "retrieve_dense": 5.7,
+        "retrieve_keyword": 3.4,
+        "fuse": 0.1,
+        "rerank": 457.3
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 644.5,
+      "timings_ms": {
+        "embed": 48.1,
+        "retrieve_dense": 7.4,
+        "retrieve_keyword": 3.4,
+        "fuse": 0.1,
+        "rerank": 574.3
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 632.2,
+      "timings_ms": {
+        "embed": 440.8,
+        "retrieve_dense": 10.5,
+        "retrieve_keyword": 7.0,
+        "fuse": 0.1,
+        "rerank": 163.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 646.1,
+      "timings_ms": {
+        "embed": 295.9,
+        "retrieve_dense": 8.3,
+        "retrieve_keyword": 6.5,
+        "fuse": 0.1,
+        "rerank": 324.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 625.5,
+      "timings_ms": {
+        "embed": 149.8,
+        "retrieve_dense": 6.7,
+        "retrieve_keyword": 5.4,
+        "fuse": 0.1,
+        "rerank": 453.1
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 627.7,
+      "timings_ms": {
+        "embed": 32.4,
+        "retrieve_dense": 6.1,
+        "retrieve_keyword": 3.8,
+        "fuse": 0.1,
+        "rerank": 579.4
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 621.2,
+      "timings_ms": {
+        "embed": 424.4,
+        "retrieve_dense": 8.6,
+        "retrieve_keyword": 5.5,
+        "fuse": 0.1,
+        "rerank": 160.3
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 601.0,
+      "timings_ms": {
+        "embed": 276.4,
+        "retrieve_dense": 8.6,
+        "retrieve_keyword": 7.4,
+        "fuse": 0.1,
+        "rerank": 298.5
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 619.3,
+      "timings_ms": {
+        "embed": 150.7,
+        "retrieve_dense": 6.8,
+        "retrieve_keyword": 11.5,
+        "fuse": 0.1,
+        "rerank": 439.9
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 635.5,
+      "timings_ms": {
+        "embed": 29.6,
+        "retrieve_dense": 6.7,
+        "retrieve_keyword": 11.2,
+        "fuse": 0.1,
+        "rerank": 579.8
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 652.6,
+      "timings_ms": {
+        "embed": 461.4,
+        "retrieve_dense": 11.2,
+        "retrieve_keyword": 12.1,
+        "fuse": 0.1,
+        "rerank": 158.0
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 657.8,
+      "timings_ms": {
+        "embed": 328.7,
+        "retrieve_dense": 8.5,
+        "retrieve_keyword": 8.3,
+        "fuse": 0.1,
+        "rerank": 302.0
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 645.9,
+      "timings_ms": {
+        "embed": 188.6,
+        "retrieve_dense": 5.7,
+        "retrieve_keyword": 14.8,
+        "fuse": 0.1,
+        "rerank": 426.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 631.9,
+      "timings_ms": {
+        "embed": 50.1,
+        "retrieve_dense": 7.5,
+        "retrieve_keyword": 5.7,
+        "fuse": 0.1,
+        "rerank": 557.5
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 615.4,
+      "timings_ms": {
+        "embed": 430.1,
+        "retrieve_dense": 9.2,
+        "retrieve_keyword": 9.6,
+        "fuse": 0.1,
+        "rerank": 155.3
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 628.5,
+      "timings_ms": {
+        "embed": 285.0,
+        "retrieve_dense": 7.5,
+        "retrieve_keyword": 6.7,
+        "fuse": 0.1,
+        "rerank": 317.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 635.1,
+      "timings_ms": {
+        "embed": 152.1,
+        "retrieve_dense": 6.7,
+        "retrieve_keyword": 8.3,
+        "fuse": 0.1,
+        "rerank": 455.7
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 641.4,
+      "timings_ms": {
+        "embed": 29.3,
+        "retrieve_dense": 6.2,
+        "retrieve_keyword": 4.0,
+        "fuse": 0.1,
+        "rerank": 595.2
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 627.9,
+      "timings_ms": {
+        "embed": 452.3,
+        "retrieve_dense": 9.4,
+        "retrieve_keyword": 8.7,
+        "fuse": 0.1,
+        "rerank": 143.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 595.8,
+      "timings_ms": {
+        "embed": 295.3,
+        "retrieve_dense": 8.2,
+        "retrieve_keyword": 5.5,
+        "fuse": 0.1,
+        "rerank": 274.0
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 605.0,
+      "timings_ms": {
+        "embed": 155.3,
+        "retrieve_dense": 5.9,
+        "retrieve_keyword": 6.3,
+        "fuse": 0.1,
+        "rerank": 424.0
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 610.2,
+      "timings_ms": {
+        "embed": 29.3,
+        "retrieve_dense": 6.0,
+        "retrieve_keyword": 4.0,
+        "fuse": 0.1,
+        "rerank": 563.8
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 616.8,
+      "timings_ms": {
+        "embed": 440.3,
+        "retrieve_dense": 9.0,
+        "retrieve_keyword": 10.6,
+        "fuse": 0.1,
+        "rerank": 146.0
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 632.3,
+      "timings_ms": {
+        "embed": 312.5,
+        "retrieve_dense": 8.5,
+        "retrieve_keyword": 5.7,
+        "fuse": 0.1,
+        "rerank": 295.3
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 609.2,
+      "timings_ms": {
+        "embed": 164.2,
+        "retrieve_dense": 5.3,
+        "retrieve_keyword": 4.2,
+        "fuse": 0.1,
+        "rerank": 424.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 596.7,
+      "timings_ms": {
+        "embed": 30.6,
+        "retrieve_dense": 5.5,
+        "retrieve_keyword": 3.8,
+        "fuse": 0.1,
+        "rerank": 550.2
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 599.6,
+      "timings_ms": {
+        "embed": 413.4,
+        "retrieve_dense": 10.0,
+        "retrieve_keyword": 7.0,
+        "fuse": 0.1,
+        "rerank": 154.1
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 594.3,
+      "timings_ms": {
+        "embed": 277.0,
+        "retrieve_dense": 9.0,
+        "retrieve_keyword": 7.2,
+        "fuse": 0.1,
+        "rerank": 290.7
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 597.1,
+      "timings_ms": {
+        "embed": 151.8,
+        "retrieve_dense": 7.2,
+        "retrieve_keyword": 9.4,
+        "fuse": 0.1,
+        "rerank": 417.8
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 596.6,
+      "timings_ms": {
+        "embed": 29.2,
+        "retrieve_dense": 5.8,
+        "retrieve_keyword": 3.9,
+        "fuse": 0.1,
+        "rerank": 550.2
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 605.5,
+      "timings_ms": {
+        "embed": 420.2,
+        "retrieve_dense": 10.7,
+        "retrieve_keyword": 7.9,
+        "fuse": 0.2,
+        "rerank": 156.2
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 595.0,
+      "timings_ms": {
+        "embed": 290.4,
+        "retrieve_dense": 8.1,
+        "retrieve_keyword": 4.6,
+        "fuse": 0.1,
+        "rerank": 281.1
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 595.5,
+      "timings_ms": {
+        "embed": 166.0,
+        "retrieve_dense": 7.3,
+        "retrieve_keyword": 12.5,
+        "fuse": 0.1,
+        "rerank": 398.6
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 596.1,
+      "timings_ms": {
+        "embed": 44.8,
+        "retrieve_dense": 7.6,
+        "retrieve_keyword": 5.7,
+        "fuse": 0.1,
+        "rerank": 528.8
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 575.0,
+      "timings_ms": {
+        "embed": 405.5,
+        "retrieve_dense": 9.2,
+        "retrieve_keyword": 8.4,
+        "fuse": 0.1,
+        "rerank": 141.2
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 575.8,
+      "timings_ms": {
+        "embed": 280.3,
+        "retrieve_dense": 7.9,
+        "retrieve_keyword": 8.3,
+        "fuse": 0.1,
+        "rerank": 268.8
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 594.5,
+      "timings_ms": {
+        "embed": 152.1,
+        "retrieve_dense": 7.2,
+        "retrieve_keyword": 8.4,
+        "fuse": 0.1,
+        "rerank": 416.4
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 615.7,
+      "timings_ms": {
+        "embed": 27.9,
+        "retrieve_dense": 6.8,
+        "retrieve_keyword": 4.1,
+        "fuse": 0.1,
+        "rerank": 569.5
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 601.3,
+      "timings_ms": {
+        "embed": 444.3,
+        "retrieve_dense": 9.6,
+        "retrieve_keyword": 11.5,
+        "fuse": 0.1,
+        "rerank": 127.0
+      }
+    }
+  ]
+}
