@@ -106,7 +106,7 @@ def test_invalid_uploads_are_rejected(client, queue, db_session, filename, data,
     response = upload(client, filename, data)
 
     assert response.status_code == status_code
-    assert response.json()["detail"]["code"] == code
+    assert response.json()["error"]["code"] == code
     assert document_count(db_session) == 0
     assert queue.job_ids == []
 
@@ -153,7 +153,7 @@ def test_unavailable_queue_fails_the_upload_visibly(client, queue, db_session):
     response = upload(client, "deps.md", MARKDOWN)
 
     assert response.status_code == 503
-    assert response.json()["detail"]["code"] == "queue_unavailable"
+    assert response.json()["error"]["code"] == "queue_unavailable"
     # The document exists but is marked failed, never left looking queued forever.
     document = db_session.scalar(select(Document))
     assert (document.status, document.error_code) == ("failed", "queue_unavailable")
@@ -188,7 +188,7 @@ def test_unknown_document_is_not_found(client):
     response = client.get(f"/documents/{uuid.uuid4()}")
 
     assert response.status_code == 404
-    assert response.json()["detail"]["code"] == "document_not_found"
+    assert response.json()["error"]["code"] == "document_not_found"
 
 
 def test_malformed_document_id_is_a_validation_error(client):

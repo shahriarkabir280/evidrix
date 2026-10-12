@@ -21,6 +21,7 @@ from app.api.deps import (
     get_embedder,
     get_ingestion_queue,
     get_llm,
+    get_redis,
     get_reranker,
     get_settings,
 )
@@ -170,6 +171,8 @@ def client(session_factory, blob_store, embedder, reranker, llm, queue, api_key,
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_ingestion_queue] = lambda: queue
     app.dependency_overrides[get_rate_limiter] = lambda: rate_limiter
+    redis = fakeredis.FakeRedis()
+    app.dependency_overrides[get_redis] = lambda: redis
     with TestClient(app, headers={"Authorization": f"Bearer {api_key}"}) as test_client:
         yield test_client
 

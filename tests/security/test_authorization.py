@@ -69,7 +69,7 @@ def test_other_users_resource_looks_exactly_like_a_missing_one(
     absent = client.request(method_m, path_m, json=body_m, headers=b_auth)
 
     assert foreign.status_code == absent.status_code == 404
-    assert foreign.json()["detail"]["code"] == absent.json()["detail"]["code"]
+    assert foreign.json()["error"]["code"] == absent.json()["error"]["code"]
 
 
 def test_owner_still_sees_their_own_resources(client, a_upload):

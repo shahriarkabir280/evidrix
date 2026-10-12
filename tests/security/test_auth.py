@@ -31,7 +31,7 @@ def call(client: TestClient, method: str, path: str, authorization: str | None):
 def assert_unauthorized(response):
     assert response.status_code == 401
     assert response.headers["WWW-Authenticate"] == "Bearer"
-    assert response.json()["detail"]["code"] == "invalid_api_key"
+    assert response.json()["error"]["code"] == "invalid_api_key"
 
 
 @pytest.mark.parametrize(("method", "path"), PROTECTED)

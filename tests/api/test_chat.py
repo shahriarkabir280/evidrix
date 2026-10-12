@@ -121,7 +121,7 @@ def test_unknown_document_is_not_found(client):
     response = ask(client, "cookies", document_ids=[str(uuid.uuid4())])
 
     assert response.status_code == 404
-    assert response.json()["detail"]["code"] == "document_not_found"
+    assert response.json()["error"]["code"] == "document_not_found"
 
 
 def test_another_users_document_is_not_found(client, ingest, db_session, other_user):
@@ -145,7 +145,7 @@ def test_document_still_processing_is_a_conflict(client, ingest, db_session):
     response = ask(client, "cookies", document_ids=[document_id])
 
     assert response.status_code == 409
-    assert response.json()["detail"]["code"] == "document_not_ready"
+    assert response.json()["error"]["code"] == "document_not_ready"
 
 
 # --- Invalid requests --------------------------------------------------------------------
@@ -183,7 +183,7 @@ def test_unreachable_model_is_service_unavailable(client, ingest):
     response = ask(client, "cookies")
 
     assert response.status_code == 503
-    assert response.json()["detail"]["code"] == "llm_unavailable"
+    assert response.json()["error"]["code"] == "llm_unavailable"
 
 
 def test_unusable_model_output_is_bad_gateway(client, ingest):
@@ -193,7 +193,7 @@ def test_unusable_model_output_is_bad_gateway(client, ingest):
     response = ask(client, "cookies")
 
     assert response.status_code == 502
-    assert response.json()["detail"]["code"] == "llm_bad_output"
+    assert response.json()["error"]["code"] == "llm_bad_output"
 
 
 def test_preset_threshold_abstains_without_calling_the_model(client, ingest, monkeypatch):
