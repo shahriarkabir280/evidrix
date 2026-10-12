@@ -4,6 +4,7 @@ of the final transaction, and jobs whose worker died (plan: Part 5, tests)."""
 from datetime import timedelta
 
 import pytest
+import structlog
 from sqlalchemy import event, func, select, text
 from sqlalchemy.exc import OperationalError
 
@@ -227,3 +228,16 @@ def test_worker_returns_the_final_status(monkeypatch):
     monkeypatch.setattr(worker_jobs, "get_embedder", lambda: None)
 
     assert worker_jobs.process_ingestion("00000000-0000-0000-0000-000000000000") == "completed"
+
+
+def test_worker_leaves_no_job_context_behind(monkeypatch):
+    def bind_like_a_job(*args):
+        structlog.contextvars.bind_contextvars(request_id="from-the-api", job_id="job-1")
+        return JobStatus.COMPLETED
+
+    monkeypatch.setattr(worker_jobs, "run_ingestion_job", bind_like_a_job)
+    monkeypatch.setattr(worker_jobs, "get_embedder", lambda: None)
+
+    worker_jobs.process_ingestion("00000000-0000-0000-0000-000000000000")
+
+    assert structlog.contextvars.get_contextvars() == {}

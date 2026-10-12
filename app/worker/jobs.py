@@ -31,13 +31,17 @@ class JobWillRetryError(Exception):
 
 
 def process_ingestion(job_id: str) -> str | None:
-    # One worker process runs many jobs: drop the previous job's context first.
+    # One worker process runs many jobs. The context (request ID, job ID) is cleared before and
+    # after each one; otherwise RQ's lines about the next job would carry this job's request ID.
     structlog.contextvars.clear_contextvars()
     settings = get_settings()
-    with get_session_factory()() as session:
-        status: JobStatus | None = run_ingestion_job(
-            session, LocalBlobStore(settings.blob_dir), get_embedder(), uuid.UUID(job_id)
-        )
+    try:
+        with get_session_factory()() as session:
+            status: JobStatus | None = run_ingestion_job(
+                session, LocalBlobStore(settings.blob_dir), get_embedder(), uuid.UUID(job_id)
+            )
+    finally:
+        structlog.contextvars.clear_contextvars()
     if status is JobStatus.RETRYING:
         # The job row already says "retrying" and holds the error; RQ only needs to know
         # that this run failed, to schedule the next one with backoff.
