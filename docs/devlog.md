@@ -188,3 +188,54 @@ Rank of the document that answers the question, within the top 10:
 
 **Next**
 - Part 5: background ingestion jobs, API keys, rate limits, prompt-injection tests.
+
+## Part 5 — Production hardening (2026-10-12)
+
+**Built**
+- 5A/5B Background ingestion: the API commits a queued document and job in one transaction,
+  then enqueues (RQ on Redis) and answers 202. The worker claims a job with one conditional
+  UPDATE, writes all results in one transaction, retries transient errors (timeouts, lost
+  connections) after 10 s / 1 min / 5 min, fails permanent ones at once. `reap-jobs` recovers
+  jobs left "processing" by a dead worker once their lease (longer than the RQ timeout) expires.
+- 5C API keys: `evx_` + 32 random bytes, stored as sha256 and looked up by hash (ADR-0004);
+  CLI to create users and keys and revoke keys. The API no longer falls back to the dev user.
+- 5D Authorization audit: every repository function a request can reach takes `owner_id`
+  (a policy test enforces it); user B gets the same 404 for A's resources as for missing ones.
+- 5E Per-user, per-route fixed-window rate limits in Redis (429 + Retry-After), failing open.
+  LLM timeout 60 s, from the measured generation p95 (~25 s) rather than the plan's 30 s.
+- 5F Prompt-injection suite (5 cases), prompt `answer_v2`, threat model in docs/security.md.
+- 5G JSON logs (structlog) with a request ID from the API through the worker; no keys,
+  questions, answers or document text in logs.
+
+**Measured**
+- Upload response 94 ms instead of the full ingestion time. Worker killed mid-job: 0 partial
+  chunks; after `reap-jobs` the job completed on attempt 2 with 539 chunks and no duplicates.
+- A transient embedding timeout was retried after 10 s and completed.
+- Injection suite on qwen3-vl:8b: `answer_v1` followed a planted "citation policy" and repeated a
+  planted phishing link; `answer_v2` did neither. Benchmarks with v2: docs correctness 0.897 vs
+  0.914 (Δ CI [−0.12, +0.07]), faithfulness 0.951 vs 0.963; papers identical.
+- Mutation checks: removing the owner filter from search SQL, skipping the route's document
+  check, adding an unscoped repository function, an off-by-one in the rate limit, and logging
+  the question text are each caught by at least one test.
+
+**Surprises**
+- The obvious injections ("ignore all previous instructions", a forged `</source>`) failed even
+  with the defences off, so they couldn't show the defences work. The one that succeeded looked
+  like a documentation convention. A sharper system-prompt rule didn't stop it; a reminder after
+  the sources did.
+- The live injection test first passed on the vulnerable prompt: the tests' 40-token chunks put
+  the attack in a separate source. It now uses production chunk sizes and fails on v1.
+- Stopping Redis showed that a document that failed while the queue was down could never be
+  retried (the duplicate check returned it). Re-uploading a failed document now queues it again.
+- RQ re-enqueues abandoned jobs itself, but the claim refuses them while the row says
+  "processing"; Postgres, not Redis, has to be corrected, which is the reaper's job.
+- The worker kept a job's log context into the next job, so RQ's lines carried the wrong
+  request ID; it is now cleared after every job.
+
+**Deviations from the plan**
+- Rate limits per user, not per key (several keys must not multiply the budget).
+- Constant-time comparison replaced by lookup by hash (ADR-0004 explains why it is equivalent).
+- Injection questions live in their own suite, not in the frozen 60-question benchmark.
+
+**Next**
+- Part 6: chat history, `/ready`, metrics and tracing, cost accounting.
