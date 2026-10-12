@@ -66,12 +66,12 @@ class MemorySampler(threading.Thread):
     def __init__(self) -> None:
         super().__init__(daemon=True)
         self.peak_mb: dict[str, float] = dict.fromkeys(PROCESS_GROUPS, 0.0)
-        self._stop = threading.Event()
+        self._halt = threading.Event()
 
     def run(self) -> None:
-        while not self._stop.is_set():
+        while not self._halt.is_set():
             self.sample()
-            self._stop.wait(1.0)
+            self._halt.wait(1.0)
 
     def sample(self) -> None:
         output = subprocess.run(
@@ -87,7 +87,7 @@ class MemorySampler(threading.Thread):
             self.peak_mb[group] = max(self.peak_mb[group], round(mb, 1))
 
     def stop(self) -> None:
-        self._stop.set()
+        self._halt.set()
 
 
 def docker_memory() -> dict[str, str]:
