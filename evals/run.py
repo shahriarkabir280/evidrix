@@ -32,7 +32,7 @@ from app.db.repositories import index_versions as index_versions_repo
 from app.db.repositories.users import DEV_USER_ID
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
-from app.rag.generation import PROMPT_VERSION, BadModelOutputError
+from app.rag.generation import BadModelOutputError
 from app.rag.llm import LLMError, get_llm
 from app.rag.rerank import get_reranker
 from app.rag.retrieval import load_preset, retrieve
@@ -145,6 +145,7 @@ def evaluate_question(
                 document_ids=document_ids,
                 retrieval=config,
                 max_tokens=settings.llm_max_output_tokens,
+                prompt_version=settings.answer_prompt_version,
             )
         except (LLMError, BadModelOutputError) as exc:
             row["errors"].append(f"{type(exc).__name__}: {exc}")
@@ -285,7 +286,7 @@ def provenance(
     if mode == "full":
         info |= {
             "llm_model": settings.llm_model,
-            "prompt_version": PROMPT_VERSION,
+            "prompt_version": settings.answer_prompt_version,
             "judge_model": settings.judge_model,
             "judge_prompts": [FAITHFULNESS_PROMPT, CORRECTNESS_PROMPT],
         }

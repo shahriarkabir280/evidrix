@@ -60,6 +60,7 @@ def chat(
             document_ids=request.document_ids,
             retrieval=config,
             max_tokens=settings.llm_max_output_tokens,
+            prompt_version=settings.answer_prompt_version,
         )
     except DocumentNotFoundError as exc:
         raise error(status.HTTP_404_NOT_FOUND, "document_not_found", exc) from exc

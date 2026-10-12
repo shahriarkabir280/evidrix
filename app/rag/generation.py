@@ -1,6 +1,6 @@
 """Prompt building, output parsing, citation validation, abstention.
 
-Component 2E (prompt) · 2F (parsing and validation).
+Component 2E (prompt) · 2F (parsing and validation) · versions chosen by setting in 5F.
 """
 
 import html
@@ -19,7 +19,9 @@ from app.rag.llm import LLMProvider, LLMResult
 logger = logging.getLogger(__name__)
 
 # Bump the version (new file) whenever the wording changes, so evaluation results can say
-# exactly which prompt produced them.
+# exactly which prompt produced them. A version is prompts/<version>.txt (the system message)
+# plus, optionally, prompts/<version>.reminder.txt, placed between the sources and the question.
+# The version in use is the answer_prompt_version setting; this is the default.
 PROMPT_VERSION = "answer_v1"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
@@ -82,12 +84,23 @@ def load_system_prompt(version: str = PROMPT_VERSION) -> str:
     return (PROMPTS_DIR / f"{version}.txt").read_text(encoding="utf-8").strip()
 
 
-def build_answer_prompt(question: str, hits: Sequence[ChunkHit]) -> tuple[str, str]:
+@cache
+def load_reminder(version: str = PROMPT_VERSION) -> str | None:
+    path = PROMPTS_DIR / f"{version}.reminder.txt"
+    return path.read_text(encoding="utf-8").strip() if path.exists() else None
+
+
+def build_answer_prompt(
+    question: str, hits: Sequence[ChunkHit], version: str = PROMPT_VERSION
+) -> tuple[str, str]:
     """System and user messages. Sources come first and the question last, so the model reads
-    the evidence before it reads what to do with it."""
+    the evidence before it reads what to do with it. A version's reminder goes in between: the
+    model reads it after any text planted in the sources, which is what makes it work."""
     sources = "\n\n".join(format_source(number, hit) for number, hit in enumerate(hits, start=1))
-    user = f"Sources:\n\n{sources}\n\nQuestion: {question.strip()}"
-    return load_system_prompt(), user
+    reminder = load_reminder(version)
+    middle = f"\n\n{reminder}" if reminder else ""
+    user = f"Sources:\n\n{sources}{middle}\n\nQuestion: {question.strip()}"
+    return load_system_prompt(version), user
 
 
 def format_source(number: int, hit: ChunkHit) -> str:
@@ -121,6 +134,7 @@ def generate_answer(
     *,
     max_tokens: int,
     min_score: float | None = None,
+    prompt_version: str = PROMPT_VERSION,
 ) -> GeneratedAnswer:
     """Ask the model to answer from `hits`, then check its reply instead of trusting it.
 
@@ -128,11 +142,11 @@ def generate_answer(
     otherwise abstains when the model says so or cites nothing valid.
     """
     if not hits:
-        return _abstain("no_sources")
+        return _abstain("no_sources", prompt_version)
     if min_score is not None and hits[0].score < min_score:
-        return _abstain("low_retrieval_score")
+        return _abstain("low_retrieval_score", prompt_version)
 
-    system, user = build_answer_prompt(question, hits)
+    system, user = build_answer_prompt(question, hits, prompt_version)
     calls: list[LLMResult] = []
     raw = None
     for attempt_user in (user, user + JSON_REMINDER):  # one retry, only for unusable output
@@ -152,19 +166,20 @@ def generate_answer(
         raise BadModelOutputError("The model did not return valid JSON after a retry.")
 
     if raw.abstain:
-        return _abstain("model", llm_calls=calls)
+        return _abstain("model", prompt_version, llm_calls=calls)
 
     answer, valid, dropped = validate_citations(raw, len(hits))
     if dropped:
         logger.info("Dropped invalid citations %s (only %d sources)", dropped, len(hits))
     if not valid:
-        return _abstain("no_valid_citations", llm_calls=calls, dropped=dropped)
+        return _abstain("no_valid_citations", prompt_version, llm_calls=calls, dropped=dropped)
     return GeneratedAnswer(
         answer=answer,
         abstained=False,
         citations=[Citation(marker, hits[marker - 1]) for marker in valid],
         dropped_citations=dropped,
         llm_calls=calls,
+        prompt_version=prompt_version,
     )
 
 
@@ -206,6 +221,7 @@ def validate_citations(raw: _RawAnswer, source_count: int) -> tuple[str, list[in
 
 def _abstain(
     reason: AbstainReason,
+    prompt_version: str = PROMPT_VERSION,
     *,
     llm_calls: list[LLMResult] | None = None,
     dropped: list[int] | None = None,
@@ -216,4 +232,5 @@ def _abstain(
         abstain_reason=reason,
         dropped_citations=dropped or [],
         llm_calls=llm_calls or [],
+        prompt_version=prompt_version,
     )
