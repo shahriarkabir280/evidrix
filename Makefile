@@ -1,6 +1,6 @@
-.PHONY: up down migrate dev test test-live lint fmt psql corpus eval eval-full
+.PHONY: up down migrate dev worker test test-live lint fmt psql corpus eval eval-full
 
-up:        ## Start Postgres (and later Redis) in Docker
+up:        ## Start Postgres and Redis in Docker
 	docker compose up -d --wait
 
 down:      ## Stop containers (data is kept in the pgdata volume)
@@ -11,6 +11,9 @@ migrate:   ## Apply all migrations to the dev database
 
 dev:       ## Run the API with auto-reload
 	uv run uvicorn app.main:app --reload
+
+worker:    ## Run the ingestion worker (processes uploads queued by the API)
+	uv run rq worker --worker-class rq.worker.SimpleWorker ingestion
 
 test:      ## Run the test suite (everything except tests that call a live LLM)
 	uv run pytest -m "not live"

@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.routes import chat, documents, health, retrieve
+from app.api.routes import chat, documents, health, jobs, retrieve
 from app.rag.embeddings import get_embedder
 from app.rag.rerank import get_reranker
 
@@ -30,6 +30,7 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(documents.router)
+    app.include_router(jobs.router)
     app.include_router(chat.router)
     app.include_router(retrieve.router)
     return app

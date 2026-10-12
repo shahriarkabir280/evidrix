@@ -43,6 +43,26 @@ class DocumentStatus(StrEnum):
     FAILED = "failed"
 
 
+class JobStatus(StrEnum):
+    QUEUED = "queued"
+    PROCESSING = "processing"
+    RETRYING = "retrying"  # a transient error; RQ will run the job again (component 5B)
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+def _status_enum(enum: type[StrEnum], name: str) -> Enum:
+    """Stored as a short string with a CHECK constraint, not a native Postgres enum type."""
+    return Enum(
+        enum,
+        name=name,
+        native_enum=False,
+        create_constraint=True,
+        length=20,
+        values_callable=lambda members: [member.value for member in members],
+    )
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -64,15 +84,7 @@ class Document(Base):
     content_hash: Mapped[str] = mapped_column(String(64))
     storage_key: Mapped[str] = mapped_column(Text)
     status: Mapped[DocumentStatus] = mapped_column(
-        Enum(
-            DocumentStatus,
-            name="document_status",
-            native_enum=False,
-            create_constraint=True,
-            length=20,
-            values_callable=lambda enum: [member.value for member in enum],
-        ),
-        default=DocumentStatus.QUEUED,
+        _status_enum(DocumentStatus, "document_status"), default=DocumentStatus.QUEUED
     )
     error_code: Mapped[str | None] = mapped_column(String(64))
     error_message: Mapped[str | None] = mapped_column(Text)
@@ -181,3 +193,33 @@ class Chunk(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     document: Mapped[Document] = relationship(back_populates="chunks")
+
+
+class IngestionJob(Base):
+    """One attempt-tracked run of the ingestion pipeline for a document.
+
+    Postgres, not Redis, is the source of truth for job state: the queue message only says
+    "process job X", and the worker reads everything else from this row.
+    """
+
+    __tablename__ = "ingestion_jobs"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    document_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    index_version_id: Mapped[int] = mapped_column(
+        ForeignKey("index_versions.id", ondelete="CASCADE")
+    )
+    status: Mapped[JobStatus] = mapped_column(
+        _status_enum(JobStatus, "job_status"), default=JobStatus.QUEUED
+    )
+    attempts: Mapped[int] = mapped_column(default=0, server_default=text("0"))
+    max_attempts: Mapped[int]
+    last_error: Mapped[str | None] = mapped_column(Text)
+    request_id: Mapped[str | None] = mapped_column(String(64))
+    enqueued_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    started_at: Mapped[datetime | None]
+    finished_at: Mapped[datetime | None]
+
+    document: Mapped[Document] = relationship()

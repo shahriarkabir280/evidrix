@@ -72,7 +72,8 @@ A: I couldn't find this in the selected documents.   (abstain_reason: no_valid_c
 flowchart LR
     subgraph Ingestion
         U[Upload PDF / MD / TXT] --> V[Validate: size, type,<br/>magic bytes, dedup by sha256]
-        V --> X[Extract text<br/>pdfminer.six · page offsets]
+        V --> J[202 + job id<br/>queued in Redis · RQ]
+        J --> X[Worker: extract text<br/>pdfminer.six · page offsets]
         X --> C[Chunk ≤480 tokens<br/>headings · code blocks · overlap]
         C --> E[Embed<br/>bge-small-en-v1.5]
         E --> DB[(Postgres + pgvector<br/>HNSW + GIN)]
@@ -91,7 +92,9 @@ flowchart LR
 ```
 
 **Ingestion.** Uploads are checked by extension *and* content (a renamed binary is rejected),
-deduplicated per user by sha256, and stored content-addressed. PDF text comes from pdfminer.six
+deduplicated per user by sha256, and stored content-addressed. The API answers `202` with a job
+id right away; an RQ worker does the slow part (extract, chunk, embed) and writes all of a
+document's results in one transaction, so a crash never leaves a half-indexed document. PDF text comes from pdfminer.six
 (pypdf dropped the spaces between words for some fonts — see [Engineering notes](#engineering-notes)).
 The chunker splits by headings, paragraphs and fenced code blocks, never cuts a code block that
 fits, keeps whole-sentence overlap within a section, and records each chunk's exact character
@@ -166,13 +169,14 @@ git clone https://github.com/shahriarkabir280/evidrix.git && cd evidrix
 uv sync                      # Python 3.12 + locked dependencies
 cp .env.example .env
 
-make up                      # Postgres 17 + pgvector on localhost:5433
+make up                      # Postgres 17 + pgvector on :5433, Redis on :6379
 make migrate                 # create the schema
 
 ollama pull qwen3-vl:8b-instruct
 OLLAMA_CONTEXT_LENGTH=8192 ollama serve      # in its own terminal
 
 make dev                     # API on http://127.0.0.1:8000 (docs at /docs)
+make worker                  # ingestion worker, in its own terminal
 ```
 
 Load the evaluation corpus (FastAPI tutorial + Python HOWTO PDFs) and ask a question:
@@ -186,7 +190,8 @@ uv run python -m scripts.ask "How do I declare a cookie parameter?"
 Or upload your own file:
 
 ```bash
-curl -s -F "file=@guide.pdf" localhost:8000/documents
+curl -s -F "file=@guide.pdf" localhost:8000/documents   # 202 {"id": …, "job_id": …, "status": "queued"}
+curl -s localhost:8000/jobs/<job_id>                     # queued → processing → completed / failed
 ```
 
 ## API
@@ -194,8 +199,9 @@ curl -s -F "file=@guide.pdf" localhost:8000/documents
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/health` | Liveness |
-| `POST` | `/documents` | Upload a PDF, Markdown or text file (deduplicated) |
+| `POST` | `/documents` | Upload a PDF, Markdown or text file (deduplicated); `202` + job id |
 | `GET` | `/documents`, `/documents/{id}` | List your documents / one document with its status |
+| `GET` | `/jobs/{id}` | Ingestion job status, attempts and last error |
 | `POST` | `/retrieve` | Retrieval only, with per-stage ranks and scores |
 | `POST` | `/chat` | Answer with citations, retrieved passages, timings and token usage |
 
@@ -297,16 +303,18 @@ Settings come from environment variables (see `.env.example`):
 | `LLM_CONTEXT_TOKENS` | `8192` | Must match the server (`OLLAMA_CONTEXT_LENGTH`) |
 | `RETRIEVAL_PRESET` | `hybrid_rerank` | A file in `configs/retrieval/` |
 | `MAX_UPLOAD_BYTES` | `10000000` | Upload size limit |
+| `REDIS_URL` | `redis://localhost:6379/0` | Job queue for the ingestion worker |
 
 ## Project structure
 
 ```text
 app/
-  api/            routes (documents, chat, retrieve), schemas, dependencies
+  api/            routes (documents, jobs, chat, retrieve), schemas, dependencies
   rag/            extract · chunking · embeddings · retrieval · rerank · llm · generation
   services/       ingestion and answering pipelines
   db/             SQLAlchemy models and repositories (all SQL lives here)
   storage/        content-addressed blob store
+  worker/         RQ queue and job functions (background ingestion)
 configs/retrieval/  dense · hybrid · hybrid_rerank presets
 evals/            benchmark, metrics, judge, runner, report, results
 migrations/       Alembic migrations

@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from app.db.models import DocumentStatus
+from app.db.models import DocumentStatus, JobStatus
 from app.rag.retrieval import RetrievalConfig
 
 
@@ -31,7 +31,23 @@ class DocumentOut(BaseModel):
 
 
 class DocumentUploadOut(DocumentOut):
+    # The job that will process the document; poll GET /jobs/{job_id}. None for a duplicate.
+    job_id: uuid.UUID | None
     duplicate: bool
+
+
+class JobOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    document_id: uuid.UUID
+    status: JobStatus
+    attempts: int
+    max_attempts: int
+    last_error: str | None
+    enqueued_at: datetime
+    started_at: datetime | None
+    finished_at: datetime | None
 
 
 class DocumentList(BaseModel):

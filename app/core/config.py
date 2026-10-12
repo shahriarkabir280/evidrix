@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     max_upload_bytes: int = 10_000_000
     blob_dir: Path = Path("data/uploads")
 
+    redis_url: str = "redis://localhost:6379/0"
+    # A job running longer than this is killed by RQ (plan: Part 5, step 7).
+    ingestion_job_timeout_seconds: int = 600
+    # 1 attempt + 3 retries for transient errors (component 5B).
+    ingestion_max_attempts: int = 4
+
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     # bge-v1.5 retrieves better when queries (not documents) carry this instruction.
     # The model's own sentence-transformers config leaves the query prompt empty.

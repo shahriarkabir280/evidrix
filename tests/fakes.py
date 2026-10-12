@@ -1,15 +1,17 @@
-"""Deterministic fakes: FakeEmbedder, FakeLLM, FakeReranker.
+"""Deterministic fakes: FakeEmbedder, FakeLLM, FakeReranker, FakeQueue.
 
-Component 2B/2C onward.
+Component 2B/2C onward · FakeQueue in 5A.
 """
 
 import re
+import uuid
 import zlib
 from collections.abc import Callable
 
 import numpy as np
 
 from app.rag.llm import LLMResult
+from app.worker.queue import QueueUnavailableError
 
 _WORD = re.compile(r"[a-z0-9_]+")
 
@@ -94,3 +96,16 @@ class FakeReranker:
         self.calls.append(passages)
         words = set(_WORD.findall(question.lower()))
         return [float(len(words & set(_WORD.findall(p.lower())))) for p in passages]
+
+
+class FakeQueue:
+    """Records enqueued job ids instead of sending them to Redis; run_worker runs them."""
+
+    def __init__(self, *, available: bool = True) -> None:
+        self.job_ids: list[uuid.UUID] = []
+        self.available = available
+
+    def enqueue(self, job_id: uuid.UUID) -> None:
+        if not self.available:
+            raise QueueUnavailableError("Redis is down")
+        self.job_ids.append(job_id)

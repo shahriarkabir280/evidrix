@@ -1,4 +1,4 @@
-"""FastAPI dependencies: get_db, get_settings, get_current_user, model providers.
+"""FastAPI dependencies: get_db, get_settings, get_current_user, model and queue providers.
 
 Component 1D · auth added in 5C.
 """
@@ -18,6 +18,7 @@ from app.rag.llm import LLMProvider, get_llm
 from app.rag.rerank import Reranker, get_reranker
 from app.rag.retrieval import RetrievalConfig, load_preset
 from app.storage.blob import BlobStore, LocalBlobStore
+from app.worker.queue import IngestionQueue, get_ingestion_queue
 
 if TYPE_CHECKING:
     from app.api.schemas import RetrievalOverride
@@ -46,6 +47,7 @@ CurrentUserId = Annotated[uuid.UUID, Depends(get_current_user_id)]
 EmbedderDep = Annotated[Embedder, Depends(get_embedder)]
 LLMDep = Annotated[LLMProvider, Depends(get_llm)]
 RerankerDep = Annotated[Reranker, Depends(get_reranker)]
+IngestionQueueDep = Annotated[IngestionQueue, Depends(get_ingestion_queue)]
 
 
 def retrieval_config(settings: Settings, override: "RetrievalOverride | None") -> RetrievalConfig:

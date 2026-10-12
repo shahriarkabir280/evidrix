@@ -25,10 +25,6 @@ def use_llm(client, llm) -> object:
     return llm
 
 
-def upload(client, filename: str, data: bytes) -> str:
-    return client.post("/documents", files={"file": (filename, data)}).json()["id"]
-
-
 def ask(client, question: str, **body):
     return client.post("/chat", json={"question": question, **body})
 
@@ -36,9 +32,9 @@ def ask(client, question: str, **body):
 # --- Answers -----------------------------------------------------------------------------
 
 
-def test_answer_comes_back_with_citations_and_the_evidence(client):
-    upload(client, "cookies.md", COOKIES)
-    upload(client, "cors.md", CORS)
+def test_answer_comes_back_with_citations_and_the_evidence(client, ingest):
+    ingest("cookies.md", COOKIES)
+    ingest("cors.md", CORS)
     llm = use_llm(client, FakeLLM(reply("Declare them with Cookie [1].", [1])))
 
     response = ask(client, "How do I declare cookie parameters?")
@@ -71,9 +67,9 @@ def test_answer_comes_back_with_citations_and_the_evidence(client):
     assert "Declare cookie parameters" in llm.calls[0]["user"]
 
 
-def test_answer_can_cite_several_passages(client):
-    upload(client, "cookies.md", COOKIES)
-    upload(client, "cors.md", CORS)
+def test_answer_can_cite_several_passages(client, ingest):
+    ingest("cookies.md", COOKIES)
+    ingest("cors.md", CORS)
     use_llm(client, FakeLLM(reply("Cookies use Cookie [1]; CORS uses CORSMiddleware [2].", [1, 2])))
 
     body = ask(client, "cookie parameters and cors middleware").json()
@@ -82,8 +78,8 @@ def test_answer_can_cite_several_passages(client):
     assert len(cited_documents) == 2
 
 
-def test_model_abstention_is_returned_as_is(client):
-    upload(client, "cookies.md", COOKIES)
+def test_model_abstention_is_returned_as_is(client, ingest):
+    ingest("cookies.md", COOKIES)
     use_llm(client, FakeLLM(reply("", [], abstain=True)))
 
     body = ask(client, "What rate limit does FastAPI apply?").json()
@@ -104,9 +100,9 @@ def test_without_any_documents_the_model_is_not_called(client, llm):
 # --- Document selection ------------------------------------------------------------------
 
 
-def test_only_selected_documents_reach_the_model(client):
-    cookies = upload(client, "cookies.md", COOKIES)
-    upload(client, "internal.md", SECRET)
+def test_only_selected_documents_reach_the_model(client, ingest):
+    cookies = ingest("cookies.md", COOKIES)
+    ingest("internal.md", SECRET)
     llm = use_llm(client, FakeLLM(reply("", [], abstain=True)))
 
     body = ask(client, "What is the internal deployment password?", document_ids=[cookies]).json()
@@ -115,8 +111,8 @@ def test_only_selected_documents_reach_the_model(client):
     assert "swordfish" not in llm.calls[0]["user"]
 
 
-def test_duplicate_document_ids_are_accepted(client):
-    cookies = upload(client, "cookies.md", COOKIES)
+def test_duplicate_document_ids_are_accepted(client, ingest):
+    cookies = ingest("cookies.md", COOKIES)
 
     assert ask(client, "cookies", document_ids=[cookies, cookies]).status_code == 200
 
@@ -128,8 +124,8 @@ def test_unknown_document_is_not_found(client):
     assert response.json()["detail"]["code"] == "document_not_found"
 
 
-def test_another_users_document_is_not_found(client, db_session, other_user):
-    document_id = upload(client, "cookies.md", COOKIES)
+def test_another_users_document_is_not_found(client, ingest, db_session, other_user):
+    document_id = ingest("cookies.md", COOKIES)
     db_session.execute(
         text("UPDATE documents SET owner_id = :owner WHERE id = :id"),
         {"owner": other_user.id, "id": document_id},
@@ -139,8 +135,8 @@ def test_another_users_document_is_not_found(client, db_session, other_user):
     assert ask(client, "cookies", document_ids=[document_id]).status_code == 404
 
 
-def test_document_still_processing_is_a_conflict(client, db_session):
-    document_id = upload(client, "cookies.md", COOKIES)
+def test_document_still_processing_is_a_conflict(client, ingest, db_session):
+    document_id = ingest("cookies.md", COOKIES)
     db_session.execute(
         text("UPDATE documents SET status = 'processing' WHERE id = :id"), {"id": document_id}
     )
@@ -180,8 +176,8 @@ class UnreachableLLM:
         raise LLMError("connection refused")
 
 
-def test_unreachable_model_is_service_unavailable(client):
-    upload(client, "cookies.md", COOKIES)
+def test_unreachable_model_is_service_unavailable(client, ingest):
+    ingest("cookies.md", COOKIES)
     use_llm(client, UnreachableLLM())
 
     response = ask(client, "cookies")
@@ -190,8 +186,8 @@ def test_unreachable_model_is_service_unavailable(client):
     assert response.json()["detail"]["code"] == "llm_unavailable"
 
 
-def test_unusable_model_output_is_bad_gateway(client):
-    upload(client, "cookies.md", COOKIES)
+def test_unusable_model_output_is_bad_gateway(client, ingest):
+    ingest("cookies.md", COOKIES)
     use_llm(client, FakeLLM(["not json", "still not json"]))
 
     response = ask(client, "cookies")
@@ -200,11 +196,11 @@ def test_unusable_model_output_is_bad_gateway(client):
     assert response.json()["detail"]["code"] == "llm_bad_output"
 
 
-def test_preset_threshold_abstains_without_calling_the_model(client, monkeypatch):
+def test_preset_threshold_abstains_without_calling_the_model(client, ingest, monkeypatch):
     from app.api import deps
     from app.rag.retrieval import RetrievalConfig
 
-    upload(client, "cookies.md", COOKIES)
+    ingest("cookies.md", COOKIES)
     llm = use_llm(client, FakeLLM(reply("never used", [1])))
     strict = RetrievalConfig(mode="dense", rerank=False, min_score=2.0)  # cosine never reaches 2
     monkeypatch.setattr(deps, "load_preset", lambda name: strict)

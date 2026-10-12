@@ -1,6 +1,10 @@
 """Ingestion pipeline: validate, dedup, extract, chunk, embed, persist.
 
-Component 1D · chunk+embed in 2D · moved to the worker in 5A.
+Component 1D · chunk+embed in 2D · split into accept (API) and process (worker) in 5A.
+
+The API only accepts an upload: it validates, stores the bytes and records a document and a job
+in one transaction. The slow part (extract, chunk, embed) runs later in the worker, in
+run_ingestion_job. ingest_upload does both in one call, for the CLI and tests.
 """
 
 import logging
@@ -9,12 +13,22 @@ from dataclasses import dataclass
 from pathlib import PurePath
 from typing import BinaryIO
 
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.db.models import Chunk, Document, DocumentPage, DocumentStatus, IndexVersion
+from app.db.models import (
+    Chunk,
+    Document,
+    DocumentPage,
+    DocumentStatus,
+    IndexVersion,
+    IngestionJob,
+    JobStatus,
+)
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import index_versions as index_versions_repo
+from app.db.repositories import jobs as jobs_repo
 from app.rag.chunking import ChunkingConfig, chunk_document
 from app.rag.embeddings import Embedder, text_for_embedding
 from app.rag.extract import (
@@ -43,6 +57,8 @@ _MIME_TYPE = {
     DocumentKind.MARKDOWN: "text/markdown",
     DocumentKind.TEXT: "text/plain",
 }
+_KIND_BY_MIME_TYPE = {mime: kind for kind, mime in _MIME_TYPE.items()}
+DEFAULT_MAX_ATTEMPTS = 4
 
 
 class IndexConfigurationError(Exception):
@@ -59,9 +75,13 @@ class UploadRejected(Exception):
 
 
 @dataclass(frozen=True)
-class IngestResult:
+class UploadResult:
     document: Document
-    created: bool
+    job: IngestionJob | None  # None when the upload is a duplicate: nothing new to process
+
+    @property
+    def created(self) -> bool:
+        return self.job is not None
 
 
 def read_limited(stream: BinaryIO, max_bytes: int) -> bytes:
@@ -93,24 +113,29 @@ def detect_kind(filename: str, data: bytes) -> DocumentKind:
     return kind
 
 
-def ingest_upload(
+def accept_upload(
     session: Session,
     blob_store: BlobStore,
-    embedder: Embedder,
     *,
     owner_id: uuid.UUID,
     filename: str,
     data: bytes,
-) -> IngestResult:
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    request_id: str | None = None,
+) -> UploadResult:
+    """Validate and record the upload; commit a queued document and its job together.
+
+    The caller enqueues the job only after this returns, so the worker can never receive a job
+    id whose row isn't committed yet.
+    """
     filename = _safe_filename(filename)
     kind = detect_kind(filename, data)
     content_hash = content_key(data)
     index_version = index_versions_repo.get_active(session)
-    ensure_compatible(index_version, embedder)
 
     existing = documents_repo.get_by_hash(session, owner_id, content_hash)
     if existing is not None:
-        return IngestResult(existing, created=False)
+        return UploadResult(existing, job=None)
 
     # Store the bytes before the row exists, so a document never points at a missing blob.
     blob_store.put(content_hash, data)
@@ -122,9 +147,16 @@ def ingest_upload(
         size_bytes=len(data),
         content_hash=content_hash,
         storage_key=content_hash,
-        status=DocumentStatus.PROCESSING,
+        status=DocumentStatus.QUEUED,
     )
-    session.add(document)
+    job = IngestionJob(
+        document=document,
+        index_version_id=index_version.id,
+        status=JobStatus.QUEUED,
+        max_attempts=max_attempts,
+        request_id=request_id,
+    )
+    session.add_all([document, job])
     try:
         session.commit()
     except IntegrityError:
@@ -133,10 +165,36 @@ def ingest_upload(
         winner = documents_repo.get_by_hash(session, owner_id, content_hash)
         if winner is None:
             raise
-        return IngestResult(winner, created=False)
+        return UploadResult(winner, job=None)
+    return UploadResult(document, job)
+
+
+def run_ingestion_job(
+    session: Session, blob_store: BlobStore, embedder: Embedder, job_id: uuid.UUID
+) -> JobStatus | None:
+    """Process one job: extract, chunk and embed its document. Returns the final job status.
+
+    Safe to call more than once for the same job: only a claimable job is processed, and all of
+    its results are written in a single transaction, so there is never a half-indexed document.
+    """
+    job = jobs_repo.claim(session, job_id)
+    if job is None:
+        logger.info("Job %s is not claimable (duplicate delivery or already done)", job_id)
+        return None
+    document = job.document
+    document.status = DocumentStatus.PROCESSING
+    session.commit()
 
     try:
-        extracted = extract(data, filename, kind)
+        index_version = session.get_one(IndexVersion, job.index_version_id)
+        ensure_compatible(index_version, embedder)
+        kind = _KIND_BY_MIME_TYPE[document.mime_type]
+        extracted = extract(blob_store.get(document.storage_key), document.filename, kind)
+
+        # Clear anything an earlier attempt left, then write the new results.
+        document.pages.clear()
+        document.chunks = [c for c in document.chunks if c.index_version_id != index_version.id]
+        session.flush()
         document.title = extracted.title
         document.extracted_text = extracted.text
         document.page_count = len(extracted.pages) if kind is DocumentKind.PDF else None
@@ -146,15 +204,42 @@ def ingest_upload(
             )
             for span in extracted.page_spans()
         ]
-        document.chunks = build_chunks(extracted, index_version, embedder)
+        document.chunks.extend(build_chunks(extracted, index_version, embedder))
         document.status = DocumentStatus.COMPLETED
+        document.error_code = document.error_message = None
+        job.status = JobStatus.COMPLETED
+        job.last_error = None
+        job.finished_at = func.now()
         session.commit()
     except ExtractionError as exc:
-        _mark_failed(session, document, exc.code, str(exc))
+        mark_failed(session, job, exc.code, str(exc))
+    except IndexConfigurationError:
+        # A deployment mistake, not the document's fault; the details go to the log only.
+        logger.exception("Ingestion job %s: embedder does not match the index", job_id)
+        mark_failed(session, job, "index_mismatch", "The worker cannot index documents right now.")
     except Exception:
-        logger.exception("Unexpected error while ingesting document %s", document.id)
-        _mark_failed(session, document, "internal_error", "Unexpected error while processing.")
-    return IngestResult(document, created=True)
+        logger.exception("Unexpected error in ingestion job %s", job_id)
+        mark_failed(session, job, "internal_error", "Unexpected error while processing.")
+    return job.status
+
+
+def ingest_upload(
+    session: Session,
+    blob_store: BlobStore,
+    embedder: Embedder,
+    *,
+    owner_id: uuid.UUID,
+    filename: str,
+    data: bytes,
+) -> UploadResult:
+    """Accept and process in one call, without a queue (CLI ingest-dir and tests)."""
+    # Here the embedder is at hand, so a mismatch is refused before anything is stored.
+    ensure_compatible(index_versions_repo.get_active(session), embedder)
+    result = accept_upload(session, blob_store, owner_id=owner_id, filename=filename, data=data)
+    if result.job is not None:
+        # result.document is the same object the job updates, so it shows the outcome.
+        run_ingestion_job(session, blob_store, embedder, result.job.id)
+    return result
 
 
 def ensure_compatible(index_version: IndexVersion, embedder: Embedder) -> None:
@@ -228,13 +313,17 @@ def reindex_document(session: Session, embedder: Embedder, document: Document) -
     return len(new_chunks)
 
 
-def _mark_failed(session: Session, document: Document, code: str, message: str) -> None:
+def mark_failed(session: Session, job: IngestionJob, code: str, message: str) -> None:
     # Discard whatever the failed attempt changed, then record the failure in a fresh
     # transaction, so the document can never be left looking "processing" or "completed".
     session.rollback()
+    document = job.document
     document.status = DocumentStatus.FAILED
     document.error_code = code
     document.error_message = message[:1000]
+    job.status = JobStatus.FAILED
+    job.last_error = f"{code}: {message}"[:1000]
+    job.finished_at = func.now()
     session.commit()
 
 

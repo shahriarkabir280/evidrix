@@ -18,6 +18,7 @@ from app.api.deps import (
     get_blob_store,
     get_db,
     get_embedder,
+    get_ingestion_queue,
     get_llm,
     get_reranker,
     get_settings,
@@ -25,8 +26,9 @@ from app.api.deps import (
 from app.core.config import Settings
 from app.db.models import User
 from app.main import create_app
+from app.services.ingestion import run_ingestion_job
 from app.storage.blob import LocalBlobStore
-from tests.fakes import FakeEmbedder, FakeLLM, FakeReranker
+from tests.fakes import FakeEmbedder, FakeLLM, FakeQueue, FakeReranker
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix_test"
@@ -64,7 +66,7 @@ def session_factory(db_engine):
     # Start every test from empty document tables (the seeded dev user stays) and with an
     # active index version that matches FakeEmbedder.
     with db_engine.begin() as connection:
-        connection.execute(text("TRUNCATE chunks, document_pages, documents"))
+        connection.execute(text("TRUNCATE ingestion_jobs, chunks, document_pages, documents"))
         connection.execute(text("DELETE FROM users WHERE email LIKE '%@test.local'"))
         connection.execute(text("DELETE FROM index_versions WHERE name LIKE 'test-%'"))
         connection.execute(text("UPDATE index_versions SET is_active = false"))
@@ -112,7 +114,24 @@ def blob_store(tmp_path):
 
 
 @pytest.fixture
-def client(session_factory, blob_store, embedder, reranker, llm):
+def queue():
+    return FakeQueue()
+
+
+@pytest.fixture
+def run_worker(queue, session_factory, blob_store, embedder):
+    """Process every job the API has enqueued so far, as the RQ worker would."""
+
+    def run() -> None:
+        while queue.job_ids:
+            with session_factory() as session:
+                run_ingestion_job(session, blob_store, embedder, queue.job_ids.pop(0))
+
+    return run
+
+
+@pytest.fixture
+def client(session_factory, blob_store, embedder, reranker, llm, queue):
     settings = Settings(
         _env_file=None, database_url=TEST_DATABASE_URL, max_upload_bytes=TEST_MAX_UPLOAD_BYTES
     )
@@ -128,6 +147,7 @@ def client(session_factory, blob_store, embedder, reranker, llm):
     app.dependency_overrides[get_llm] = lambda: llm
     app.dependency_overrides[get_reranker] = lambda: reranker
     app.dependency_overrides[get_settings] = lambda: settings
+    app.dependency_overrides[get_ingestion_queue] = lambda: queue
     with TestClient(app) as test_client:
         yield test_client
 
@@ -138,3 +158,16 @@ def other_user(db_session):
     db_session.add(user)
     db_session.commit()
     return user
+
+
+@pytest.fixture
+def ingest(client, run_worker):
+    """Upload a file through the API and process it; returns the document id."""
+
+    def upload_and_process(filename: str, data: bytes) -> str:
+        response = client.post("/documents", files={"file": (filename, data)})
+        assert response.status_code == 202, response.text
+        run_worker()
+        return response.json()["id"]
+
+    return upload_and_process
