@@ -23,6 +23,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "fakeredis>=2.39.0",
     "fpdf2>=2.8.9",
     "httpx2>=2.13.1",
     "pytest>=9.1.1",

@@ -6,7 +6,7 @@ Lets you inspect what the model would see for a question, and why each chunk ran
 without spending an LLM call.
 """
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
 
 from app.api.deps import (
     CurrentUserId,
@@ -16,6 +16,7 @@ from app.api.deps import (
     SettingsDep,
     retrieval_config,
 )
+from app.api.rate_limit import rate_limit
 from app.api.routes.chat import error, retrieved_out
 from app.api.schemas import RetrievalConfigOut, RetrieveRequest, RetrieveResponse
 from app.db.repositories import index_versions as index_versions_repo
@@ -26,7 +27,7 @@ from app.services.ingestion import ensure_compatible
 router = APIRouter(tags=["retrieve"])
 
 
-@router.post("/retrieve")
+@router.post("/retrieve", dependencies=[Depends(rate_limit("retrieve"))])
 def retrieve_chunks(
     request: RetrieveRequest,
     session: DbSession,

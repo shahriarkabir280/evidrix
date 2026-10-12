@@ -70,7 +70,7 @@ def ingest_dir(directory: Path) -> None:
                 print(f"  rejected   {name}: {exc.code}")
                 continue
             document = result.document
-            if not result.created:
+            if result.job is None:  # already ingested (a failed one is processed again)
                 counts["duplicate"] += 1
                 print(f"  duplicate  {name}")
             elif document.status is DocumentStatus.FAILED:

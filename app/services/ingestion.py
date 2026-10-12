@@ -83,11 +83,12 @@ class UploadRejected(Exception):
 @dataclass(frozen=True)
 class UploadResult:
     document: Document
-    job: IngestionJob | None  # None when the upload is a duplicate: nothing new to process
+    job: IngestionJob | None  # the job to enqueue; None when there is nothing to process
+    duplicate: bool = False  # the file was already uploaded (the document is the earlier one)
 
     @property
     def created(self) -> bool:
-        return self.job is not None
+        return not self.duplicate
 
 
 def read_limited(stream: BinaryIO, max_bytes: int) -> bytes:
@@ -132,7 +133,8 @@ def accept_upload(
     """Validate and record the upload; commit a queued document and its job together.
 
     The caller enqueues the job only after this returns, so the worker can never receive a job
-    id whose row isn't committed yet.
+    id whose row isn't committed yet. Uploading a file again returns the earlier document; if
+    that one failed, it gets a new job, so uploading again is how a failed document is retried.
     """
     filename = _safe_filename(filename)
     kind = detect_kind(filename, data)
@@ -141,7 +143,20 @@ def accept_upload(
 
     existing = documents_repo.get_by_hash(session, owner_id, content_hash)
     if existing is not None:
-        return UploadResult(existing, job=None)
+        if existing.status is not DocumentStatus.FAILED:
+            return UploadResult(existing, job=None, duplicate=True)
+        existing.status = DocumentStatus.QUEUED
+        existing.error_code = existing.error_message = None
+        retry = IngestionJob(
+            document=existing,
+            index_version_id=index_version.id,
+            status=JobStatus.QUEUED,
+            max_attempts=max_attempts,
+            request_id=request_id,
+        )
+        session.add(retry)
+        session.commit()
+        return UploadResult(existing, retry, duplicate=True)
 
     # Store the bytes before the row exists, so a document never points at a missing blob.
     blob_store.put(content_hash, data)
@@ -171,7 +186,7 @@ def accept_upload(
         winner = documents_repo.get_by_hash(session, owner_id, content_hash)
         if winner is None:
             raise
-        return UploadResult(winner, job=None)
+        return UploadResult(winner, job=None, duplicate=True)
     return UploadResult(document, job)
 
 

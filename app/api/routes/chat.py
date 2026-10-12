@@ -3,7 +3,7 @@
 Component 2G · configurable retrieval in 3D · history endpoints in 6A.
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.deps import (
     CurrentUserId,
@@ -14,6 +14,7 @@ from app.api.deps import (
     SettingsDep,
     retrieval_config,
 )
+from app.api.rate_limit import rate_limit
 from app.api.schemas import (
     ChatConfig,
     ChatRequest,
@@ -37,7 +38,7 @@ router = APIRouter(tags=["chat"])
 QUOTE_CHARS = 300
 
 
-@router.post("/chat")
+@router.post("/chat", dependencies=[Depends(rate_limit("chat"))])
 def chat(
     request: ChatRequest,
     session: DbSession,

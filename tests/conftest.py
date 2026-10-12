@@ -6,6 +6,7 @@ Component 1E.
 import os
 import uuid
 
+import fakeredis
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -23,6 +24,7 @@ from app.api.deps import (
     get_reranker,
     get_settings,
 )
+from app.api.rate_limit import RateLimiter, get_rate_limiter
 from app.core.config import Settings
 from app.db.models import User
 from app.db.repositories import users as users_repo
@@ -135,13 +137,19 @@ def run_worker(queue, session_factory, blob_store, embedder):
 
 
 @pytest.fixture
+def rate_limiter() -> RateLimiter:
+    """The real limiter on an in-memory Redis, fresh for every test."""
+    return RateLimiter(fakeredis.FakeRedis())
+
+
+@pytest.fixture
 def api_key(db_session) -> str:
     """A key for the seeded dev user, who owns what the service-level tests ingest."""
     return users_repo.create_api_key(db_session, DEV_USER_ID, "tests")
 
 
 @pytest.fixture
-def client(session_factory, blob_store, embedder, reranker, llm, queue, api_key):
+def client(session_factory, blob_store, embedder, reranker, llm, queue, api_key, rate_limiter):
     """Authenticated as the dev user. Pass headers={"Authorization": ...} to act as someone else."""
     settings = Settings(
         _env_file=None, database_url=TEST_DATABASE_URL, max_upload_bytes=TEST_MAX_UPLOAD_BYTES
@@ -159,6 +167,7 @@ def client(session_factory, blob_store, embedder, reranker, llm, queue, api_key)
     app.dependency_overrides[get_reranker] = lambda: reranker
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_ingestion_queue] = lambda: queue
+    app.dependency_overrides[get_rate_limiter] = lambda: rate_limiter
     with TestClient(app, headers={"Authorization": f"Bearer {api_key}"}) as test_client:
         yield test_client
 

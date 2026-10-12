@@ -219,6 +219,12 @@ control is a `WHERE owner_id = …` in the SQL of every query a request can reac
 user's chunks are never even retrieval candidates; a test fails if a repository function
 without `owner_id` is added.
 
+Requests are limited per user per minute (fixed window in Redis): `/chat` 20, `/retrieve` 60,
+uploads 10. Over the limit: `429` with `Retry-After`; every response carries
+`X-RateLimit-Limit` / `X-RateLimit-Remaining`. If Redis is down the limiter lets requests
+through (fail open) rather than taking the API down with it; uploads then answer `503`, since
+they need the queue. Uploading a file that failed earlier queues it again.
+
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
 e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still
 processing, 422 invalid request, 502 unusable model output, 503 model unavailable.
@@ -318,7 +324,9 @@ Settings come from environment variables (see `.env.example`):
 | `LLM_CONTEXT_TOKENS` | `8192` | Must match the server (`OLLAMA_CONTEXT_LENGTH`) |
 | `RETRIEVAL_PRESET` | `hybrid_rerank` | A file in `configs/retrieval/` |
 | `MAX_UPLOAD_BYTES` | `10000000` | Upload size limit |
-| `REDIS_URL` | `redis://localhost:6379/0` | Job queue for the ingestion worker |
+| `REDIS_URL` | `redis://localhost:6379/0` | Job queue and rate-limit counters |
+| `RATE_LIMIT_CHAT_PER_MINUTE` | `20` | Also `RATE_LIMIT_RETRIEVE_…` (60) and `RATE_LIMIT_UPLOAD_…` (10) |
+| `LLM_TIMEOUT_SECONDS` | `60` | Per model call; generation p95 is ~25 s on the dev split |
 
 ## Project structure
 

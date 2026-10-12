@@ -159,6 +159,22 @@ def test_unavailable_queue_fails_the_upload_visibly(client, queue, db_session):
     assert (document.status, document.error_code) == ("failed", "queue_unavailable")
 
 
+def test_failed_document_is_retried_by_uploading_it_again(client, queue, run_worker):
+    queue.available = False
+    upload(client, "deps.md", MARKDOWN)  # 503: the document is recorded as failed
+    queue.available = True
+
+    again = upload(client, "deps.md", MARKDOWN)
+    run_worker()
+
+    assert again.status_code == 202
+    body = again.json()
+    assert (body["duplicate"], body["status"], body["error_code"]) == (True, "queued", None)
+    assert queue.job_ids == []  # the worker ran the new job
+    assert client.get(f"/documents/{body['id']}").json()["status"] == "completed"
+    assert client.get(f"/jobs/{body['job_id']}").json()["status"] == "completed"
+
+
 def test_get_document_by_id(client):
     created = upload(client, "deps.md", MARKDOWN).json()
 
