@@ -9,8 +9,8 @@ Component 6D · Plan: Part 6, step 7.
 The questions are the dev splits of both benchmarks (36 documentation + 13 paper questions),
 asked without a document filter, as a user would. Latency is measured twice: by the client
 (the whole HTTP round trip, queueing included) and by the server per stage (timings_ms in the
-response). While the run lasts, the resident memory (RSS) of the API, the worker and Ollama is
-sampled every second.
+response). While the run lasts, the memory of the API, the worker and Ollama is sampled every
+second (see MemorySampler for why it is not RSS on macOS).
 
 The server's rate limits are per user per minute, so start it with limits above the load:
 RATE_LIMIT_CHAT_PER_MINUTE=1000 RATE_LIMIT_RETRIEVE_PER_MINUTE=1000.
@@ -61,11 +61,18 @@ def summarize_ms(values: list[float]) -> dict[str, float]:
 
 
 class MemorySampler(threading.Thread):
-    """Peak RSS per process group, from `ps` once a second."""
+    """Peak memory per process group, sampled every second.
+
+    On Linux this is RSS. On macOS RSS badly undercounts: it leaves out compressed and swapped
+    pages and Metal (GPU) allocations in unified memory. Measured during the first run, the API
+    showed 112 MB of RSS but a 1.5 GB physical footprint, Ollama 7.2 GB vs 10 GB. So on macOS
+    the footprint from `top` is used, which is what Activity Monitor calls "Memory".
+    """
 
     def __init__(self) -> None:
         super().__init__(daemon=True)
         self.peak_mb: dict[str, float] = dict.fromkeys(PROCESS_GROUPS, 0.0)
+        self.metric = "physical_footprint" if platform.system() == "Darwin" else "rss"
         self._halt = threading.Event()
 
     def run(self) -> None:
@@ -75,16 +82,37 @@ class MemorySampler(threading.Thread):
 
     def sample(self) -> None:
         output = subprocess.run(
-            ["ps", "-axo", "rss=,command="], capture_output=True, text=True, check=False
+            ["ps", "-axo", "pid=,rss=,command="], capture_output=True, text=True, check=False
         ).stdout
-        totals = dict.fromkeys(PROCESS_GROUPS, 0.0)
+        pids: dict[str, list[str]] = {group: [] for group in PROCESS_GROUPS}
+        rss_mb = dict.fromkeys(PROCESS_GROUPS, 0.0)
         for line in output.splitlines():
-            rss_kb, _, command = line.strip().partition(" ")
+            pid, rss_kb, command = line.split(None, 2)
             for group, needle in PROCESS_GROUPS.items():
                 if needle in command and "loadtest" not in command:
-                    totals[group] += int(rss_kb) / 1024
+                    pids[group].append(pid)
+                    rss_mb[group] += int(rss_kb) / 1024
+        totals = self._footprints(pids) if self.metric == "physical_footprint" else rss_mb
         for group, mb in totals.items():
             self.peak_mb[group] = max(self.peak_mb[group], round(mb, 1))
+
+    @staticmethod
+    def _footprints(pids: dict[str, list[str]]) -> dict[str, float]:
+        group_of = {pid: group for group, members in pids.items() for pid in members}
+        if not group_of:
+            return dict.fromkeys(pids, 0.0)
+        command = ["top", "-l", "1", "-stats", "pid,mem"]
+        for pid in group_of:
+            command += ["-pid", pid]
+        output = subprocess.run(command, capture_output=True, text=True, check=False).stdout
+        totals = dict.fromkeys(pids, 0.0)
+        units = {"K": 1 / 1024, "M": 1.0, "G": 1024.0}
+        for line in output.splitlines():
+            parts = line.split()
+            if len(parts) == 2 and parts[0] in group_of and parts[1][-1] in units:
+                size = parts[1].rstrip("+-")
+                totals[group_of[parts[0]]] += float(size[:-1]) * units[size[-1]]
+        return totals
 
     def stop(self) -> None:
         self._halt.set()
@@ -162,7 +190,8 @@ def run(base_url: str, api_key: str, endpoint: str, concurrency: int) -> dict[st
             stage: summarize_ms([r["timings_ms"][stage] for r in ok if stage in r["timings_ms"]])
             for stage in stages
         },
-        "peak_rss_mb": sampler.peak_mb,
+        "peak_memory_mb": sampler.peak_mb,
+        "memory_metric": sampler.metric,
         "docker_memory": docker_memory(),
     }
     if endpoint == "chat":
