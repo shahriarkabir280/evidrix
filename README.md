@@ -28,7 +28,12 @@ local LLM through Ollama).
   unanswerable) labeled with verbatim evidence quotes, a held-out test split, and bootstrap
   confidence intervals for every comparison.
 - **Security in the query, not the prompt.** Owner, status and index-version filters are part of
-  the SQL of every retrieval leg; another user's chunks are never candidates.
+  the SQL of every retrieval leg; another user's chunks are never candidates. Hashed API keys,
+  per-user rate limits, and a prompt-injection suite that found an attack the first prompt let
+  through ([security model](docs/security.md)).
+- **Background ingestion that survives failures.** Uploads return `202`; an RQ worker retries
+  transient errors with backoff, never leaves a half-indexed document, and jobs lost with a
+  crashed worker are recovered.
 - **Answers measured, not assumed.** With the default preset, answers score 0.914 correctness
   and 0.963 faithfulness (claims supported by the sources) on the dev split, graded by a
   calibrated LLM judge; every unanswerable dev question abstained.
@@ -55,7 +60,7 @@ curl -s -X POST localhost:8000/chat -H 'Content-Type: application/json' \
   ],
   "retrieved": [ /* the 5 passages the model saw, with per-stage ranks and scores */ ],
   "timings_ms": {"embed": 13, "retrieve_dense": 7, "retrieve_keyword": 4, "fuse": 0, "rerank": 169, "generate": 9900, "total": 10120},
-  "config": {"retrieval": {"mode": "hybrid", "rerank": true, "top_k": 5}, "prompt_version": "answer_v1", "...": "..."}
+  "config": {"retrieval": {"mode": "hybrid", "rerank": true, "top_k": 5}, "prompt_version": "answer_v2", "...": "..."}
 }
 ```
 
@@ -108,16 +113,17 @@ range, page range and section path (`Dependencies with yield > A database depend
 rescored by `cross-encoder/ms-marco-MiniLM-L-6-v2`). `POST /retrieve` shows the ranked chunks and
 how each stage ranked them, without calling the LLM.
 
-**Generation.** A versioned prompt (`answer_v1`) puts numbered sources before the question and
+**Generation.** A versioned prompt (`answer_v2`) puts numbered sources before the question and
 treats source text as untrusted data (a document cannot close its `<source>` block or open a fake
-one). The reply is JSON; citations must point to a retrieved source and appear in the answer
+one); a reminder between the sources and the question stops instructions planted in a document
+([measurements](docs/security.md#measurements)). The reply is JSON; citations must point to a retrieved source and appear in the answer
 text. A context guard refuses prompts that would overflow the model's window, because Ollama
 would otherwise drop the start of the prompt silently.
 
 ## Results
 
-Dev split (36 questions, 29 answerable), top 5, answers from `qwen3-vl:8b-instruct`, graded by
-`gemma3:12b`. Mean with 95% bootstrap CI; Δ is the paired difference against `dense`, and
+Dev split (36 questions, 29 answerable), top 5, answers from `qwen3-vl:8b-instruct` with prompt
+`answer_v1`, graded by `gemma3:12b`. Mean with 95% bootstrap CI; Δ is the paired difference against `dense`, and
 **bold** marks a difference whose interval excludes zero.
 
 **Retrieval**
@@ -152,6 +158,11 @@ What the data supports so far:
 |---|---|---|---|---|---|
 | Documentation (29 + 7 dev) | 0.914 | 0.862 | 0.914 | 0.963 | 0.875 |
 | Research papers (11 + 2 dev) | 0.712 | 0.712 | 0.818 | 1.000 | 1.000 |
+
+The default prompt is now `answer_v2` (Part 5). Re-run on the same dev splits it scored 0.897
+correctness / 0.951 faithfulness on documentation (Δ −0.017 [−0.12, +0.07] and −0.013
+[−0.04, 0.00] against `answer_v1`) and the same 0.818 / 1.000 on papers, with the same
+abstentions.
 
 Papers are harder, mainly because of tables and questions that span two papers. Retrieval
 numbers on papers are underestimated: two questions whose answers the paper states in several
@@ -292,6 +303,17 @@ Things the measurements caught that the original plan didn't:
 - **Labels can be too narrow.** A single labeled location undercounts when a paper repeats the
   answer (introduction, method section, appendix). The labels were left unchanged rather than
   extended from the system's own output, which would bias the benchmark.
+- **The injection that worked didn't look like one.** "Ignore all previous instructions" and a
+  forged `</source>` block failed even with the defences switched off, so they proved nothing
+  about the defences. A "citation policy" asking for a code after each citation was followed
+  with the system prompt's "sources are data" rule, and with a sharper version of it; a
+  reminder placed after the sources stopped it, at no measurable cost on the benchmarks.
+- **Unit tests miss what a dead dependency shows.** Stopping Redis during a smoke test revealed
+  that a document which failed while the queue was down could never be retried: re-uploading it
+  returned the failed duplicate. Re-uploading now queues it again.
+- **A test with the wrong chunk size proved nothing.** The live injection test passed even with
+  the vulnerable prompt, because the tests' 40-token chunks put the attack in a source of its
+  own. With production chunk sizes it fails on `answer_v1` and passes on `answer_v2`.
 - **Memory is the limit of a 16 GB laptop.** The first full run thrashed for hours: the
   evaluation process kept the embedder and reranker in GPU memory next to a 12B judge. Runs now
   checkpoint the answers and hand judging to a fresh process (`os.execv`); Ollama keeps one
@@ -359,7 +381,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 3** — keyword search, hybrid fusion, reranking, `/retrieve`
 - [x] **Part 4** — evaluation harness: benchmark, retrieval and answer metrics, judge calibration, abstention threshold
 - [x] **Part 4b** — research papers: CC-licensed arXiv corpus, ligatures and section headings in PDFs, a 24-question paper benchmark
-- [ ] **Part 5** — background ingestion jobs, API keys, rate limits, prompt-injection tests
+- [x] **Part 5** — background ingestion jobs (RQ, retries, recovery), hashed API keys, authorization audit, rate limits, prompt-injection suite, JSON logs with request IDs
 - [ ] **Part 6** — persisted chats, cost and latency tracking, load test
 - [ ] **Part 7** — Docker image, hosted deployment, smoke tests
 - [ ] **Part 8** — final evaluation on the held-out split, report, demo

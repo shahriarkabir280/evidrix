@@ -50,9 +50,10 @@ class Settings(BaseSettings):
     # Must match the server: start Ollama with OLLAMA_CONTEXT_LENGTH=8192.
     llm_context_tokens: int = 8192
     llm_max_output_tokens: int = 512
-    # A version in app/rag/prompts. answer_v2 adds a reminder after the sources against
-    # injected instructions (component 5F; see docs/security.md for the measurements).
-    answer_prompt_version: str = "answer_v1"
+    # A version in app/rag/prompts. answer_v2 adds a reminder after the sources: it stopped an
+    # injected "citation rule" that v1 followed, with no measurable change on the benchmarks
+    # (docs/security.md).
+    answer_prompt_version: str = "answer_v2"
     # Per model call. Measured on the dev split: generation p95 is ~25 s warm, and loading the
     # model on the first call adds 10-20 s. Worst case for one /chat: 2 calls (one retry for
     # unusable output) x 2 attempts (llm_max_retries) x 60 s = 4 min.

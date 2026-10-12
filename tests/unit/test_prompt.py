@@ -29,7 +29,7 @@ def hit(text: str, *, title="Simple OAuth2", section=None, pages=(None, None), r
 def test_system_prompt_is_loaded_from_the_versioned_file():
     system = load_system_prompt()
 
-    assert PROMPT_VERSION == "answer_v1"
+    assert PROMPT_VERSION == "answer_v2"
     assert "untrusted data" in system
     assert '"abstain"' in system
 

@@ -63,7 +63,7 @@ def test_answer_comes_back_with_citations_and_the_evidence(client, ingest):
     assert body["config"]["retrieval"]["mode"] == "hybrid"
     assert body["config"]["reranker_model"] == "fake-word-overlap"
     assert body["usage"]["llm_calls"] == 1
-    assert body["config"]["prompt_version"] == "answer_v1"
+    assert body["config"]["prompt_version"] == "answer_v2"
     assert "Declare cookie parameters" in llm.calls[0]["user"]
 
 

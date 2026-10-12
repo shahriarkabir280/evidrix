@@ -23,7 +23,7 @@ logger = structlog.get_logger(__name__)
 # exactly which prompt produced them. A version is prompts/<version>.txt (the system message)
 # plus, optionally, prompts/<version>.reminder.txt, placed between the sources and the question.
 # The version in use is the answer_prompt_version setting; this is the default.
-PROMPT_VERSION = "answer_v1"
+PROMPT_VERSION = "answer_v2"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 
 ANSWER_SCHEMA = {
