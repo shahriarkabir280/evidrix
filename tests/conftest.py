@@ -21,6 +21,7 @@ from app.api.deps import (
     get_embedder,
     get_ingestion_queue,
     get_llm,
+    get_redis,
     get_reranker,
     get_settings,
 )
@@ -71,7 +72,9 @@ def session_factory(db_engine):
     # active index version that matches FakeEmbedder.
     with db_engine.begin() as connection:
         connection.execute(
-            text("TRUNCATE api_keys, ingestion_jobs, chunks, document_pages, documents")
+            text(
+                "TRUNCATE chat_queries, api_keys, ingestion_jobs, chunks, document_pages, documents"
+            )
         )
         connection.execute(text("DELETE FROM users WHERE email LIKE '%@test.local'"))
         connection.execute(text("DELETE FROM index_versions WHERE name LIKE 'test-%'"))
@@ -168,6 +171,8 @@ def client(session_factory, blob_store, embedder, reranker, llm, queue, api_key,
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_ingestion_queue] = lambda: queue
     app.dependency_overrides[get_rate_limiter] = lambda: rate_limiter
+    redis = fakeredis.FakeRedis()
+    app.dependency_overrides[get_redis] = lambda: redis
     with TestClient(app, headers={"Authorization": f"Bearer {api_key}"}) as test_client:
         yield test_client
 

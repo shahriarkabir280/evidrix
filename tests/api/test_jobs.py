@@ -42,7 +42,7 @@ def test_unknown_job_is_not_found(client):
     response = client.get(f"/jobs/{uuid.uuid4()}")
 
     assert response.status_code == 404
-    assert response.json()["detail"]["code"] == "job_not_found"
+    assert response.json()["error"]["code"] == "job_not_found"
 
 
 def test_other_users_jobs_are_invisible(client, db_session, other_user):

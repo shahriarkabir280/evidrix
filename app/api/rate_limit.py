@@ -23,8 +23,7 @@ import structlog
 from fastapi import Depends, HTTPException, Response, status
 from redis import Redis, RedisError
 
-from app.api.deps import CurrentUserId, SettingsDep
-from app.core.config import get_settings
+from app.api.deps import CurrentUserId, SettingsDep, get_redis
 
 logger = structlog.get_logger(__name__)
 
@@ -67,10 +66,9 @@ class RateLimiter:
 
 @lru_cache
 def get_rate_limiter() -> RateLimiter:
-    # Short timeouts: the limiter is on every request's path, so a slow Redis must not make
-    # every request slow. After 0.5 s the request goes through unlimited instead.
-    redis = Redis.from_url(get_settings().redis_url, socket_timeout=0.5, socket_connect_timeout=0.5)
-    return RateLimiter(redis)
+    # get_redis has 0.5 s timeouts: the limiter is on every request's path, so a slow Redis must
+    # not make every request slow. After 0.5 s the request goes through unlimited instead.
+    return RateLimiter(get_redis())
 
 
 RateLimiterDep = Annotated[RateLimiter, Depends(get_rate_limiter)]

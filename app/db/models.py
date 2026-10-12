@@ -15,14 +15,16 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Index,
+    Numeric,
     String,
     Text,
     UniqueConstraint,
+    Uuid,
     false,
     func,
     text,
 )
-from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, TSVECTOR
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -239,3 +241,38 @@ class IngestionJob(Base):
     finished_at: Mapped[datetime | None]
 
     document: Mapped[Document] = relationship()
+
+
+class ChatQuery(Base):
+    """One /chat request and everything needed to inspect it later: what was asked, which chunks
+    were retrieved and how they scored, the answer and its citations, the configuration, the
+    tokens, the cost and the time per stage. Failed requests are stored too, with error_code.
+    """
+
+    __tablename__ = "chat_queries"
+    __table_args__ = (Index("ix_chat_queries_user_id_created_at", "user_id", "created_at"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    request_id: Mapped[str | None] = mapped_column(String(64))
+    question: Mapped[str] = mapped_column(Text)
+    document_ids: Mapped[list[uuid.UUID] | None] = mapped_column(ARRAY(Uuid()))
+    retrieval_config: Mapped[dict[str, Any]] = mapped_column(JSONB)
+    index_version_id: Mapped[int | None] = mapped_column(
+        ForeignKey("index_versions.id", ondelete="SET NULL")
+    )
+    # Locations, ranks and per-stage scores of the retrieved chunks, not their text: the text is
+    # in the chunks table, and a stored copy would outlive a deleted document.
+    retrieved: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    answer: Mapped[str | None] = mapped_column(Text)
+    abstained: Mapped[bool | None]
+    abstain_reason: Mapped[str | None] = mapped_column(String(32))
+    citations: Mapped[list[dict[str, Any]]] = mapped_column(JSONB, default=list)
+    prompt_version: Mapped[str | None] = mapped_column(String(64))
+    llm_model: Mapped[str | None] = mapped_column(String(200))
+    prompt_tokens: Mapped[int] = mapped_column(default=0)
+    completion_tokens: Mapped[int] = mapped_column(default=0)
+    cost_usd: Mapped[float | None] = mapped_column(Numeric(12, 6))
+    timings_ms: Mapped[dict[str, float]] = mapped_column(JSONB, default=dict)
+    error_code: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())

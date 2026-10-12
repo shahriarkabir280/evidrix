@@ -1,9 +1,18 @@
 import json
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 import pytest
 
-from app.rag.llm import LLMError, OpenAICompatibleProvider, PromptTooLongError, estimate_tokens
+from app.rag.llm import (
+    LLMBusyError,
+    LLMError,
+    OpenAICompatibleProvider,
+    PromptTooLongError,
+    estimate_tokens,
+)
 
 SCHEMA = {"type": "object", "properties": {"answer": {"type": "string"}}}
 
@@ -25,7 +34,7 @@ def completion(content: str, *, finish_reason: str = "stop") -> dict:
     }
 
 
-def provider_with(handler, *, context_tokens: int = 8192) -> OpenAICompatibleProvider:
+def provider_with(handler, *, context_tokens: int = 8192, **options) -> OpenAICompatibleProvider:
     """A provider whose HTTP calls go to `handler` instead of the network."""
     return OpenAICompatibleProvider(
         base_url="http://ollama.test/v1",
@@ -34,6 +43,7 @@ def provider_with(handler, *, context_tokens: int = 8192) -> OpenAICompatiblePro
         context_tokens=context_tokens,
         max_retries=0,
         http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+        **options,
     )
 
 
@@ -104,3 +114,59 @@ def test_token_estimate_never_undercounts_measured_text():
     # Measured on real prompts: 3.7-4.2 characters per qwen token.
     text = "word " * 1000
     assert estimate_tokens(text) >= len(text) / 3.7
+
+
+class SlowServer:
+    """Answers after `delay` seconds and records how many requests it handled at once."""
+
+    def __init__(self, delay: float) -> None:
+        self.delay = delay
+        self.in_flight = 0
+        self.max_in_flight = 0
+        self._lock = threading.Lock()
+
+    def __call__(self, request: httpx.Request) -> httpx.Response:
+        with self._lock:
+            self.in_flight += 1
+            self.max_in_flight = max(self.max_in_flight, self.in_flight)
+        time.sleep(self.delay)
+        with self._lock:
+            self.in_flight -= 1
+        return httpx.Response(200, json=completion('{"answer": "ok"}'))
+
+
+def test_concurrent_calls_wait_for_a_slot_instead_of_piling_onto_the_server():
+    server = SlowServer(delay=0.05)
+    provider = provider_with(server, max_concurrency=1)
+
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(lambda _: provider.generate("s", "u", max_tokens=10), range(4)))
+
+    assert len(results) == 4
+    assert server.max_in_flight == 1
+
+
+def test_a_call_that_waits_too_long_for_a_slot_is_refused():
+    server = SlowServer(delay=0.3)
+    provider = provider_with(server, max_concurrency=1, queue_timeout_seconds=0.05)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        first = pool.submit(provider.generate, "s", "u", max_tokens=10)
+        time.sleep(0.05)  # let the first call take the only slot
+        second = pool.submit(provider.generate, "s", "u", max_tokens=10)
+
+        assert first.result().text == '{"answer": "ok"}'
+        with pytest.raises(LLMBusyError):
+            second.result()
+
+
+def test_a_failed_call_gives_its_slot_back():
+    def failing(request):
+        return httpx.Response(500, json={"error": "boom"})
+
+    provider = provider_with(failing, max_concurrency=1, queue_timeout_seconds=0.1)
+
+    for _ in range(3):  # would raise LLMBusyError from the second call if the slot leaked
+        with pytest.raises(LLMError) as raised:
+            provider.generate("s", "u", max_tokens=10)
+        assert not isinstance(raised.value, LLMBusyError)

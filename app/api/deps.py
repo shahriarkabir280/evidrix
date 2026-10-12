@@ -5,11 +5,13 @@ Component 1D · auth added in 5C.
 
 import uuid
 from collections.abc import Iterator
+from functools import lru_cache
 from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import ValidationError
+from redis import Redis
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings, get_settings
@@ -34,6 +36,12 @@ _bearer = HTTPBearer(auto_error=False, description="An API key: `Authorization: 
 def get_db() -> Iterator[Session]:
     with get_session_factory()() as session:
         yield session
+
+
+@lru_cache
+def get_redis() -> Redis:
+    # Short timeouts: readiness probes and the rate limiter must not hang on a slow Redis.
+    return Redis.from_url(get_settings().redis_url, socket_timeout=0.5, socket_connect_timeout=0.5)
 
 
 def get_blob_store(settings: Annotated[Settings, Depends(get_settings)]) -> BlobStore:

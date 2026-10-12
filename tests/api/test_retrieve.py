@@ -89,4 +89,4 @@ def test_prompt_too_long_for_the_model_is_a_client_error(client, ingest):
     response = client.post("/chat", json={"question": "cookie", "retrieval": {"top_k": 20}})
 
     assert response.status_code == 422
-    assert response.json()["detail"]["code"] == "prompt_too_long"
+    assert response.json()["error"]["code"] == "prompt_too_long"

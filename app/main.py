@@ -3,11 +3,14 @@
 Component 1A · Plan: Part 1, step 1 and §10.
 """
 
+import time
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import structlog
 from fastapi import FastAPI
 
+from app.api.errors import install_error_handlers
 from app.api.middleware import RequestContextMiddleware
 from app.api.routes import chat, documents, health, jobs, retrieve
 from app.core.config import get_settings
@@ -21,10 +24,17 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # Here rather than at import: uvicorn sets up its own loggers after importing the app.
         configure_logging(get_settings())
+        app.state.warmed_up = False
         if preload_models:
-            # Load the local models at startup, so the first request isn't the slow one.
-            get_embedder()
-            get_reranker()
+            # Load the models and run each once before accepting requests: the first call
+            # also initializes the device (MPS) and its kernels, which loading alone doesn't.
+            started = time.perf_counter()
+            get_embedder().embed_query("warm-up")
+            get_reranker().score("warm-up", ["warm-up"])
+            app.state.warmed_up = True
+            structlog.get_logger(__name__).info(
+                "models_warmed_up", duration_ms=round((time.perf_counter() - started) * 1000, 1)
+            )
         yield
 
     app = FastAPI(
@@ -33,6 +43,7 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+    install_error_handlers(app)
     app.add_middleware(RequestContextMiddleware)
     app.include_router(health.router)
     app.include_router(documents.router)

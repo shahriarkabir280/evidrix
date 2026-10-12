@@ -21,7 +21,7 @@ def test_21st_chat_in_a_minute_is_refused_with_retry_after(client, ingest):
     assert [r.status_code for r in responses[:20]] == [200] * 20
     refused = responses[20]
     assert refused.status_code == 429
-    assert refused.json()["detail"]["code"] == "rate_limited"
+    assert refused.json()["error"]["code"] == "rate_limited"
     assert 1 <= int(refused.headers["Retry-After"]) <= 60
     assert refused.headers["X-RateLimit-Remaining"] == "0"
 

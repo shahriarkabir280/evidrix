@@ -6,6 +6,7 @@ Only this module imports the vendor SDK; the rest of the app depends on LLMProvi
 """
 
 import math
+import threading
 import time
 from dataclasses import dataclass
 from functools import lru_cache
@@ -29,6 +30,10 @@ MESSAGE_OVERHEAD_TOKENS = 16
 
 class LLMError(Exception):
     """The model could not be reached, timed out, or returned an error."""
+
+
+class LLMBusyError(LLMError):
+    """Every model slot stayed taken for the whole queue timeout (the server is overloaded)."""
 
 
 class PromptTooLongError(Exception):
@@ -73,6 +78,8 @@ class OpenAICompatibleProvider:
         timeout_seconds: float = 120.0,
         max_retries: int = 1,
         temperature: float = 0.0,
+        max_concurrency: int = 1,
+        queue_timeout_seconds: float = 120.0,
         http_client: "httpx.Client | None" = None,
     ) -> None:
         from openai import OpenAI
@@ -80,6 +87,13 @@ class OpenAICompatibleProvider:
         self.model = model
         self.context_tokens = context_tokens
         self._temperature = temperature
+        # At most as many calls in flight as the model server runs in parallel; the rest wait
+        # here. Measured in the Part 6 load test without this: at concurrency 4, requests
+        # queued inside Ollama ran into the 60 s timeout, the SDK retried them (20 retries),
+        # and Ollama kept generating answers nobody was waiting for. Throughput halved, from
+        # 6.75 to 3.45 answers a minute. Waiting here, the timeout covers generation only.
+        self._slots = threading.BoundedSemaphore(max_concurrency)
+        self._queue_timeout = queue_timeout_seconds
         # The SDK already retries connection errors, 429 and 5xx with backoff; we don't add
         # a second retry layer on top, which would multiply the worst-case wait.
         self._client = OpenAI(
@@ -116,6 +130,8 @@ class OpenAICompatibleProvider:
                 "json_schema": {"name": "response", "schema": json_schema},
             }
 
+        if not self._slots.acquire(timeout=self._queue_timeout):
+            raise LLMBusyError(f"No free slot for {self.model} within {self._queue_timeout:.0f} s.")
         started = time.perf_counter()
         try:
             response = self._client.chat.completions.create(
@@ -130,6 +146,8 @@ class OpenAICompatibleProvider:
             )
         except openai.APIError as exc:
             raise LLMError(f"LLM request to {self.model} failed: {exc}") from exc
+        finally:
+            self._slots.release()
         latency_ms = (time.perf_counter() - started) * 1000
 
         choice = response.choices[0]
@@ -161,4 +179,6 @@ def get_llm() -> LLMProvider:
         context_tokens=settings.llm_context_tokens,
         timeout_seconds=settings.llm_timeout_seconds,
         max_retries=settings.llm_max_retries,
+        max_concurrency=settings.llm_max_concurrency,
+        queue_timeout_seconds=settings.llm_queue_timeout_seconds,
     )

@@ -59,6 +59,11 @@ class Settings(BaseSettings):
     # unusable output) x 2 attempts (llm_max_retries) x 60 s = 4 min.
     llm_timeout_seconds: float = 60.0
     llm_max_retries: int = 1
+    # Calls in flight at once from this process: match the model server's parallelism
+    # (OLLAMA_NUM_PARALLEL, 1 by default). Others wait up to llm_queue_timeout_seconds for a
+    # slot, then get 503 llm_busy. See OpenAICompatibleProvider for the measurement.
+    llm_max_concurrency: int = 1
+    llm_queue_timeout_seconds: float = 120.0
     # Evaluation only: a different model family from llm_model grades the answers. Calibration
     # (evals/judge_calibration.jsonl, judge_correctness_v1): gemma3:12b 100%, llama3.1:8b 88%.
     judge_model: str = "gemma3:12b"

@@ -3,12 +3,12 @@
 Component 2G · rerank in 3C · persistence in 6A.
 """
 
-import time
 import uuid
 from dataclasses import dataclass
 
 from sqlalchemy.orm import Session
 
+from app.core.timing import StageTimer
 from app.db.models import DocumentStatus
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import index_versions as index_versions_repo
@@ -41,6 +41,7 @@ class ChatResult:
     timings_ms: dict[str, float]
     retrieval: RetrievalConfig
     index_version: str
+    index_version_id: int
     embedding_model: str
     reranker_model: str | None
     llm_model: str
@@ -58,8 +59,10 @@ def answer_question(
     retrieval: RetrievalConfig,
     max_tokens: int,
     prompt_version: str = PROMPT_VERSION,
+    timer: StageTimer | None = None,
 ) -> ChatResult:
-    started = time.perf_counter()
+    """Retrieve and answer. Pass a `timer` to keep the stage timings even if a stage fails."""
+    timer = timer or StageTimer()
     if document_ids is not None:
         document_ids = list(dict.fromkeys(document_ids))  # drop duplicates, keep order
         check_documents(session, owner_id, document_ids)
@@ -75,19 +78,19 @@ def answer_question(
         index_version_id=index_version.id,
         question=question,
         document_ids=document_ids,
+        timer=timer,
     )
-    timings = dict(found.timings_ms)
-    generate_started = time.perf_counter()
-    generated = generate_answer(
-        llm,
-        question,
-        found.hits,
-        max_tokens=max_tokens,
-        min_score=retrieval.min_score,
-        prompt_version=prompt_version,
-    )
-    timings["generate"] = round((time.perf_counter() - generate_started) * 1000, 1)
-    timings["total"] = round((time.perf_counter() - started) * 1000, 1)
+    # Timed even when it returns at once (no sources, or below the abstention threshold).
+    with timer.stage("generate"):
+        generated = generate_answer(
+            llm,
+            question,
+            found.hits,
+            max_tokens=max_tokens,
+            min_score=retrieval.min_score,
+            prompt_version=prompt_version,
+        )
+    timings = timer.finish()
 
     return ChatResult(
         generated=generated,
@@ -95,6 +98,7 @@ def answer_question(
         timings_ms=timings,
         retrieval=retrieval,
         index_version=index_version.name,
+        index_version_id=index_version.id,
         embedding_model=embedder.model_name,
         reranker_model=reranker.model_name if retrieval.rerank else None,
         llm_model=llm.model,

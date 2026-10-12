@@ -99,18 +99,23 @@ class CitationOut(SourceLocation):
     quote: str  # the start of the cited passage
 
 
-class RetrievedOut(SourceLocation):
+class RankedSource(SourceLocation):
     rank: int
     score: float
-    text: str
     # How each stage saw the chunk: dense/keyword rank and score, rrf_score, rerank_score, ...
     debug: dict[str, float]
+
+
+class RetrievedOut(RankedSource):
+    text: str
 
 
 class Usage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     llm_calls: int
+    # From configs/pricing.toml; 0 for the local models, null for a model without a price.
+    cost_usd: float | None
 
 
 class RetrievalConfigOut(BaseModel):
@@ -126,6 +131,8 @@ class ChatConfig(RetrievalConfigOut):
 
 
 class ChatResponse(BaseModel):
+    id: uuid.UUID  # GET /chats/{id} shows this exchange again
+    request_id: str | None
     answer: str
     abstained: bool
     abstain_reason: str | None
@@ -134,6 +141,41 @@ class ChatResponse(BaseModel):
     usage: Usage
     timings_ms: dict[str, float]
     config: ChatConfig
+
+
+class ChatSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    created_at: datetime
+    question: str
+    abstained: bool | None
+    error_code: str | None
+
+
+class ChatList(BaseModel):
+    items: list[ChatSummary]
+    total: int
+    limit: int
+    offset: int
+
+
+class ChatTrace(ChatSummary):
+    """A stored /chat: enough to see why it answered what it answered."""
+
+    request_id: str | None
+    document_ids: list[uuid.UUID] | None
+    answer: str | None
+    abstain_reason: str | None
+    citations: list[CitationOut]
+    retrieved: list[RankedSource]  # without chunk text; GET the document for that
+    retrieval_config: dict
+    prompt_version: str | None
+    llm_model: str | None
+    prompt_tokens: int
+    completion_tokens: int
+    cost_usd: float | None
+    timings_ms: dict[str, float]
 
 
 class RetrieveResponse(BaseModel):

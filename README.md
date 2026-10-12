@@ -164,6 +164,13 @@ correctness / 0.951 faithfulness on documentation (Δ −0.017 [−0.12, +0.07] 
 [−0.04, 0.00] against `answer_v1`) and the same 0.818 / 1.000 on papers, with the same
 abstentions.
 
+**Performance** (MacBook Air M4, 16 GB, [details](docs/perf.md)): generation is ~94% of `/chat`
+latency (p50 4.4 s of 4.7 s when the machine is cool, 18 s after two hours of sustained load);
+retrieval with reranking takes ~0.3 s. About 1,800 prompt and 50 completion tokens per query,
+$0 with the local model. Ollama needs 10–11 GB and the API 1.6 GB. Concurrency doesn't raise
+`/chat` throughput, since the model generates one answer at a time; caching wouldn't change that
+picture ([ADR-0005](docs/adr/0005-no-caching-yet.md)).
+
 Papers are harder, mainly because of tables and questions that span two papers. Retrieval
 numbers on papers are underestimated: two questions whose answers the paper states in several
 places were labeled at one place only, and the system answered both correctly from another.
@@ -215,12 +222,14 @@ curl -s -H "$AUTH" localhost:8000/jobs/<job_id>                     # queued →
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/health` | Liveness |
+| `GET` | `/health` | Liveness: the process answers |
+| `GET` | `/ready` | Readiness: database and Redis answer, models warmed up (`503` if not) |
 | `POST` | `/documents` | Upload a PDF, Markdown or text file (deduplicated); `202` + job id |
 | `GET` | `/documents`, `/documents/{id}` | List your documents / one document with its status |
 | `GET` | `/jobs/{id}` | Ingestion job status, attempts and last error |
 | `POST` | `/retrieve` | Retrieval only, with per-stage ranks and scores |
-| `POST` | `/chat` | Answer with citations, retrieved passages, timings and token usage |
+| `POST` | `/chat` | Answer with citations, retrieved passages, timings, tokens and cost |
+| `GET` | `/chats`, `/chats/{id}` | Your question history; one exchange with its full retrieval trace |
 
 Every endpoint except `/health` needs `Authorization: Bearer evx_…`. Keys are created with
 `app.cli create-user` / `create-key`, stored only as a sha256 hash, and revoked with
@@ -242,8 +251,21 @@ created, carries that ID. Questions are logged as length and hash; keys, questio
 document text are never logged.
 
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
-e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still
-processing, 422 invalid request, 502 unusable model output, 503 model unavailable.
+e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Every `/chat` is stored, failures
+included, with the retrieved chunks' scores, the citations, the configuration, tokens, cost and
+the time per stage, so `GET /chats/{id}` can show why an answer came out the way it did.
+
+Every error has the same shape, with a stable `code` for programs and the request ID to quote in
+a bug report:
+
+```json
+{"error": {"code": "document_not_ready", "message": "…", "request_id": "3f2c…"}}
+```
+
+`401` bad key · `404` unknown (or someone else's) resource · `409` document still processing ·
+`413` too large · `415` unsupported type · `422` invalid request (with a per-field `details`
+list) · `429` rate limited · `502` unusable model output · `503` model or queue unavailable ·
+`500` anything unexpected: logged with its stack trace, answered with only the request ID.
 
 ## Evaluation
 
@@ -314,6 +336,17 @@ Things the measurements caught that the original plan didn't:
 - **A test with the wrong chunk size proved nothing.** The live injection test passed even with
   the vulnerable prompt, because the tests' 40-token chunks put the attack in a source of its
   own. With production chunk sizes it fails on `answer_v1` and passes on `answer_v2`.
+- **Concurrency crashed the API.** Four parallel requests segfaulted it: FastAPI runs sync
+  endpoints in threads, and PyTorch's MPS backend isn't thread-safe (a four-thread repro crashed
+  twice and deadlocked once). A lock around each model call fixed it. One request at a time had
+  never shown it.
+- **Retries under overload add work.** Requests queued inside Ollama hit the timeout, the SDK
+  retried them, and Ollama kept generating answers nobody waited for. The API now queues LLM
+  calls itself and answers `503 llm_busy` when a slot doesn't free up in time.
+- **Control runs catch wrong conclusions.** The fix above didn't restore throughput; a control
+  run with the old concurrency showed why: after two hours of load the fanless laptop generated
+  4× slower with the same code. Without the control the slowdown would have been blamed on
+  concurrency.
 - **Memory is the limit of a 16 GB laptop.** The first full run thrashed for hours: the
   evaluation process kept the embedder and reranker in GPU memory next to a 12B judge. Runs now
   checkpoint the answers and hand judging to a fresh process (`os.execv`); Ollama keeps one
@@ -382,7 +415,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 4** — evaluation harness: benchmark, retrieval and answer metrics, judge calibration, abstention threshold
 - [x] **Part 4b** — research papers: CC-licensed arXiv corpus, ligatures and section headings in PDFs, a 24-question paper benchmark
 - [x] **Part 5** — background ingestion jobs (RQ, retries, recovery), hashed API keys, authorization audit, rate limits, prompt-injection suite, JSON logs with request IDs
-- [ ] **Part 6** — persisted chats, cost and latency tracking, load test
+- [x] **Part 6** — persisted chats with full traces, per-stage timing and cost, error envelope, `/ready`, load test and perf report, caching decision
 - [ ] **Part 7** — Docker image, hosted deployment, smoke tests
 - [ ] **Part 8** — final evaluation on the held-out split, report, demo
 
