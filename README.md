@@ -214,7 +214,10 @@ curl -s -H "$AUTH" localhost:8000/jobs/<job_id>                     # queued →
 Every endpoint except `/health` needs `Authorization: Bearer evx_…`. Keys are created with
 `app.cli create-user` / `create-key`, stored only as a sha256 hash, and revoked with
 `app.cli revoke-key` ([ADR-0004](docs/adr/0004-api-key-storage.md)). A missing, unknown or
-revoked key gets `401`; another user's document or job is a `404`, never a `403`.
+revoked key gets `401`; another user's document or job is a `404`, never a `403`. Access
+control is a `WHERE owner_id = …` in the SQL of every query a request can reach, so another
+user's chunks are never even retrieval candidates; a test fails if a repository function
+without `owner_id` is added.
 
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
 e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still

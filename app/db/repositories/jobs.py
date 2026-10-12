@@ -1,6 +1,9 @@
 """Ingestion job queries, including the atomic claim.
 
-Component 5A/5B.
+Component 5A/5B · owner scoping audited in 5D.
+
+claim and stale are for the worker and the reaper, which act for the system, not for a user; no
+API route calls them. Everything a request can reach takes owner_id and filters on it in SQL.
 """
 
 import uuid
@@ -64,10 +67,13 @@ def get_for_owner(session: Session, owner_id: uuid.UUID, job_id: uuid.UUID) -> I
     )
 
 
-def latest_for_document(session: Session, document_id: uuid.UUID) -> IngestionJob | None:
+def latest_for_document(
+    session: Session, owner_id: uuid.UUID, document_id: uuid.UUID
+) -> IngestionJob | None:
     return session.scalar(
         select(IngestionJob)
-        .where(IngestionJob.document_id == document_id)
+        .join(Document, IngestionJob.document_id == Document.id)
+        .where(IngestionJob.document_id == document_id, Document.owner_id == owner_id)
         .order_by(IngestionJob.enqueued_at.desc())
         .limit(1)
     )

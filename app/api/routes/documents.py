@@ -48,7 +48,7 @@ def upload_document(
 
     if result.job is None:
         response.status_code = status.HTTP_200_OK
-        latest = jobs_repo.latest_for_document(session, result.document.id)
+        latest = jobs_repo.latest_for_document(session, owner_id, result.document.id)
         job_id = latest.id if latest else None
     else:
         # Enqueue only after the commit in accept_upload: the worker must find the job's row.
