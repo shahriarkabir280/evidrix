@@ -1,9 +1,9 @@
 import pytest
 from sqlalchemy import text
 
-from app.api.deps import DEV_USER_ID
 from app.db.repositories import chunks as chunks_repo
 from app.db.repositories import index_versions as index_versions_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.rag.retrieval import dense_search
 from app.services import ingestion
 

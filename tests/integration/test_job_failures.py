@@ -7,9 +7,9 @@ import pytest
 from sqlalchemy import event, func, select, text
 from sqlalchemy.exc import OperationalError
 
-from app.api.deps import DEV_USER_ID
 from app.db.models import Chunk, DocumentStatus, IngestionJob, JobStatus
 from app.db.repositories import jobs as jobs_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.services import ingestion
 from app.services.ingestion import accept_upload, reap_stale_jobs, run_ingestion_job
 from app.worker import jobs as worker_jobs

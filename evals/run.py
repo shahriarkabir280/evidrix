@@ -26,10 +26,10 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.deps import DEV_USER_ID
 from app.core.config import get_settings
 from app.db.models import Document, DocumentStatus
 from app.db.repositories import index_versions as index_versions_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
 from app.rag.generation import PROMPT_VERSION, BadModelOutputError

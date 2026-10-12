@@ -71,6 +71,22 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 
+class ApiKey(Base):
+    """A credential for the API. Only the sha256 of the key is stored (app/core/security.py)."""
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    prefix: Mapped[str] = mapped_column(String(16))  # e.g. "evx_AbCdEfGh", safe to show
+    name: Mapped[str | None] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    revoked_at: Mapped[datetime | None]
+
+
 class Document(Base):
     __tablename__ = "documents"
     __table_args__ = (UniqueConstraint("owner_id", "content_hash"),)

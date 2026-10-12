@@ -1,9 +1,9 @@
 import pytest
 from sqlalchemy import func, select
 
-from app.api.deps import DEV_USER_ID
 from app.db.models import Document, DocumentPage, DocumentStatus
 from app.db.repositories import documents as documents_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.services import ingestion
 from tests.factories import make_pdf
 

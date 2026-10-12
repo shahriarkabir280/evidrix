@@ -25,6 +25,8 @@ from app.api.deps import (
 )
 from app.core.config import Settings
 from app.db.models import User
+from app.db.repositories import users as users_repo
+from app.db.repositories.users import DEV_USER_ID
 from app.main import create_app
 from app.services.ingestion import run_ingestion_job
 from app.storage.blob import LocalBlobStore
@@ -66,7 +68,9 @@ def session_factory(db_engine):
     # Start every test from empty document tables (the seeded dev user stays) and with an
     # active index version that matches FakeEmbedder.
     with db_engine.begin() as connection:
-        connection.execute(text("TRUNCATE ingestion_jobs, chunks, document_pages, documents"))
+        connection.execute(
+            text("TRUNCATE api_keys, ingestion_jobs, chunks, document_pages, documents")
+        )
         connection.execute(text("DELETE FROM users WHERE email LIKE '%@test.local'"))
         connection.execute(text("DELETE FROM index_versions WHERE name LIKE 'test-%'"))
         connection.execute(text("UPDATE index_versions SET is_active = false"))
@@ -131,7 +135,14 @@ def run_worker(queue, session_factory, blob_store, embedder):
 
 
 @pytest.fixture
-def client(session_factory, blob_store, embedder, reranker, llm, queue):
+def api_key(db_session) -> str:
+    """A key for the seeded dev user, who owns what the service-level tests ingest."""
+    return users_repo.create_api_key(db_session, DEV_USER_ID, "tests")
+
+
+@pytest.fixture
+def client(session_factory, blob_store, embedder, reranker, llm, queue, api_key):
+    """Authenticated as the dev user. Pass headers={"Authorization": ...} to act as someone else."""
     settings = Settings(
         _env_file=None, database_url=TEST_DATABASE_URL, max_upload_bytes=TEST_MAX_UPLOAD_BYTES
     )
@@ -148,7 +159,7 @@ def client(session_factory, blob_store, embedder, reranker, llm, queue):
     app.dependency_overrides[get_reranker] = lambda: reranker
     app.dependency_overrides[get_settings] = lambda: settings
     app.dependency_overrides[get_ingestion_queue] = lambda: queue
-    with TestClient(app) as test_client:
+    with TestClient(app, headers={"Authorization": f"Bearer {api_key}"}) as test_client:
         yield test_client
 
 

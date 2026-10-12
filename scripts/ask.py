@@ -1,26 +1,30 @@
 """Asks one question and prints the answer, citations, and retrieved chunks.
 
-Component 2G. Talks to a running API (make dev), so it exercises the real endpoint.
+Component 2G · API key in 5C. Talks to a running API (make dev), so it exercises the real
+endpoint. The key comes from EVIDRIX_API_KEY (create one with `app.cli create-key`).
 
+    uv run python -m app.cli create-key --email dev@evidrix.local   # once
+    export EVIDRIX_API_KEY=evx_...
     uv run python -m scripts.ask "How do I declare a cookie parameter?"
     uv run python -m scripts.ask "..." --doc <document-id> --doc <another-id>
 """
 
 import argparse
 import json
+import os
 import textwrap
 import urllib.error
 import urllib.request
 
 
-def ask(base_url: str, question: str, document_ids: list[str] | None) -> dict:
+def ask(base_url: str, api_key: str, question: str, document_ids: list[str] | None) -> dict:
     body = {"question": question}
     if document_ids:
         body["document_ids"] = document_ids
     request = urllib.request.Request(
         f"{base_url.rstrip('/')}/chat",
         data=json.dumps(body).encode(),
-        headers={"Content-Type": "application/json"},
+        headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
     )
     try:
         with urllib.request.urlopen(request, timeout=300) as response:
@@ -65,7 +69,10 @@ def main() -> None:
     parser.add_argument("--doc", action="append", dest="document_ids", help="limit to a document")
     parser.add_argument("--url", default="http://127.0.0.1:8000")
     args = parser.parse_args()
-    show(ask(args.url, args.question, args.document_ids))
+    api_key = os.environ.get("EVIDRIX_API_KEY")
+    if not api_key:
+        raise SystemExit("Set EVIDRIX_API_KEY (uv run python -m app.cli create-key --email ...).")
+    show(ask(args.url, api_key, args.question, args.document_ids))
 
 
 if __name__ == "__main__":

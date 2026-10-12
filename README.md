@@ -187,14 +187,17 @@ Load the evaluation corpus (FastAPI tutorial + Python HOWTO PDFs) and ask a ques
 ```bash
 make corpus                                          # download + verify against the manifest
 uv run python -m app.cli ingest-dir evals/corpus/raw # chunk + embed (~20 s on Apple MPS)
+uv run python -m app.cli create-key --email dev@evidrix.local   # prints an API key once
+export EVIDRIX_API_KEY=evx_...
 uv run python -m scripts.ask "How do I declare a cookie parameter?"
 ```
 
 Or upload your own file:
 
 ```bash
-curl -s -F "file=@guide.pdf" localhost:8000/documents   # 202 {"id": …, "job_id": …, "status": "queued"}
-curl -s localhost:8000/jobs/<job_id>                     # queued → processing → completed / failed
+AUTH="Authorization: Bearer $EVIDRIX_API_KEY"
+curl -s -H "$AUTH" -F "file=@guide.pdf" localhost:8000/documents   # 202 {"id", "job_id", "status": "queued"}
+curl -s -H "$AUTH" localhost:8000/jobs/<job_id>                     # queued → processing → completed / failed
 ```
 
 ## API
@@ -207,6 +210,11 @@ curl -s localhost:8000/jobs/<job_id>                     # queued → processing
 | `GET` | `/jobs/{id}` | Ingestion job status, attempts and last error |
 | `POST` | `/retrieve` | Retrieval only, with per-stage ranks and scores |
 | `POST` | `/chat` | Answer with citations, retrieved passages, timings and token usage |
+
+Every endpoint except `/health` needs `Authorization: Bearer evx_…`. Keys are created with
+`app.cli create-user` / `create-key`, stored only as a sha256 hash, and revoked with
+`app.cli revoke-key` ([ADR-0004](docs/adr/0004-api-key-storage.md)). A missing, unknown or
+revoked key gets `401`; another user's document or job is a `404`, never a `403`.
 
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
 e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still
@@ -279,7 +287,8 @@ Things the measurements caught that the original plan didn't:
 
 Design decisions are recorded as ADRs: [pgvector](docs/adr/0001-postgres-pgvector.md) ·
 [embedding model and chunk size](docs/adr/0002-embedding-model-and-chunk-size.md) ·
-[keyword search](docs/adr/0003-keyword-search.md). The full build log is in
+[keyword search](docs/adr/0003-keyword-search.md) ·
+[API key storage](docs/adr/0004-api-key-storage.md). The full build log is in
 [docs/devlog.md](docs/devlog.md) and the plan in [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md).
 
 ## Testing
