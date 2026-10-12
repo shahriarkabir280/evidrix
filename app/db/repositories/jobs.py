@@ -4,6 +4,7 @@ Component 5A/5B.
 """
 
 import uuid
+from datetime import timedelta
 
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
@@ -35,6 +36,24 @@ def claim(session: Session, job_id: uuid.UUID) -> IngestionJob | None:
     # Commit the claim on its own, so it holds even if processing crashes the worker.
     session.commit()
     return job
+
+
+def stale(session: Session, older_than: timedelta) -> list[IngestionJob]:
+    """Jobs that have been processing for longer than `older_than`, locked for update.
+
+    SKIP LOCKED leaves out a job whose row is locked right now, i.e. one a live worker is
+    finishing at this very moment.
+    """
+    return list(
+        session.scalars(
+            select(IngestionJob)
+            .where(
+                IngestionJob.status == JobStatus.PROCESSING,
+                IngestionJob.started_at < func.now() - older_than,
+            )
+            .with_for_update(skip_locked=True)
+        )
+    )
 
 
 def get_for_owner(session: Session, owner_id: uuid.UUID, job_id: uuid.UUID) -> IngestionJob | None:

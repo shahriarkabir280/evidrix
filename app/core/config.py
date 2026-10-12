@@ -21,8 +21,12 @@ class Settings(BaseSettings):
     redis_url: str = "redis://localhost:6379/0"
     # A job running longer than this is killed by RQ (plan: Part 5, step 7).
     ingestion_job_timeout_seconds: int = 600
-    # 1 attempt + 3 retries for transient errors (component 5B).
+    # 1 attempt + 3 retries for transient errors, waiting 10 s, 1 min, 5 min between them.
     ingestion_max_attempts: int = 4
+    ingestion_retry_delays_seconds: list[int] = [10, 60, 300]
+    # A job still "processing" after this long lost its worker: RQ would have killed it at
+    # ingestion_job_timeout_seconds, so the lease must be longer than that.
+    ingestion_lease_seconds: int = 900
 
     embedding_model: str = "BAAI/bge-small-en-v1.5"
     # bge-v1.5 retrieves better when queries (not documents) carry this instruction.

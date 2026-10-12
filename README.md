@@ -94,7 +94,10 @@ flowchart LR
 **Ingestion.** Uploads are checked by extension *and* content (a renamed binary is rejected),
 deduplicated per user by sha256, and stored content-addressed. The API answers `202` with a job
 id right away; an RQ worker does the slow part (extract, chunk, embed) and writes all of a
-document's results in one transaction, so a crash never leaves a half-indexed document. PDF text comes from pdfminer.six
+document's results in one transaction, so a crash never leaves a half-indexed document.
+Transient errors (timeouts, lost connections) are retried up to 3 times with backoff
+(10 s, 1 min, 5 min); permanent ones (a broken PDF) fail at once. A job left "processing" by a
+worker that died is requeued by `app.cli reap-jobs`, which `make worker` runs first. PDF text comes from pdfminer.six
 (pypdf dropped the spaces between words for some fonts — see [Engineering notes](#engineering-notes)).
 The chunker splits by headings, paragraphs and fenced code blocks, never cuts a code block that
 fits, keeps whole-sentence overlap within a section, and records each chunk's exact character

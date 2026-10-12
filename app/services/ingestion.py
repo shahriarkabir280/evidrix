@@ -10,11 +10,12 @@ run_ingestion_job. ingest_upload does both in one call, for the CLI and tests.
 import logging
 import uuid
 from dataclasses import dataclass
+from datetime import timedelta
 from pathlib import PurePath
 from typing import BinaryIO
 
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 from app.db.models import (
@@ -59,6 +60,11 @@ _MIME_TYPE = {
 }
 _KIND_BY_MIME_TYPE = {mime: kind for kind, mime in _MIME_TYPE.items()}
 DEFAULT_MAX_ATTEMPTS = 4
+
+# Errors that may go away if the same job runs again a little later: a slow or unreachable
+# embedding service, a database restart. Anything else is treated as permanent, because
+# retrying a bug or a broken file only repeats the same failure.
+TRANSIENT_ERRORS: tuple[type[Exception], ...] = (TimeoutError, ConnectionError, OperationalError)
 
 
 class IndexConfigurationError(Exception):
@@ -172,10 +178,12 @@ def accept_upload(
 def run_ingestion_job(
     session: Session, blob_store: BlobStore, embedder: Embedder, job_id: uuid.UUID
 ) -> JobStatus | None:
-    """Process one job: extract, chunk and embed its document. Returns the final job status.
+    """Process one job: extract, chunk and embed its document. Returns the job's new status.
 
     Safe to call more than once for the same job: only a claimable job is processed, and all of
     its results are written in a single transaction, so there is never a half-indexed document.
+    RETRYING means a transient error with attempts left: the caller should run the job again
+    later (the RQ worker does this with backoff).
     """
     job = jobs_repo.claim(session, job_id)
     if job is None:
@@ -213,6 +221,20 @@ def run_ingestion_job(
         session.commit()
     except ExtractionError as exc:
         mark_failed(session, job, exc.code, str(exc))
+    except TRANSIENT_ERRORS as exc:
+        logger.warning(
+            "Ingestion job %s: transient error on attempt %d of %d: %r",
+            job_id,
+            job.attempts,
+            job.max_attempts,
+            exc,
+        )
+        if job.attempts >= job.max_attempts:
+            mark_failed(
+                session, job, "retries_exhausted", f"Gave up after {job.attempts} attempts: {exc!r}"
+            )
+        else:
+            mark_retrying(session, job, repr(exc))
     except IndexConfigurationError:
         # A deployment mistake, not the document's fault; the details go to the log only.
         logger.exception("Ingestion job %s: embedder does not match the index", job_id)
@@ -232,13 +254,45 @@ def ingest_upload(
     filename: str,
     data: bytes,
 ) -> UploadResult:
-    """Accept and process in one call, without a queue (CLI ingest-dir and tests)."""
+    """Accept and process in one call, without a queue (CLI ingest-dir and tests).
+
+    A transient failure is retried straight away (no backoff: someone is waiting at the
+    terminal); max_attempts still bounds the loop.
+    """
     # Here the embedder is at hand, so a mismatch is refused before anything is stored.
     ensure_compatible(index_versions_repo.get_active(session), embedder)
     result = accept_upload(session, blob_store, owner_id=owner_id, filename=filename, data=data)
     if result.job is not None:
         # result.document is the same object the job updates, so it shows the outcome.
-        run_ingestion_job(session, blob_store, embedder, result.job.id)
+        while run_ingestion_job(session, blob_store, embedder, result.job.id) is JobStatus.RETRYING:
+            pass
+    return result
+
+
+@dataclass(frozen=True)
+class ReapResult:
+    requeued: list[uuid.UUID]
+    failed: list[uuid.UUID]
+
+
+def reap_stale_jobs(session: Session, lease: timedelta) -> ReapResult:
+    """Recover jobs whose worker died mid-job (killed, crashed, machine lost). Commits.
+
+    Such a job stays "processing" forever: no worker owns it, and the claim refuses to take it.
+    The crashed run already counted as an attempt, so a document that crashes the worker every
+    time (e.g. runs it out of memory) ends up failed instead of looping. The caller enqueues
+    the returned `requeued` jobs.
+    """
+    result = ReapResult(requeued=[], failed=[])
+    for job in jobs_repo.stale(session, lease):
+        message = "The worker stopped while processing this job."
+        if job.attempts >= job.max_attempts:
+            _set_failed(job, "worker_lost", message)
+            result.failed.append(job.id)
+        else:
+            _set_retrying(job, message)
+            result.requeued.append(job.id)
+    session.commit()
     return result
 
 
@@ -317,6 +371,17 @@ def mark_failed(session: Session, job: IngestionJob, code: str, message: str) ->
     # Discard whatever the failed attempt changed, then record the failure in a fresh
     # transaction, so the document can never be left looking "processing" or "completed".
     session.rollback()
+    _set_failed(job, code, message)
+    session.commit()
+
+
+def mark_retrying(session: Session, job: IngestionJob, error: str) -> None:
+    session.rollback()  # the attempt's partial results are discarded, as for a failure
+    _set_retrying(job, error)
+    session.commit()
+
+
+def _set_failed(job: IngestionJob, code: str, message: str) -> None:
     document = job.document
     document.status = DocumentStatus.FAILED
     document.error_code = code
@@ -324,7 +389,12 @@ def mark_failed(session: Session, job: IngestionJob, code: str, message: str) ->
     job.status = JobStatus.FAILED
     job.last_error = f"{code}: {message}"[:1000]
     job.finished_at = func.now()
-    session.commit()
+
+
+def _set_retrying(job: IngestionJob, error: str) -> None:
+    job.document.status = DocumentStatus.QUEUED  # waiting to be processed again
+    job.status = JobStatus.RETRYING
+    job.last_error = error[:1000]
 
 
 def _safe_filename(filename: str) -> str:

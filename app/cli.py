@@ -1,15 +1,17 @@
-"""Command-line tasks: ingest-dir, create-user, reindex.
+"""Command-line tasks: ingest-dir, reindex, search, reap-jobs, create-user.
 
-Component 2D (ingest-dir, reindex, search) · 5C (create-user).
+Component 2D (ingest-dir, reindex, search) · 5B (reap-jobs) · 5C (create-user).
 
     uv run python -m app.cli ingest-dir evals/corpus/raw
     uv run python -m app.cli reindex
     uv run python -m app.cli search "How do I declare a cookie parameter?"
     uv run python -m app.cli search "OAuth2PasswordRequestForm" --preset dense -k 3
+    uv run python -m app.cli reap-jobs
 """
 
 import argparse
 import time
+from datetime import timedelta
 from pathlib import Path
 
 from sqlalchemy import select
@@ -22,8 +24,14 @@ from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
 from app.rag.rerank import get_reranker
 from app.rag.retrieval import RetrievalConfig, load_preset, retrieve
-from app.services.ingestion import UploadRejected, ingest_upload, reindex_document
+from app.services.ingestion import (
+    UploadRejected,
+    ingest_upload,
+    reap_stale_jobs,
+    reindex_document,
+)
 from app.storage.blob import LocalBlobStore
+from app.worker.queue import get_ingestion_queue
 
 SUPPORTED_SUFFIXES = {".pdf", ".md", ".markdown", ".txt"}
 
@@ -89,6 +97,19 @@ def reindex() -> None:
         print(f"{len(documents)} documents reindexed into {index_version.name}")
 
 
+def reap_jobs(lease_seconds: int) -> None:
+    """Requeue (or fail) jobs left "processing" by a dead worker. Run before starting one."""
+    with get_session_factory()() as session:
+        result = reap_stale_jobs(session, timedelta(seconds=lease_seconds))
+    queue = get_ingestion_queue()
+    for job_id in result.requeued:
+        queue.enqueue(job_id)
+    print(
+        f"{len(result.requeued)} stale jobs requeued, "
+        f"{len(result.failed)} failed (no attempts left)"
+    )
+
+
 def search(question: str, preset: str, k: int | None) -> None:
     config = load_preset(preset)
     if k is not None:
@@ -132,12 +153,21 @@ def main() -> None:
         "--preset", default=get_settings().retrieval_preset, help="configs/retrieval/<name>.toml"
     )
     query.add_argument("-k", type=int, help="override the preset's top_k")
+    reap = commands.add_parser("reap-jobs", help="recover jobs whose worker died mid-job")
+    reap.add_argument(
+        "--lease-seconds",
+        type=int,
+        default=get_settings().ingestion_lease_seconds,
+        help="a job processing for longer than this has lost its worker",
+    )
     args = parser.parse_args()
 
     if args.command == "ingest-dir":
         ingest_dir(args.directory)
     elif args.command == "reindex":
         reindex()
+    elif args.command == "reap-jobs":
+        reap_jobs(args.lease_seconds)
     else:
         search(args.question, args.preset, args.k)
 

@@ -1,6 +1,6 @@
-"""Deterministic fakes: FakeEmbedder, FakeLLM, FakeReranker, FakeQueue.
+"""Deterministic fakes: FakeEmbedder, FakeLLM, FakeReranker, FakeQueue, FailingEmbedder.
 
-Component 2B/2C onward · FakeQueue in 5A.
+Component 2B/2C onward · FakeQueue in 5A · FailingEmbedder in 5B.
 """
 
 import re
@@ -46,6 +46,21 @@ class FakeEmbedder:
             vector[zlib.crc32(word.encode()) % self.dim] += 1.0
         norm = np.linalg.norm(vector)
         return vector / norm if norm else vector
+
+
+class FailingEmbedder(FakeEmbedder):
+    """Raises `error` on the first `failures` calls to embed_documents, then works."""
+
+    def __init__(self, error: Exception, failures: int = 1_000) -> None:
+        self.error = error
+        self.failures = failures
+        self.calls = 0
+
+    def embed_documents(self, texts: list[str]) -> np.ndarray:
+        self.calls += 1
+        if self.calls <= self.failures:
+            raise self.error
+        return super().embed_documents(texts)
 
 
 class FakeLLM:

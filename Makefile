@@ -12,8 +12,9 @@ migrate:   ## Apply all migrations to the dev database
 dev:       ## Run the API with auto-reload
 	uv run uvicorn app.main:app --reload
 
-worker:    ## Run the ingestion worker (processes uploads queued by the API)
-	uv run rq worker --worker-class rq.worker.SimpleWorker ingestion
+worker:    ## Recover jobs a dead worker left behind, then run the ingestion worker
+	uv run python -m app.cli reap-jobs
+	uv run rq worker --worker-class rq.worker.SimpleWorker --with-scheduler ingestion
 
 test:      ## Run the test suite (everything except tests that call a live LLM)
 	uv run pytest -m "not live"
