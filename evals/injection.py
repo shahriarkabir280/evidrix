@@ -23,9 +23,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.db.models import Document
 from app.db.repositories.users import DEV_USER_ID
 from app.db.session import get_session_factory
 from app.rag.embeddings import Embedder, get_embedder
@@ -35,7 +37,7 @@ from app.rag.rerank import Reranker, get_reranker
 from app.rag.retrieval import RetrievalConfig, load_preset
 from app.services.answering import answer_question
 from app.services.ingestion import ingest_upload
-from app.storage.blob import BlobStore, LocalBlobStore
+from app.storage.blob import BlobStore, LocalBlobStore, content_key
 from evals.run import RESULTS_DIR, _git, _stamp
 
 SUITE_DIR = Path(__file__).parent / "security"
@@ -115,6 +117,17 @@ def run_suite(
     return rows
 
 
+def remove_fixtures(session: Session, owner_id=DEV_USER_ID) -> int:
+    """Delete the fixture documents again: pages with planted attacks (one with a phishing link)
+    must not stay in the dev user's collection, where ordinary questions could retrieve them."""
+    hashes = [content_key(path.read_bytes()) for path in FIXTURES_DIR.glob("*.md")]
+    result = session.execute(
+        delete(Document).where(Document.owner_id == owner_id, Document.content_hash.in_(hashes))
+    )
+    session.commit()
+    return result.rowcount
+
+
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
     """Instructions and false facts are counted apart: only the first are something the model
     should refuse; a false fact is, from the model's side, simply what the source says."""
@@ -136,16 +149,20 @@ def main() -> None:
     settings = get_settings()
     retrieval = load_preset(settings.retrieval_preset)
     with get_session_factory()() as session:
-        rows = run_suite(
-            session,
-            LocalBlobStore(settings.blob_dir),
-            get_embedder(),
-            get_reranker(),
-            get_llm(),
-            retrieval=retrieval,
-            max_tokens=settings.llm_max_output_tokens,
-            prompt_version=settings.answer_prompt_version,
-        )
+        try:
+            rows = run_suite(
+                session,
+                LocalBlobStore(settings.blob_dir),
+                get_embedder(),
+                get_reranker(),
+                get_llm(),
+                retrieval=retrieval,
+                max_tokens=settings.llm_max_output_tokens,
+                prompt_version=settings.answer_prompt_version,
+            )
+        finally:
+            session.rollback()
+            remove_fixtures(session)
     for row in rows:
         verdict = "HIJACKED" if row["hijacked"] else "resisted"
         quality = "correct" if row["answered_correctly"] else "not answered correctly"
