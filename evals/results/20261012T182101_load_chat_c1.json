@@ -1,0 +1,1716 @@
+{
+  "provenance": {
+    "created_at": "2026-10-12T18:21:01+00:00",
+    "endpoint": "chat",
+    "concurrency": 1,
+    "questions": "dev splits: documentation + papers",
+    "machine": {
+      "platform": "macOS-15.7.7-arm64-arm-64bit",
+      "cpu": "Apple M4",
+      "cpu_cores": 10,
+      "memory_gb": 16.0
+    },
+    "config": {
+      "retrieval": {
+        "mode": "hybrid",
+        "rerank": true,
+        "top_k": 5,
+        "candidate_k": 20,
+        "rrf_k": 60,
+        "min_score": -2.84,
+        "exclude_references": false
+      },
+      "index_version": "bge-small_c400_o64",
+      "embedding_model": "BAAI/bge-small-en-v1.5",
+      "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+      "llm_model": "qwen3-vl:8b-instruct",
+      "prompt_version": "answer_v2"
+    }
+  },
+  "summary": {
+    "requests": 49,
+    "ok": 49,
+    "errors": {},
+    "wall_s": 867.6,
+    "throughput_per_min": 3.39,
+    "client_ms": {
+      "p50": 18445.3,
+      "p95": 26897.7,
+      "max": 30227.1
+    },
+    "server_stage_ms": {
+      "embed": {
+        "p50": 228.9,
+        "p95": 398.4,
+        "max": 2152.5
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.2,
+        "max": 0.3
+      },
+      "generate": {
+        "p50": 18138.0,
+        "p95": 26340.1,
+        "max": 29647.4
+      },
+      "rerank": {
+        "p50": 209.3,
+        "p95": 241.5,
+        "max": 247.2
+      },
+      "retrieve_dense": {
+        "p50": 15.4,
+        "p95": 20.8,
+        "max": 25.5
+      },
+      "retrieve_keyword": {
+        "p50": 11.4,
+        "p95": 22.7,
+        "max": 26.7
+      },
+      "total": {
+        "p50": 18418.1,
+        "p95": 26861.9,
+        "max": 30189.5
+      }
+    },
+    "peak_memory_mb": {
+      "api": 1597.3,
+      "worker": 0.0,
+      "ollama": 11282.7
+    },
+    "memory_metric": "physical_footprint",
+    "docker_memory": {
+      "evidrix-redis-1": "21.89MiB / 7.75GiB",
+      "evidrix-db-1": "138.8MiB / 7.75GiB"
+    },
+    "tokens_per_query": {
+      "prompt_p50": 1828,
+      "completion_p50": 49,
+      "prompt_mean": 1788.6,
+      "completion_mean": 52.2
+    },
+    "cost_per_query_usd": 0.0,
+    "abstained": 11
+  },
+  "requests": [
+    {
+      "status": 200,
+      "client_ms": 14846.2,
+      "timings_ms": {
+        "embed": 2152.5,
+        "retrieve_dense": 21.9,
+        "retrieve_keyword": 23.3,
+        "fuse": 0.2,
+        "rerank": 213.1,
+        "generate": 12361.8,
+        "total": 14775.0
+      },
+      "prompt_tokens": 1933,
+      "completion_tokens": 32,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 13336.8,
+      "timings_ms": {
+        "embed": 228.9,
+        "retrieve_dense": 13.2,
+        "retrieve_keyword": 8.9,
+        "fuse": 0.1,
+        "rerank": 170.4,
+        "generate": 12853.8,
+        "total": 13276.9
+      },
+      "prompt_tokens": 1758,
+      "completion_tokens": 64,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 10350.4,
+      "timings_ms": {
+        "embed": 252.2,
+        "retrieve_dense": 15.5,
+        "retrieve_keyword": 12.1,
+        "fuse": 0.1,
+        "rerank": 183.2,
+        "generate": 9840.9,
+        "total": 10305.1
+      },
+      "prompt_tokens": 1409,
+      "completion_tokens": 50,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 7452.4,
+      "timings_ms": {
+        "embed": 227.1,
+        "retrieve_dense": 16.0,
+        "retrieve_keyword": 7.9,
+        "fuse": 0.1,
+        "rerank": 175.1,
+        "generate": 7001.7,
+        "total": 7429.3
+      },
+      "prompt_tokens": 1049,
+      "completion_tokens": 35,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 12436.0,
+      "timings_ms": {
+        "embed": 209.4,
+        "retrieve_dense": 9.2,
+        "retrieve_keyword": 7.6,
+        "fuse": 0.1,
+        "rerank": 169.4,
+        "generate": 12011.8,
+        "total": 12409.0
+      },
+      "prompt_tokens": 1782,
+      "completion_tokens": 40,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 9632.4,
+      "timings_ms": {
+        "embed": 231.3,
+        "retrieve_dense": 15.9,
+        "retrieve_keyword": 20.7,
+        "fuse": 0.1,
+        "rerank": 170.0,
+        "generate": 9171.1,
+        "total": 9610.4
+      },
+      "prompt_tokens": 1391,
+      "completion_tokens": 33,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 14916.4,
+      "timings_ms": {
+        "embed": 140.2,
+        "retrieve_dense": 17.9,
+        "retrieve_keyword": 12.0,
+        "fuse": 0.1,
+        "rerank": 187.8,
+        "generate": 14519.1,
+        "total": 14878.4
+      },
+      "prompt_tokens": 1795,
+      "completion_tokens": 79,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 13842.9,
+      "timings_ms": {
+        "embed": 214.5,
+        "retrieve_dense": 16.2,
+        "retrieve_keyword": 11.1,
+        "fuse": 0.1,
+        "rerank": 167.1,
+        "generate": 13392.6,
+        "total": 13803.2
+      },
+      "prompt_tokens": 1703,
+      "completion_tokens": 67,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 12884.1,
+      "timings_ms": {
+        "embed": 225.4,
+        "retrieve_dense": 16.4,
+        "retrieve_keyword": 8.9,
+        "fuse": 0.1,
+        "rerank": 178.9,
+        "generate": 12420.0,
+        "total": 12850.7
+      },
+      "prompt_tokens": 1347,
+      "completion_tokens": 91,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 10708.5,
+      "timings_ms": {
+        "embed": 208.1,
+        "retrieve_dense": 13.5,
+        "retrieve_keyword": 12.5,
+        "fuse": 0.1,
+        "rerank": 198.4,
+        "generate": 10245.3,
+        "total": 10679.0
+      },
+      "prompt_tokens": 1415,
+      "completion_tokens": 38,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 16066.1,
+      "timings_ms": {
+        "embed": 238.1,
+        "retrieve_dense": 14.6,
+        "retrieve_keyword": 4.7,
+        "fuse": 0.1,
+        "rerank": 184.8,
+        "generate": 15597.7,
+        "total": 16040.7
+      },
+      "prompt_tokens": 2164,
+      "completion_tokens": 31,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 13217.5,
+      "timings_ms": {
+        "embed": 238.5,
+        "retrieve_dense": 16.6,
+        "retrieve_keyword": 6.7,
+        "fuse": 0.1,
+        "rerank": 166.6,
+        "generate": 12753.6,
+        "total": 13183.5
+      },
+      "prompt_tokens": 1534,
+      "completion_tokens": 46,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 12942.1,
+      "timings_ms": {
+        "embed": 205.1,
+        "retrieve_dense": 10.4,
+        "retrieve_keyword": 9.9,
+        "fuse": 0.2,
+        "rerank": 204.5,
+        "generate": 12476.5,
+        "total": 12907.8
+      },
+      "prompt_tokens": 1405,
+      "completion_tokens": 49,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 18662.1,
+      "timings_ms": {
+        "embed": 227.1,
+        "retrieve_dense": 16.6,
+        "retrieve_keyword": 7.9,
+        "fuse": 0.1,
+        "rerank": 225.8,
+        "generate": 18150.2,
+        "total": 18629.2
+      },
+      "prompt_tokens": 1974,
+      "completion_tokens": 47,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 16086.8,
+      "timings_ms": {
+        "embed": 213.4,
+        "retrieve_dense": 17.2,
+        "retrieve_keyword": 12.4,
+        "fuse": 0.1,
+        "rerank": 214.1,
+        "generate": 15595.9,
+        "total": 16054.3
+      },
+      "prompt_tokens": 1476,
+      "completion_tokens": 58,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 19840.7,
+      "timings_ms": {
+        "embed": 217.7,
+        "retrieve_dense": 14.1,
+        "retrieve_keyword": 9.5,
+        "fuse": 0.1,
+        "rerank": 201.8,
+        "generate": 19372.0,
+        "total": 19816.2
+      },
+      "prompt_tokens": 1526,
+      "completion_tokens": 86,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 18376.5,
+      "timings_ms": {
+        "embed": 204.5,
+        "retrieve_dense": 15.7,
+        "retrieve_keyword": 4.4,
+        "fuse": 0.1,
+        "rerank": 225.9,
+        "generate": 17913.7,
+        "total": 18365.2
+      },
+      "prompt_tokens": 1828,
+      "completion_tokens": 49,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 21969.1,
+      "timings_ms": {
+        "embed": 67.8,
+        "retrieve_dense": 5.9,
+        "retrieve_keyword": 3.8,
+        "fuse": 0.1,
+        "rerank": 247.2,
+        "generate": 21621.1,
+        "total": 21946.4
+      },
+      "prompt_tokens": 2120,
+      "completion_tokens": 61,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 26897.7,
+      "timings_ms": {
+        "embed": 249.7,
+        "retrieve_dense": 15.4,
+        "retrieve_keyword": 26.7,
+        "fuse": 0.1,
+        "rerank": 228.5,
+        "generate": 26340.1,
+        "total": 26861.9
+      },
+      "prompt_tokens": 2228,
+      "completion_tokens": 109,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 16034.8,
+      "timings_ms": {
+        "embed": 266.9,
+        "retrieve_dense": 10.5,
+        "retrieve_keyword": 19.2,
+        "fuse": 0.1,
+        "rerank": 215.9,
+        "generate": 15483.9,
+        "total": 15998.1
+      },
+      "prompt_tokens": 1631,
+      "completion_tokens": 42,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 8791.7,
+      "timings_ms": {
+        "embed": 204.9,
+        "retrieve_dense": 10.3,
+        "retrieve_keyword": 15.4,
+        "fuse": 0.1,
+        "rerank": 211.2,
+        "generate": 8327.9,
+        "total": 8771.5
+      },
+      "prompt_tokens": 1567,
+      "completion_tokens": 41,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 19494.2,
+      "timings_ms": {
+        "embed": 38.2,
+        "retrieve_dense": 6.4,
+        "retrieve_keyword": 12.7,
+        "fuse": 0.1,
+        "rerank": 241.6,
+        "generate": 19172.9,
+        "total": 19473.2
+      },
+      "prompt_tokens": 1796,
+      "completion_tokens": 71,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 18378.9,
+      "timings_ms": {
+        "embed": 227.5,
+        "retrieve_dense": 14.1,
+        "retrieve_keyword": 20.5,
+        "fuse": 0.1,
+        "rerank": 214.1,
+        "generate": 17856.4,
+        "total": 18333.9
+      },
+      "prompt_tokens": 1707,
+      "completion_tokens": 64,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 22411.5,
+      "timings_ms": {
+        "embed": 214.5,
+        "retrieve_dense": 16.2,
+        "retrieve_keyword": 12.8,
+        "fuse": 0.1,
+        "rerank": 207.4,
+        "generate": 21924.2,
+        "total": 22377.4
+      },
+      "prompt_tokens": 1751,
+      "completion_tokens": 87,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 16298.8,
+      "timings_ms": {
+        "embed": 221.6,
+        "retrieve_dense": 15.8,
+        "retrieve_keyword": 17.9,
+        "fuse": 0.1,
+        "rerank": 217.5,
+        "generate": 15802.1,
+        "total": 16276.1
+      },
+      "prompt_tokens": 1830,
+      "completion_tokens": 23,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 18890.6,
+      "timings_ms": {
+        "embed": 164.7,
+        "retrieve_dense": 18.6,
+        "retrieve_keyword": 13.6,
+        "fuse": 0.1,
+        "rerank": 237.9,
+        "generate": 18423.0,
+        "total": 18859.2
+      },
+      "prompt_tokens": 1780,
+      "completion_tokens": 56,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 15668.9,
+      "timings_ms": {
+        "embed": 254.3,
+        "retrieve_dense": 13.3,
+        "retrieve_keyword": 17.6,
+        "fuse": 0.1,
+        "rerank": 217.9,
+        "generate": 15126.6,
+        "total": 15633.3
+      },
+      "prompt_tokens": 1553,
+      "completion_tokens": 44,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 16555.6,
+      "timings_ms": {
+        "embed": 248.0,
+        "retrieve_dense": 14.6,
+        "retrieve_keyword": 10.8,
+        "fuse": 0.1,
+        "rerank": 227.4,
+        "generate": 16009.6,
+        "total": 16511.9
+      },
+      "prompt_tokens": 1579,
+      "completion_tokens": 52,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 21216.3,
+      "timings_ms": {
+        "embed": 263.1,
+        "retrieve_dense": 14.2,
+        "retrieve_keyword": 11.4,
+        "fuse": 0.1,
+        "rerank": 209.3,
+        "generate": 20668.8,
+        "total": 21168.3
+      },
+      "prompt_tokens": 2017,
+      "completion_tokens": 52,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 516.4,
+      "timings_ms": {
+        "embed": 268.4,
+        "retrieve_dense": 16.5,
+        "retrieve_keyword": 8.1,
+        "fuse": 0.1,
+        "rerank": 202.9,
+        "generate": 0.0,
+        "total": 497.5
+      },
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 20889.1,
+      "timings_ms": {
+        "embed": 16.0,
+        "retrieve_dense": 12.2,
+        "retrieve_keyword": 17.3,
+        "fuse": 0.2,
+        "rerank": 226.7,
+        "generate": 20592.1,
+        "total": 20865.4
+      },
+      "prompt_tokens": 2171,
+      "completion_tokens": 34,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 524.6,
+      "timings_ms": {
+        "embed": 240.2,
+        "retrieve_dense": 16.6,
+        "retrieve_keyword": 10.2,
+        "fuse": 0.1,
+        "rerank": 237.0,
+        "generate": 0.0,
+        "total": 504.9
+      },
+      "prompt_tokens": 0,
+      "completion_tokens": 0,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 18445.3,
+      "timings_ms": {
+        "embed": 20.7,
+        "retrieve_dense": 19.1,
+        "retrieve_keyword": 20.1,
+        "fuse": 0.3,
+        "rerank": 218.2,
+        "generate": 18138.0,
+        "total": 18418.1
+      },
+      "prompt_tokens": 1955,
+      "completion_tokens": 21,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 14727.4,
+      "timings_ms": {
+        "embed": 214.9,
+        "retrieve_dense": 12.4,
+        "retrieve_keyword": 9.3,
+        "fuse": 0.1,
+        "rerank": 209.1,
+        "generate": 14236.3,
+        "total": 14683.1
+      },
+      "prompt_tokens": 1456,
+      "completion_tokens": 32,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 21002.8,
+      "timings_ms": {
+        "embed": 250.6,
+        "retrieve_dense": 16.6,
+        "retrieve_keyword": 11.3,
+        "fuse": 0.1,
+        "rerank": 200.2,
+        "generate": 20478.5,
+        "total": 20959.8
+      },
+      "prompt_tokens": 2138,
+      "completion_tokens": 37,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 22212.8,
+      "timings_ms": {
+        "embed": 265.2,
+        "retrieve_dense": 19.0,
+        "retrieve_keyword": 10.9,
+        "fuse": 0.1,
+        "rerank": 206.2,
+        "generate": 21671.2,
+        "total": 22174.1
+      },
+      "prompt_tokens": 2095,
+      "completion_tokens": 36,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 30227.1,
+      "timings_ms": {
+        "embed": 294.7,
+        "retrieve_dense": 15.0,
+        "retrieve_keyword": 9.1,
+        "fuse": 0.1,
+        "rerank": 222.1,
+        "generate": 29647.4,
+        "total": 30189.5
+      },
+      "prompt_tokens": 2242,
+      "completion_tokens": 146,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 23370.5,
+      "timings_ms": {
+        "embed": 310.8,
+        "retrieve_dense": 14.7,
+        "retrieve_keyword": 7.4,
+        "fuse": 0.1,
+        "rerank": 221.2,
+        "generate": 22768.3,
+        "total": 23324.9
+      },
+      "prompt_tokens": 2162,
+      "completion_tokens": 67,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 21144.6,
+      "timings_ms": {
+        "embed": 248.0,
+        "retrieve_dense": 16.6,
+        "retrieve_keyword": 22.7,
+        "fuse": 0.1,
+        "rerank": 211.7,
+        "generate": 20611.0,
+        "total": 21111.3
+      },
+      "prompt_tokens": 2202,
+      "completion_tokens": 31,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 26210.3,
+      "timings_ms": {
+        "embed": 188.4,
+        "retrieve_dense": 6.0,
+        "retrieve_keyword": 4.6,
+        "fuse": 0.1,
+        "rerank": 202.9,
+        "generate": 25774.6,
+        "total": 26177.6
+      },
+      "prompt_tokens": 2242,
+      "completion_tokens": 86,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 28674.8,
+      "timings_ms": {
+        "embed": 258.1,
+        "retrieve_dense": 14.0,
+        "retrieve_keyword": 10.8,
+        "fuse": 0.1,
+        "rerank": 195.0,
+        "generate": 28107.5,
+        "total": 28587.0
+      },
+      "prompt_tokens": 2568,
+      "completion_tokens": 70,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 24805.3,
+      "timings_ms": {
+        "embed": 605.5,
+        "retrieve_dense": 25.5,
+        "retrieve_keyword": 18.2,
+        "fuse": 0.2,
+        "rerank": 214.6,
+        "generate": 23798.5,
+        "total": 24676.2
+      },
+      "prompt_tokens": 2002,
+      "completion_tokens": 82,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 24071.4,
+      "timings_ms": {
+        "embed": 398.4,
+        "retrieve_dense": 20.8,
+        "retrieve_keyword": 20.7,
+        "fuse": 0.2,
+        "rerank": 241.5,
+        "generate": 23358.7,
+        "total": 24041.3
+      },
+      "prompt_tokens": 2287,
+      "completion_tokens": 53,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 21169.2,
+      "timings_ms": {
+        "embed": 200.7,
+        "retrieve_dense": 14.3,
+        "retrieve_keyword": 12.3,
+        "fuse": 0.1,
+        "rerank": 192.3,
+        "generate": 20702.2,
+        "total": 21123.0
+      },
+      "prompt_tokens": 2163,
+      "completion_tokens": 29,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 23888.8,
+      "timings_ms": {
+        "embed": 237.7,
+        "retrieve_dense": 7.7,
+        "retrieve_keyword": 5.1,
+        "fuse": 0.1,
+        "rerank": 200.9,
+        "generate": 23408.7,
+        "total": 23861.9
+      },
+      "prompt_tokens": 2435,
+      "completion_tokens": 36,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 22081.7,
+      "timings_ms": {
+        "embed": 233.5,
+        "retrieve_dense": 15.8,
+        "retrieve_keyword": 16.9,
+        "fuse": 0.1,
+        "rerank": 208.6,
+        "generate": 21579.7,
+        "total": 22055.7
+      },
+      "prompt_tokens": 2001,
+      "completion_tokens": 61,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 25162.2,
+      "timings_ms": {
+        "embed": 280.0,
+        "retrieve_dense": 15.5,
+        "retrieve_keyword": 20.4,
+        "fuse": 0.1,
+        "rerank": 224.5,
+        "generate": 24574.6,
+        "total": 25116.5
+      },
+      "prompt_tokens": 2102,
+      "completion_tokens": 99,
+      "cost_usd": 0.0,
+      "abstained": false,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 19409.9,
+      "timings_ms": {
+        "embed": 277.8,
+        "retrieve_dense": 14.0,
+        "retrieve_keyword": 12.0,
+        "fuse": 0.1,
+        "rerank": 220.1,
+        "generate": 18862.0,
+        "total": 19387.4
+      },
+      "prompt_tokens": 2113,
+      "completion_tokens": 21,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    },
+    {
+      "status": 200,
+      "client_ms": 20807.6,
+      "timings_ms": {
+        "embed": 221.3,
+        "retrieve_dense": 9.2,
+        "retrieve_keyword": 8.7,
+        "fuse": 0.1,
+        "rerank": 186.1,
+        "generate": 20349.7,
+        "total": 20776.4
+      },
+      "prompt_tokens": 2260,
+      "completion_tokens": 21,
+      "cost_usd": 0.0,
+      "abstained": true,
+      "config": {
+        "retrieval": {
+          "mode": "hybrid",
+          "rerank": true,
+          "top_k": 5,
+          "candidate_k": 20,
+          "rrf_k": 60,
+          "min_score": -2.84,
+          "exclude_references": false
+        },
+        "index_version": "bge-small_c400_o64",
+        "embedding_model": "BAAI/bge-small-en-v1.5",
+        "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+        "llm_model": "qwen3-vl:8b-instruct",
+        "prompt_version": "answer_v2"
+      }
+    }
+  ]
+}

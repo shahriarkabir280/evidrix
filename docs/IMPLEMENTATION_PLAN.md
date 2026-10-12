@@ -825,6 +825,8 @@ Branch `feature/production-hardening` · Milestone M4
 
 Branch `feature/observability` · Milestone M4
 
+**Status: done (2026-10-13).** Measurements in docs/perf.md, the caching decision in ADR-0005, deviations in docs/devlog.md (Part 6).
+
 **Components**
 - **6A** Chat persistence and migration hygiene (step 1, 4)
 - **6B** Per-stage timing, token usage, cost (steps 2–3)
@@ -870,9 +872,9 @@ Branch `feature/observability` · Milestone M4
 - Migration round-trip: `alembic downgrade base && alembic upgrade head` on the test DB.
 
 **DoD**
-- [ ] Every chat is persisted and inspectable with its full retrieval trace.
-- [ ] `docs/perf.md` has p50/p95 per stage, cost per query, and memory footprint under a documented workload.
-- [ ] A written decision on caching, backed by measurements.
+- [x] Every chat is persisted and inspectable with its full retrieval trace.
+- [x] `docs/perf.md` has p50/p95 per stage, cost per query, and memory footprint under a documented workload.
+- [x] A written decision on caching, backed by measurements.
 
 
 **Check your understanding**

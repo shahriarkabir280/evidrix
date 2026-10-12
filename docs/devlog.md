@@ -239,3 +239,46 @@ Rank of the document that answers the question, within the top 10:
 
 **Next**
 - Part 6: chat history, `/ready`, metrics and tracing, cost accounting.
+
+## Part 6 — Production API and observability (2026-10-13)
+
+**Built**
+- 6A Every `/chat` stored in `chat_queries` (failures too, with `error_code`): question,
+  filters, config, retrieved chunks' locations and per-stage scores, answer, citations, prompt
+  version, model, tokens, cost, timings. `GET /chats`, `GET /chats/{id}`. A test downgrades all
+  migrations to base and back; CI already ran `alembic check`.
+- 6B `StageTimer` passed through retrieval and generation, so failed chats keep the timings up to
+  the failure. Cost from `configs/pricing.toml` (0 for local models, null if unpriced).
+- 6C One error envelope for every 4xx/5xx (`code`, `message`, `request_id`); the catch-all 500
+  lives in the request middleware because Starlette's `Exception` handler runs outside it.
+  `/ready` checks Postgres and Redis; the lifespan warms the models up.
+- 6D `scripts/loadtest.py` and docs/perf.md. 6E ADR-0005: no cache.
+
+**Measured** (MacBook Air M4, 16 GB, on battery)
+- `/chat` p50 4.7 s, of which generation 4.4 s (~94%); retrieval with reranking ~0.3 s.
+  ~1,800 prompt / 50 completion tokens per query, $0.
+- Memory: Ollama 10–11 GB, API 1.6 GB, Postgres 138 MiB, Redis 22 MiB.
+- Warm-up: first embedding 266 ms cold vs 12 ms warm; first `/chat` with the LLM unloaded 16.3 s.
+
+**Surprises**
+- Concurrency 4 segfaulted the API: PyTorch's MPS backend isn't thread-safe and FastAPI calls
+  the models from its thread pool. Fixed with a process-wide inference lock; a real-model test
+  runs six threads.
+- Requests queued in Ollama timed out and were retried while Ollama finished the abandoned ones
+  (20 retries, 1 failure). LLM calls now queue in the API (`LLM_MAX_CONCURRENCY`, `503 llm_busy`).
+- That fix did not restore throughput. A control run at concurrency 1 showed the cause: after
+  ~2 hours of load the fanless laptop generated 4× slower (p50 4.4 s → 18.1 s) with the same code.
+- The Mac went to idle sleep twice during runs (once in the gap between two `caffeinate` calls).
+- RSS on macOS said the API used 112 MB; its physical footprint was 1.5 GB. The load test now
+  samples the footprint.
+- A `threading.Thread` subclass with a `_stop` attribute breaks `join()`.
+
+**Deviations from the plan**
+- Load test against a local uvicorn process, not a Docker deployment (that is Part 7), so
+  memory is per process rather than `docker stats` for the app.
+- `configs/pricing.toml` instead of YAML (stdlib `tomllib`, like the retrieval presets).
+- "Models loaded" in `/ready` is guaranteed by the lifespan; the LLM isn't a readiness check,
+  because every instance shares it.
+
+**Next**
+- Part 7: Docker images, deployment, CI/CD.
