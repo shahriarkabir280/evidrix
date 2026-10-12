@@ -14,7 +14,7 @@ from typing import Protocol
 
 from app.core.config import get_settings
 from app.db.repositories.chunks import ChunkHit
-from app.rag.embeddings import Device, resolve_device
+from app.rag.embeddings import INFERENCE_LOCK, Device, resolve_device
 
 
 class Reranker(Protocol):
@@ -72,12 +72,13 @@ class CrossEncoderReranker:
         if not passages:
             return []
         # Raw logits: unbounded, only their order matters (and, later, a calibrated threshold).
-        scores = self._model.predict(
-            [(question, passage) for passage in passages],
-            batch_size=self._batch_size,
-            show_progress_bar=False,
-            convert_to_numpy=True,
-        )
+        with INFERENCE_LOCK:  # see INFERENCE_LOCK: not thread-safe on MPS
+            scores = self._model.predict(
+                [(question, passage) for passage in passages],
+                batch_size=self._batch_size,
+                show_progress_bar=False,
+                convert_to_numpy=True,
+            )
         return [float(s) for s in scores]
 
 

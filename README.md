@@ -215,12 +215,14 @@ curl -s -H "$AUTH" localhost:8000/jobs/<job_id>                     # queued →
 
 | Method | Path | Purpose |
 |---|---|---|
-| `GET` | `/health` | Liveness |
+| `GET` | `/health` | Liveness: the process answers |
+| `GET` | `/ready` | Readiness: database and Redis answer, models warmed up (`503` if not) |
 | `POST` | `/documents` | Upload a PDF, Markdown or text file (deduplicated); `202` + job id |
 | `GET` | `/documents`, `/documents/{id}` | List your documents / one document with its status |
 | `GET` | `/jobs/{id}` | Ingestion job status, attempts and last error |
 | `POST` | `/retrieve` | Retrieval only, with per-stage ranks and scores |
-| `POST` | `/chat` | Answer with citations, retrieved passages, timings and token usage |
+| `POST` | `/chat` | Answer with citations, retrieved passages, timings, tokens and cost |
+| `GET` | `/chats`, `/chats/{id}` | Your question history; one exchange with its full retrieval trace |
 
 Every endpoint except `/health` needs `Authorization: Bearer evx_…`. Keys are created with
 `app.cli create-user` / `create-key`, stored only as a sha256 hash, and revoked with
@@ -242,8 +244,21 @@ created, carries that ID. Questions are logged as length and hash; keys, questio
 document text are never logged.
 
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
-e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Errors: 404 unknown document, 409 still
-processing, 422 invalid request, 502 unusable model output, 503 model unavailable.
+e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Every `/chat` is stored, failures
+included, with the retrieved chunks' scores, the citations, the configuration, tokens, cost and
+the time per stage, so `GET /chats/{id}` can show why an answer came out the way it did.
+
+Every error has the same shape, with a stable `code` for programs and the request ID to quote in
+a bug report:
+
+```json
+{"error": {"code": "document_not_ready", "message": "…", "request_id": "3f2c…"}}
+```
+
+`401` bad key · `404` unknown (or someone else's) resource · `409` document still processing ·
+`413` too large · `415` unsupported type · `422` invalid request (with a per-field `details`
+list) · `429` rate limited · `502` unusable model output · `503` model or queue unavailable ·
+`500` anything unexpected: logged with its stack trace, answered with only the request ID.
 
 ## Evaluation
 

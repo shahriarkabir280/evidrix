@@ -3,6 +3,7 @@
 Component 2C · Plan: Part 2, step 4.
 """
 
+import threading
 from collections.abc import Callable
 from functools import lru_cache
 from typing import Literal, Protocol
@@ -30,6 +31,14 @@ class Embedder(Protocol):
     def count_tokens(self, text: str) -> int:
         """Tokens as this model's tokenizer counts them, without special tokens."""
         ...
+
+
+# One model call at a time per process, for the embedder and the reranker alike. PyTorch's MPS
+# backend (Apple GPU) is not thread-safe, and FastAPI runs sync endpoints in a thread pool: in
+# the Part 6 load test, four concurrent /retrieve requests crashed the API with a segfault, and
+# a standalone repro with four threads crashed twice and deadlocked once. Each call takes
+# 10-20 ms, so waiting for the lock costs little next to a multi-second LLM call.
+INFERENCE_LOCK = threading.Lock()
 
 
 def resolve_device(preference: Device) -> str:
@@ -77,13 +86,14 @@ class SentenceTransformerEmbedder:
 
     def _encode(self, texts: list[str]) -> np.ndarray:
         # Normalized vectors make the dot product equal to cosine similarity.
-        vectors = self._model.encode(
-            texts,
-            batch_size=self._batch_size,
-            normalize_embeddings=True,
-            convert_to_numpy=True,
-            show_progress_bar=False,
-        )
+        with INFERENCE_LOCK:
+            vectors = self._model.encode(
+                texts,
+                batch_size=self._batch_size,
+                normalize_embeddings=True,
+                convert_to_numpy=True,
+                show_progress_bar=False,
+            )
         return vectors.astype(np.float32, copy=False)
 
 
