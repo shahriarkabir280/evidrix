@@ -73,7 +73,8 @@ def session_factory(db_engine):
     with db_engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE chat_queries, api_keys, ingestion_jobs, chunks, document_pages, documents"
+                "TRUNCATE blobs, chat_queries, api_keys, ingestion_jobs, chunks, document_pages, "
+                "documents"
             )
         )
         connection.execute(text("DELETE FROM users WHERE email LIKE '%@test.local'"))

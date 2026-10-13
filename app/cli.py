@@ -39,7 +39,7 @@ from app.services.ingestion import (
     reap_stale_jobs,
     reindex_document,
 )
-from app.storage.blob import LocalBlobStore
+from app.storage.blob import make_blob_store
 from app.worker.queue import get_ingestion_queue
 
 SUPPORTED_SUFFIXES = {".pdf", ".md", ".markdown", ".txt"}
@@ -48,7 +48,7 @@ SUPPORTED_SUFFIXES = {".pdf", ".md", ".markdown", ".txt"}
 def ingest_dir(directory: Path) -> None:
     settings = get_settings()
     embedder = get_embedder()
-    blob_store = LocalBlobStore(settings.blob_dir)
+    blob_store = make_blob_store(settings)
     paths = sorted(p for p in directory.rglob("*") if p.suffix.lower() in SUPPORTED_SUFFIXES)
     counts = {"created": 0, "duplicate": 0, "failed": 0, "rejected": 0, "chunks": 0}
     started = time.perf_counter()

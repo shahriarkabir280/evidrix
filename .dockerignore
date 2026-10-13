@@ -1,0 +1,16 @@
+# Only what the image needs: pyproject.toml, uv.lock, alembic.ini, migrations/, configs/, app/.
+.git
+.github
+.venv
+.env
+.env.*
+!.env.example
+**/__pycache__
+.pytest_cache
+.ruff_cache
+data
+docs
+evals
+scripts
+tests
+*.md

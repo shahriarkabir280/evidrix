@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5433/evidrix"
     max_upload_bytes: int = 10_000_000
     blob_dir: Path = Path("data/uploads")
+    # "postgres" on hosts whose container file system doesn't survive a restart.
+    blob_backend: Literal["local", "postgres"] = "local"
 
     redis_url: str = "redis://localhost:6379/0"
 
@@ -71,6 +73,10 @@ class Settings(BaseSettings):
 
     # Cross-encoder that rescores the candidate pool (runs on embedding_device).
     reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    # Pairs scored per forward pass. Peak memory grows with it: the attention matrices of 20
+    # pairs of 512 tokens take ~250 MB. Smaller batches trade a little speed for memory on a
+    # small instance (measured in docs/deploy.md).
+    reranker_batch_size: int = 32
 
     # Name of a file in configs/retrieval/. hybrid_rerank won on the dev split (MRR +0.155 over
     # dense, significant). Each chunk sent to the local 8B model adds ~1.8 s of prompt reading,

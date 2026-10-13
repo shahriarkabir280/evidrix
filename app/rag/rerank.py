@@ -85,4 +85,8 @@ class CrossEncoderReranker:
 @lru_cache
 def get_reranker() -> Reranker:
     settings = get_settings()
-    return CrossEncoderReranker(settings.reranker_model, device=settings.embedding_device)
+    return CrossEncoderReranker(
+        settings.reranker_model,
+        device=settings.embedding_device,
+        batch_size=settings.reranker_batch_size,
+    )

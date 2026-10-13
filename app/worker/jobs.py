@@ -20,7 +20,7 @@ from app.db.models import JobStatus
 from app.db.session import get_session_factory
 from app.rag.embeddings import get_embedder
 from app.services.ingestion import run_ingestion_job
-from app.storage.blob import LocalBlobStore
+from app.storage.blob import make_blob_store
 
 # The worker process imports this module before running its first job.
 configure_logging(get_settings())
@@ -38,7 +38,7 @@ def process_ingestion(job_id: str) -> str | None:
     try:
         with get_session_factory()() as session:
             status: JobStatus | None = run_ingestion_job(
-                session, LocalBlobStore(settings.blob_dir), get_embedder(), uuid.UUID(job_id)
+                session, make_blob_store(settings), get_embedder(), uuid.UUID(job_id)
             )
     finally:
         structlog.contextvars.clear_contextvars()

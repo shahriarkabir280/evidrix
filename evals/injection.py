@@ -37,7 +37,7 @@ from app.rag.rerank import Reranker, get_reranker
 from app.rag.retrieval import RetrievalConfig, load_preset
 from app.services.answering import answer_question
 from app.services.ingestion import ingest_upload
-from app.storage.blob import BlobStore, LocalBlobStore, content_key
+from app.storage.blob import BlobStore, content_key, make_blob_store
 from evals.run import RESULTS_DIR, _git, _stamp
 
 SUITE_DIR = Path(__file__).parent / "security"
@@ -152,7 +152,7 @@ def main() -> None:
         try:
             rows = run_suite(
                 session,
-                LocalBlobStore(settings.blob_dir),
+                make_blob_store(settings),
                 get_embedder(),
                 get_reranker(),
                 get_llm(),
