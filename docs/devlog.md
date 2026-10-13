@@ -340,3 +340,28 @@ Rank of the document that answers the question, within the top 10:
 
 **Not done**
 - Demo video (docs/demo-script.md), `v1.0.0` tag, the public deployment (Part 7).
+
+## Web UI and follow-up questions (2026-10-13)
+
+**Built**
+- `/ui`: a single page (HTML + JavaScript modules, no build step) served by the API with a strict
+  Content-Security-Policy: API key in the browser, documents with live job status, upload,
+  history by conversation, answers with citation buttons that open the passage, abstentions,
+  retrieved passages, and a retrieval-only mode when `/chat` is disabled.
+- Conversations: `conversation_id` on every chat; a follow-up is rewritten into a standalone
+  question from the last three turns (`condense_v2`), then searched and answered with the
+  unchanged answer prompt. Migration 0008 made every earlier chat its own conversation.
+
+**Measured**
+- `evals.condense_check` (6 cases, real model): `condense_v1` rewrote 1 of 5 follow-ups,
+  `condense_v2` 5 of 5, and kept the standalone question unchanged. The first version of v2
+  used two of the test questions as its examples; replaced with unrelated examples, still 5/5.
+- Browser run (headless Chrome, real model): "And for headers?" → "How do I declare a header
+  parameter in FastAPI?"; a fourth follow-up that abstained without the rewrite was answered
+  from the right section.
+
+**Surprises**
+- qwen3-vl:8b read "if the question is already standalone, return it unchanged" as the rule for
+  every question. Saying what makes a question depend on context fixed it; examples helped.
+- The page's own CSP blocked the test harness's `page.waitForFunction` (it evaluates strings),
+  evidence that the policy forbids eval.

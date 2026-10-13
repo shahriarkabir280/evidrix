@@ -84,8 +84,15 @@ What this says, and what it doesn't:
   model's point of view the document is the evidence. Citations make the source visible, which
   is the mitigation; the answer is only as trustworthy as the documents.
 - **Client-side rendering.** Answers are plain text. A client that renders them as Markdown or
-  HTML would turn a planted image link into a request to the attacker's server. Clients should
-  render answers as text, or allow only links that appear in the cited sources.
+  HTML would turn a planted image link into a request to the attacker's server. The bundled
+  page (`/ui`) escapes every text before adding the only markup it uses (code and citation
+  buttons), renders no links or images, and is served with a Content-Security-Policy that
+  allows only its own scripts and styles and connections to the API itself. Other clients
+  should do the same.
+- **Follow-up rewriting.** The rewrite of a follow-up reads earlier answers, which may quote a
+  planted instruction. Its prompt treats earlier turns as context, and its output is only a
+  search query over the user's own documents, so a manipulated rewrite can make retrieval worse
+  but reach nothing else.
 - **Unauthenticated floods.** The per-user limit applies after authentication; requests with bad
   keys are cheap (one indexed lookup) but unlimited until a per-IP limit is added at the reverse
   proxy (Part 7).
