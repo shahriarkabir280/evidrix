@@ -21,12 +21,14 @@ local LLM through Ollama).
 
 - **Citations you can check.** Every answer cites numbered sources; citations that point to
   nothing are removed, and an answer left without a valid citation becomes an abstention.
-- **Hybrid retrieval, measured.** Dense (bge-small) + Postgres full-text search, merged with
-  Reciprocal Rank Fusion and rescored by a cross-encoder. Reranking improves MRR@5 by
-  **+0.155 (95% CI +0.03 to +0.29)** over dense retrieval on the dev split.
-- **A labeled benchmark.** 60 questions (factual, identifier, multi-hop, distractor,
-  unanswerable) labeled with verbatim evidence quotes, a held-out test split, and bootstrap
-  confidence intervals for every comparison.
+- **Hybrid retrieval, measured on a held-out split.** Dense (bge-small) + Postgres full-text
+  search, merged with Reciprocal Rank Fusion and rescored by a cross-encoder. On the test split,
+  run once, reranking improves MRR@5 by **+0.193 (95% CI +0.05 to +0.35)** and Recall@5 by
+  **+0.125** over dense retrieval; fusion without reranking does not help
+  ([report](docs/REPORT.md)).
+- **A labeled benchmark.** 84 questions over documentation and research papers (factual,
+  identifier, multi-hop, distractor, table, unanswerable) labeled with verbatim evidence
+  quotes, a held-out test split, and bootstrap confidence intervals for every comparison.
 - **Security in the query, not the prompt.** Owner, status and index-version filters are part of
   the SQL of every retrieval leg; another user's chunks are never candidates. Hashed API keys,
   per-user rate limits, and a prompt-injection suite that found an attack the first prompt let
@@ -34,9 +36,9 @@ local LLM through Ollama).
 - **Background ingestion that survives failures.** Uploads return `202`; an RQ worker retries
   transient errors with backoff, never leaves a half-indexed document, and jobs lost with a
   crashed worker are recovered.
-- **Answers measured, not assumed.** With the default preset, answers score 0.914 correctness
-  and 0.963 faithfulness (claims supported by the sources) on the dev split, graded by a
-  calibrated LLM judge; every unanswerable dev question abstained.
+- **Answers measured, not assumed.** With the default configuration, answers score 0.857
+  correctness and 1.000 faithfulness (claims supported by the sources) on the held-out test
+  split, graded by a calibrated LLM judge; every unanswerable test question abstained.
 - **Honest failure modes.** Unanswerable questions abstain; a model reply cut off or not in the
   required JSON is retried once, then reported (502), never passed off as an answer.
 - **Tested.** 282 tests (unit + integration against real Postgres) plus live tests against the
@@ -121,6 +123,24 @@ text. A context guard refuses prompts that would overflow the model's window, be
 would otherwise drop the start of the prompt silently.
 
 ## Results
+
+**Held-out test split** (35 questions over both benchmarks, each configuration run once;
+[full report](docs/REPORT.md) with intervals, chunk-size and depth ablations, error analysis):
+
+| Config | Recall@5 | MRR@5 | Correctness | Faithfulness | Prompt tokens |
+|---|---|---|---|---|---|
+| E1 dense | 0.696 | 0.571 | 0.768 | 0.996 | 1,810 |
+| E2 hybrid (RRF) | 0.661 | 0.487 | 0.750 | 0.917 | 1,944 |
+| **E3 hybrid + rerank** (default) | **0.821** | **0.764** | **0.857** | 1.000 | 1,874 |
+| E4 E3 with 256-token chunks | 0.768 | 0.717 | 0.786 | 0.990 | 1,379 |
+| E5 E3 with top 3 / top 8 | 0.732 / — | 0.750 / — | 0.821 / 0.839 | 0.968 / 1.000 | 1,269 / 2,901 |
+
+Reranking's retrieval gains over dense exclude zero; its answer gain (+0.089) does not yet, with
+28 answerable questions. All 7 unanswerable test questions abstained in every configuration. Of
+14 failures of the default (test + dev), 6 are retrieval (mostly a missing second hop), 2 table
+extraction, 2 false abstentions, and 4 judge errors.
+
+The rest of this section is the dev-split development history.
 
 Dev split (36 questions, 29 answerable), top 5, answers from `qwen3-vl:8b-instruct` with prompt
 `answer_v1`, graded by `gemma3:12b`. Mean with 95% bootstrap CI; Δ is the paired difference against `dense`, and
@@ -431,8 +451,8 @@ docs/             plan, ADRs, devlog
 - [x] **Part 4b** — research papers: CC-licensed arXiv corpus, ligatures and section headings in PDFs, a 24-question paper benchmark
 - [x] **Part 5** — background ingestion jobs (RQ, retries, recovery), hashed API keys, authorization audit, rate limits, prompt-injection suite, JSON logs with request IDs
 - [x] **Part 6** — persisted chats with full traces, per-stage timing and cost, error envelope, `/ready`, load test and perf report, caching decision
-- [ ] **Part 7** — Docker image, hosted deployment, smoke tests
-- [ ] **Part 8** — final evaluation on the held-out split, report, demo
+- [x] **Part 7** — Docker image, container stack with a release-step migration, CI with coverage and image build, smoke and persistence tests ([deploy](docs/deploy.md)); public Space pending accounts
+- [x] **Part 8** — ablations E1–E5 on the held-out split, error analysis, [report](docs/REPORT.md); demo video pending
 
 ## Limitations
 

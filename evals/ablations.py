@@ -31,15 +31,16 @@ class Experiment:
     label: str
     preset: str
     index_version: str = DEFAULT_INDEX
+    baseline: str | None = "E1"  # E4 and E5 vary E3, so they are compared with it
 
 
 EXPERIMENTS = [
-    Experiment("E1", "dense, top 5", "dense"),
+    Experiment("E1", "dense, top 5", "dense", baseline=None),
     Experiment("E2", "hybrid (RRF), top 5", "hybrid"),
     Experiment("E3", "hybrid + rerank, top 5", "hybrid_rerank"),
-    Experiment("E4", "E3 with 256-token chunks", "hybrid_rerank", SMALL_CHUNKS_INDEX),
-    Experiment("E5a", "E3 with top 3", "hybrid_rerank_k3"),
-    Experiment("E5b", "E3 with top 8", "hybrid_rerank_k8"),
+    Experiment("E4", "E3 with 256-token chunks", "hybrid_rerank", SMALL_CHUNKS_INDEX, "E3"),
+    Experiment("E5a", "E3 with top 3", "hybrid_rerank_k3", baseline="E3"),
+    Experiment("E5b", "E3 with top 8", "hybrid_rerank_k8", baseline="E3"),
 ]
 BENCHMARKS = ("docs", "papers")
 RETRIEVAL = ("recall", "mrr", "ndcg")
@@ -92,19 +93,22 @@ def rows_of(results, experiment_id: str, benchmarks=BENCHMARKS) -> list[dict[str
     ]
 
 
-def cell(results, experiment_id: str, metric: str, benchmarks=BENCHMARKS) -> str:
-    values = pooled(results, experiment_id, metric, benchmarks)
+def cell(results, experiment: Experiment, metric: str, benchmarks=BENCHMARKS) -> str:
+    values = pooled(results, experiment.id, metric, benchmarks)
     if not values:
         return "—"
     ci = bootstrap_ci(list(values.values()))
     text = f"{ci.mean:.3f} [{ci.low:.2f}, {ci.high:.2f}]"
-    if experiment_id != "E1":
-        base = pooled(results, "E1", metric, benchmarks)
+    if experiment.baseline:
+        base = pooled(results, experiment.baseline, metric, benchmarks)
         shared = sorted(set(base) & set(values))
         if shared:
             diff = paired_bootstrap_diff([base[q] for q in shared], [values[q] for q in shared])
             mark = "**" if diff.excludes_zero() else ""
-            text += f"<br>{mark}Δ {diff.mean:+.3f} [{diff.low:+.2f}, {diff.high:+.2f}]{mark}"
+            text += (
+                f"<br>{mark}Δ{experiment.baseline} {diff.mean:+.3f} "
+                f"[{diff.low:+.2f}, {diff.high:+.2f}]{mark}"
+            )
     return text
 
 
@@ -136,8 +140,9 @@ def report(split: str) -> str:
     missing = [f"{e.id}/{b}" for e in EXPERIMENTS for b in BENCHMARKS if (e.id, b) not in results]
     n = {b: len(results[("E1", b)]["questions"]) for b in BENCHMARKS if ("E1", b) in results}
     lines = [
-        f"Split: {split}. Questions per benchmark: {n}. Mean [95% bootstrap CI]; Δ is the paired "
-        "difference against E1, **bold** when its interval excludes 0.",
+        f"Split: {split}. Questions per benchmark: {n}. Mean [95% bootstrap CI]. ΔE1 / ΔE3: paired "
+        "difference against that run (E2, E3 vs E1; E4, E5 vs E3), **bold** when its interval "
+        "excludes 0. Retrieval metrics cut off at 5, so E5b's are E3's.",
     ]
     if missing:
         lines.append(f"Missing runs: {', '.join(missing)}.")
@@ -146,7 +151,7 @@ def report(split: str) -> str:
         lines.extend(["", f"### {title}", "", "| | Config | " + " | ".join(metrics) + " |"])
         lines.append("|---|---|" + "---|" * len(metrics))
         for e in present:
-            cells = [cell(results, e.id, m, benchmarks) for m in metrics]
+            cells = [cell(results, e, m, benchmarks) for m in metrics]
             lines.append(f"| {e.id} | {e.label} | " + " | ".join(cells) + " |")
 
     table("Retrieval, pooled (answerable questions; Recall/MRR/nDCG at 5)", RETRIEVAL)

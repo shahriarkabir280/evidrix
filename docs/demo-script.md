@@ -22,6 +22,6 @@ Use a PDF the corpus doesn't have (any short technical PDF with a text layer).
 | 5 | Unanswerable question | the same with a question the PDF can't answer | "`abstained: true` — it says it doesn't know instead of guessing." |
 | 6 | Retrieval debug | `uv run python -m app.cli search "OAuth2PasswordRequestForm" --preset dense -k 3`, then `--preset hybrid_rerank` | "An identifier query: dense search ranks it loosely, keyword search finds the exact name, the reranker orders them." |
 | 7 | History | `curl -s -H "$AUTH" localhost:8000/chats/<chat id> \| jq '.timings_ms, .retrieved[0]'` | "Every chat is stored with its scores and timings: generation is ~94% of the latency." |
-| 8 | Results | README results table / `docs/REPORT.md` | One sentence with the report's main finding, and that every number comes with a confidence interval on a held-out test split. |
+| 8 | Results | README results table / `docs/REPORT.md` | "On a held-out test split, reranking was the change that helped: MRR +0.19, outside the confidence interval. Fusion alone didn't help, and five passages did as well as eight with two-thirds of the tokens." |
 
 Keep the terminal font large, and cut the waiting time during generation.

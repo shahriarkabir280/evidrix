@@ -312,3 +312,31 @@ Rank of the document that answers the question, within the top 10:
 
 **Not done (needs the owner's accounts)**
 - The public deployment and its smoke run; branch protection on `main` (GitHub settings).
+
+## Part 8 — Ablations, error analysis, report (2026-10-13)
+
+**Built**
+- `scripts/run_ablations.sh` (12 full runs on the test split, once each), `evals.ablations`
+  (pooled tables with paired differences), `evals.failures` (failure listing), `evals.rescore`,
+  `app.cli index-version` (E4), presets for E5. docs/REPORT.md and docs/demo-script.md.
+
+**Measured (test split, 35 questions)**
+- Reranking (E3) vs dense: Recall@5 +0.125, MRR@5 +0.193, nDCG@5 +0.145, all significant;
+  correctness +0.089 (0.768 → 0.857), not yet significant. Hybrid without reranking: slightly
+  worse than dense. 256-token chunks: 26% fewer tokens, worse on every quality measure. Top 3:
+  32% fewer tokens, −0.036 correctness; top 8: +55% tokens, no gain.
+- 14 failures of the default (test + dev): 6 retrieval (4 a missing second hop), 2 table
+  extraction, 2 false abstentions, 4 judge errors. No missed abstention.
+
+**Surprises**
+- The error analysis found a bug rather than a failure: `x[1]` in a code answer was parsed as
+  a citation marker, and the judge, which strips markers, graded `lambda x: x`. Fixed in the app
+  and the judge; the one affected question was re-scored in the three runs that contained it.
+- The first version of the re-score condition also matched `][` between consecutive citations
+  and started re-judging most answers; caught by its output, results restored from git, the
+  condition narrowed and checked with a dry run first.
+- With eight passages, one judge reply was cut off mid-JSON.
+- Four of 14 failures were the judge's: the measured correctness understates the system.
+
+**Not done**
+- Demo video (docs/demo-script.md), `v1.0.0` tag, the public deployment (Part 7).
