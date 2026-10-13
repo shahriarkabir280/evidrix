@@ -282,3 +282,33 @@ Rank of the document that answers the question, within the top 10:
 
 **Next**
 - Part 7: Docker images, deployment, CI/CD.
+
+## Part 7 — Deployment and CI/CD (2026-10-13)
+
+**Built**
+- A two-stage Dockerfile (uv, CPU-only torch, models downloaded at build time, non-root UID 1000);
+  one image for the API and the worker. 2.44 GB: 1.4 GB virtualenv, 217 MB models.
+- `docker-compose.prod.yml`: Postgres, Redis, a `migrate` release step, API, worker.
+- `BLOB_BACKEND=postgres` (uploads in a `blobs` table), `INGESTION_MODE=inline` (jobs in an
+  API thread, resubmitted at startup), `CHAT_ENABLED=false` (retrieval-only demo).
+- `scripts/smoke.py` with a persistence check; CI with coverage (≥ 85%, at 92%) and a Docker
+  build; manual `Smoke test` and `Deploy` workflows (migrate Neon, then push to the HF Space).
+
+**Decided (with the owner)**
+- Public demo retrieval-only, so the published numbers stay those of the local 8B model.
+- Hugging Face Space + Neon + Upstash rather than Render: measured peak memory in the container
+  was 687 MiB by default and 488 MiB at best, too close to Render's 512 MB instances.
+
+**Measured**
+- Container memory per setting (docs/deploy.md); the reranker batch size was the lever
+  (687 → 518 MiB), `MALLOC_ARENA_MAX` did nothing.
+- Smoke test and persistence check pass against the container stack; the demo configuration
+  passes via `/retrieve`.
+
+**Surprises**
+- The first smoke run found the worker listening on RQ's `default` queue: in a folded YAML
+  block, more-indented continuation lines keep their newlines, so `sh` ran `rq worker` without
+  its queue name. Nothing failed loudly; jobs just stayed queued.
+
+**Not done (needs the owner's accounts)**
+- The public deployment and its smoke run; branch protection on `main` (GitHub settings).

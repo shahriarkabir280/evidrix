@@ -43,7 +43,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 
 FROM ${PYTHON_IMAGE} AS runtime
-RUN useradd --create-home --uid 10001 evidrix
+# UID 1000: Hugging Face Spaces run containers as that user.
+RUN useradd --create-home --uid 1000 evidrix
 WORKDIR /app
 COPY --from=builder --chown=evidrix:evidrix /app /app
 COPY --from=builder --chown=evidrix:evidrix /models /models

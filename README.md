@@ -372,6 +372,21 @@ Fakes (`FakeEmbedder`, `FakeLLM`, `FakeReranker`) are injected through FastAPI d
 production code has no test-only branches. Tests that need real models are marked `model` or
 `live` and run locally; CI uses CPU-only torch and skips them.
 
+## Deployment
+
+The same Docker image runs the API and the worker; settings come from environment variables.
+
+```bash
+make prod-up                                   # API, worker, Postgres, Redis in containers (:8080)
+docker compose -f docker-compose.prod.yml run --rm api python -m app.cli create-user --email you@example.com
+make smoke URL=http://localhost:8080 KEY=evx_…  # end-to-end check of a deployment
+```
+
+Migrations run as a release step (a `migrate` service that the API and worker wait for), never
+at application startup. The public demo is retrieval-only on a Hugging Face Space with Neon
+Postgres and Upstash Redis, deployed by a manual GitHub Actions workflow that migrates first;
+[docs/deploy.md](docs/deploy.md) has the memory measurements behind that choice and the steps.
+
 ## Configuration
 
 Settings come from environment variables (see `.env.example`):

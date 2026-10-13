@@ -1,0 +1,45 @@
+name: Deploy
+
+# Run by hand: Actions → Deploy → Run workflow. Two steps, in this order:
+#   1. release step: apply the database migrations (fails the deploy if they fail);
+#   2. push the app to the Hugging Face Space, which builds the Docker image and restarts.
+# Repository secrets: DATABASE_URL (Neon), HF_TOKEN (write access to the Space).
+# Repository variable: HF_SPACE, e.g. "shahriarkabir280/evidrix".
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --no-dev
+
+      - name: Migrate (release step)
+        run: uv run --no-sync alembic upgrade head
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Push to the Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          # The Space gets only what the image needs, plus its own README with the Space config.
+          mkdir space
+          cp -r Dockerfile .dockerignore pyproject.toml uv.lock alembic.ini migrations configs app space/
+          cp deploy/huggingface/README.md space/README.md
+          cd space
+          git init -q -b main
+          git config user.name "evidrix-deploy"
+          git config user.email "deploy@evidrix.invalid"
+          git add -A
+          git commit -q -m "Deploy ${GITHUB_SHA::7}"
+          git push --force "https://user:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}" main

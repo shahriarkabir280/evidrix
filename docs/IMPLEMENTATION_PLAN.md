@@ -888,6 +888,8 @@ Branch `feature/observability` · Milestone M4
 
 Branch `feature/deploy` · Milestone M5
 
+**Status: built and verified locally (2026-10-13); the public deployment needs the owner's Neon, Upstash and Hugging Face accounts (steps in docs/deploy.md).**
+
 **Components**
 - **7A** Production Dockerfile (step 1)
 - **7B** Memory decision and hosting setup (steps 2–3)
@@ -958,7 +960,7 @@ Branch `feature/deploy` · Milestone M5
 
 **DoD**
 - [ ] Public URL with Swagger UI. Smoke script passes against it.
-- [ ] Data survives restarts. Migrations ran via the release command.
+- [x] Data survives restarts. Migrations ran via the release command. (container stack)
 - [ ] CI green on `main` with branch protection. Deployment steps documented in the README.
 
 
