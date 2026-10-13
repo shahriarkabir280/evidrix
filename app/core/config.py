@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     blob_backend: Literal["local", "postgres"] = "local"
 
     redis_url: str = "redis://localhost:6379/0"
+    # "rq": a separate worker process takes jobs from Redis (make worker). "inline": the API runs
+    # them in a background thread, for a single-instance deployment without a worker
+    # (app/worker/inline.py has the trade-offs).
+    ingestion_mode: Literal["rq", "inline"] = "rq"
+    # False for a retrieval-only deployment without an LLM: /chat answers 503 chat_disabled.
+    chat_enabled: bool = True
 
     # Requests per user per minute (fixed window). Each /chat costs a model call, so it is the
     # tightest; /retrieve is cheap; uploads cost embedding time in the worker.

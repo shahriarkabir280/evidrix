@@ -77,6 +77,14 @@ def chat(
     settings: SettingsDep,
 ) -> ChatResponse:
     """Answer from the caller's documents. Every call is stored, failures included."""
+    if not settings.chat_enabled:
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            {
+                "code": "chat_disabled",
+                "message": "This deployment is retrieval-only (no LLM): use POST /retrieve.",
+            },
+        )
     config = retrieval_config(settings, request.retrieval)
     timer = StageTimer()
     try:
