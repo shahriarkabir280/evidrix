@@ -56,6 +56,10 @@ class RQIngestionQueue:
 @lru_cache
 def get_ingestion_queue() -> IngestionQueue:
     settings = get_settings()
+    if settings.ingestion_mode == "inline":
+        from app.worker.inline import InlineIngestionQueue
+
+        return InlineIngestionQueue(settings)
     return RQIngestionQueue(
         settings.redis_url,
         job_timeout_seconds=settings.ingestion_job_timeout_seconds,

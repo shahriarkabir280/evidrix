@@ -15,6 +15,7 @@ from sqlalchemy import (
     Enum,
     ForeignKey,
     Index,
+    LargeBinary,
     Numeric,
     String,
     Text,
@@ -275,4 +276,14 @@ class ChatQuery(Base):
     cost_usd: Mapped[float | None] = mapped_column(Numeric(12, 6))
     timings_ms: Mapped[dict[str, float]] = mapped_column(JSONB, default=dict)
     error_code: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+class Blob(Base):
+    """Uploaded file bytes, when BLOB_BACKEND=postgres (app/storage/blob.py)."""
+
+    __tablename__ = "blobs"
+
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)  # sha256 of the bytes
+    data: Mapped[bytes] = mapped_column(LargeBinary)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

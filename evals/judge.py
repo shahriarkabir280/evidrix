@@ -14,6 +14,7 @@ from functools import cache
 from pathlib import Path
 from typing import Literal
 
+from app.rag.generation import CITATION_RUN
 from app.rag.llm import LLMProvider
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
@@ -21,7 +22,8 @@ FAITHFULNESS_PROMPT = "judge_faithfulness_v1"
 CORRECTNESS_PROMPT = "judge_correctness_v1"
 JUDGE_MAX_TOKENS = 600
 
-_CITATION = re.compile(r"\s*\[\d+(?:\s*,\s*\d+)*\]")
+# Only markers that the answer pipeline counts as citations (see CITATION_RUN).
+_CITATION = re.compile(r"[ \t]*" + CITATION_RUN.pattern)
 
 FAITHFULNESS_SCHEMA = {
     "type": "object",
@@ -117,8 +119,8 @@ class Judge:
 
 
 def strip_citations(answer: str) -> str:
-    """The judge grades the claims, not the [n] markers."""
-    return _CITATION.sub("", answer).strip()
+    """The judge grades the claims, not the [n] markers (but keeps indexing such as `x[1]`)."""
+    return re.sub(r"[ \t]+([.,;:!?])", r"\1", _CITATION.sub("", answer)).strip()
 
 
 def get_judge() -> Judge:

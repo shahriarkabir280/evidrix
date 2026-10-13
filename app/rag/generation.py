@@ -45,8 +45,13 @@ JSON_REMINDER = (
 
 # Matches "<source" and "</source" in any letter case, wherever they appear in chunk text.
 _SOURCE_TAG = re.compile(r"<(/?)(source)", re.IGNORECASE)
-# A citation group such as [2], [2][3] or [1, 3] (each bracket is one group).
+# A citation group such as [2] or [1, 3] (each bracket is one group).
 _CITATION_GROUP = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+# A run of citation groups ("[4][2]") that is not glued to what precedes it. In `x[1]` or
+# `a[1][2]` the brackets index into something: code, not citations. Found in the Part 8 error
+# analysis: the answer `key=lambda x: x[1]` had `[1]` counted as a citation, and the judge, which
+# strips citations, graded the code as `lambda x: x`.
+CITATION_RUN = re.compile(r"(?<![\w)\]])(?:\[\d+(?:\s*,\s*\d+)*\])+")
 _CODE_FENCE = re.compile(r"^```(?:json)?\s*|\s*```$")
 
 AbstainReason = Literal["no_sources", "low_retrieval_score", "model", "no_valid_citations"]
@@ -208,7 +213,12 @@ def validate_citations(raw: _RawAnswer, source_count: int) -> tuple[str, list[in
     markers that were dropped. Out-of-range markers are also removed from the text, so the
     reader never sees "[7]" pointing at nothing.
     """
-    in_text = [int(n) for group in _CITATION_GROUP.findall(raw.answer) for n in group.split(",")]
+    in_text = [
+        int(n)
+        for run in CITATION_RUN.finditer(raw.answer)
+        for group in _CITATION_GROUP.findall(run.group())
+        for n in group.split(",")
+    ]
     valid = list(dict.fromkeys(n for n in in_text if 1 <= n <= source_count))
     dropped = sorted({n for n in [*in_text, *raw.citations] if n not in valid})
 
@@ -216,7 +226,7 @@ def validate_citations(raw: _RawAnswer, source_count: int) -> tuple[str, list[in
         kept = [n for n in match.group(1).split(",") if 1 <= int(n) <= source_count]
         return f"[{', '.join(n.strip() for n in kept)}]" if kept else ""
 
-    cleaned = _CITATION_GROUP.sub(keep_valid, raw.answer)
+    cleaned = CITATION_RUN.sub(lambda run: _CITATION_GROUP.sub(keep_valid, run.group()), raw.answer)
     cleaned = re.sub(r"[ \t]+([.,;:!?])", r"\1", cleaned)  # "text [7]." became "text ."
     return re.sub(r"[ \t]{2,}", " ", cleaned).strip(), valid, dropped
 

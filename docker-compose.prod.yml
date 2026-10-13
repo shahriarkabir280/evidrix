@@ -1,0 +1,91 @@
+# The whole stack in containers, built from the production image (components 7C/7E).
+#
+#   docker compose -f docker-compose.prod.yml up -d --build --wait
+#   docker compose -f docker-compose.prod.yml run --rm api python -m app.cli create-user --email you@example.com
+#
+# Separate project name and volume from the development stack (docker-compose.yml), so the two
+# never share a database. The LLM is Ollama on the host machine.
+
+name: evidrix-prod
+
+x-app: &app
+  image: evidrix:latest
+  build: .
+  environment: &app-env
+    APP_ENV: production
+    DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/evidrix
+    REDIS_URL: redis://redis:6379/0
+    BLOB_BACKEND: postgres
+    INGESTION_MODE: rq
+    LLM_BASE_URL: http://host.docker.internal:11434/v1
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: evidrix
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d evidrix"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # Release step: runs once and exits; the API and worker start only if it succeeded. Running
+  # migrations here rather than in the API's startup means two API replicas never race to
+  # migrate, and a failed migration stops the release instead of a half-started app.
+  migrate:
+    <<: *app
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *app
+    ports:
+      - "8080:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/ready')"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+
+  worker:
+    <<: *app
+    # One line on purpose: in a folded YAML block, more-indented continuation lines keep their
+    # newlines, and sh would run `rq worker` without its queue name (it then listens on "default").
+    command:
+      - sh
+      - -c
+      - python -m app.cli reap-jobs && exec rq worker --worker-class rq.worker.SimpleWorker --with-scheduler --url redis://redis:6379/0 ingestion
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:

@@ -1,0 +1,2149 @@
+{
+  "provenance": {
+    "created_at": "2026-10-13T13:26:16+00:00",
+    "git_commit": "28ce1bd7308a8cc26bd898412bb3a212ca882668",
+    "git_dirty": true,
+    "benchmark": "docs",
+    "preset": "dense",
+    "retrieval": {
+      "mode": "dense",
+      "rerank": false,
+      "top_k": 5,
+      "candidate_k": 20,
+      "rrf_k": 60,
+      "min_score": null,
+      "exclude_references": false
+    },
+    "split": "test",
+    "mode": "full",
+    "k": 5,
+    "index_version": "bge-small_c400_o64",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": null,
+    "benchmark_sha256": "91b2b3844a2e890bf900f9caf97dcb0ffb08e49570f12310ce73fe62c94c44e9",
+    "corpus_manifest_sha256": "9216ea461e5f02049d788d5f8f58689fd7d16f2e46705c404805f25e3f2b22d0",
+    "llm_model": "qwen3-vl:8b-instruct",
+    "prompt_version": "answer_v2",
+    "judge_model": "gemma3:12b",
+    "judge_prompts": [
+      "judge_faithfulness_v1",
+      "judge_correctness_v1"
+    ],
+    "duration_s": 413.3,
+    "judge_duration_s": 688.1,
+    "rescored": [
+      {
+        "ids": [
+          "q037"
+        ],
+        "reason": "code indexing such as x[1] was read as a citation marker (fixed in b3de835)",
+        "git_commit": "b3de8359438d7f3b15544ed84d55012be6114e3e",
+        "at": "2026-10-13T16:40:38+00:00"
+      }
+    ]
+  },
+  "summary": {
+    "questions": 24,
+    "errors": 0,
+    "retrieval": {
+      "recall": 0.8158,
+      "all_evidence": 0.7895,
+      "hit": 0.8421,
+      "mrr": 0.6711,
+      "ndcg": 0.673
+    },
+    "retrieval_by_type": {
+      "distractor": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.6111,
+        "ndcg": 0.7103
+      },
+      "factual": {
+        "recall": 0.875,
+        "all_evidence": 0.875,
+        "hit": 0.875,
+        "mrr": 0.6146,
+        "ndcg": 0.6788
+      },
+      "identifier": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.9033
+      },
+      "multi_hop": {
+        "recall": 0.375,
+        "all_evidence": 0.25,
+        "hit": 0.5,
+        "mrr": 0.5,
+        "ndcg": 0.4033
+      }
+    },
+    "latency_ms": {
+      "embed": {
+        "p50": 296.8,
+        "p95": 357.0
+      },
+      "generate": {
+        "p50": 16145.1,
+        "p95": 24506.6
+      },
+      "retrieve_dense": {
+        "p50": 18.6,
+        "p95": 25.6
+      },
+      "total": {
+        "p50": 16482.8,
+        "p95": 24855.3
+      }
+    },
+    "answers": {
+      "correctness": 0.8421,
+      "faithfulness": 0.9938,
+      "citation_precision": 0.7812,
+      "abstention": {
+        "precision": 0.625,
+        "recall": 1.0,
+        "f1": 0.7692307692307693,
+        "false_abstention_rate": 0.15789473684210525
+      },
+      "prompt_tokens": 1639.2917,
+      "completion_tokens": 50.0417
+    }
+  },
+  "questions": [
+    {
+      "id": "q004",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 70.2,
+        "retrieve_dense": 15.9,
+        "generate": 15810.9,
+        "total": 15902.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.776,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 5789,
+          "end": 6481,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.728,
+          "source": "fastapi/tutorial/index.md",
+          "start": 3230,
+          "end": 3605,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7251,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 4944,
+          "end": 5787,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7174,
+          "source": "fastapi/tutorial/index.md",
+          "start": 3607,
+          "end": 4900,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.6966,
+          "source": "fastapi/tutorial/index.md",
+          "start": 0,
+          "end": 387,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "The FastAPI tutorial suggests using tools like Celery for heavy background computation that doesn't need to run in the same process [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1191,
+        "completion_tokens": 47
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately identifies Celery as the suggested tool for heavy background computation, aligning with the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The FastAPI tutorial suggests using tools like Celery for heavy background computation.",
+            "supported": true
+          },
+          {
+            "claim": "The heavy background computation doesn't need to run in the same process.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q010",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 287.3,
+        "retrieve_dense": 21.1,
+        "generate": 11170.5,
+        "total": 11486.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7842,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 1937,
+          "end": 3195,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7836,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 9854,
+          "end": 9968,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7816,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 726,
+          "end": 1935,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 0.7735,
+          "source": "fastapi/tutorial/request-forms-and-files.md",
+          "start": 739,
+          "end": 1781,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7597,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 3135,
+          "end": 4281,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      },
+      "answer": "Declaring an uploaded file parameter as `bytes` means the whole contents will be stored in memory, which works well for small files but can consume all memory for large files [3].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1546,
+        "completion_tokens": 57
+      },
+      "citations": [
+        3
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately explains that declaring an uploaded file parameter as bytes stores the entire file in memory, making it suitable only for small files due to potential memory consumption issues."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Declaring an uploaded file parameter as `bytes` means the whole contents will be stored in memory.",
+            "supported": true
+          },
+          {
+            "claim": "This works well for small files.",
+            "supported": true
+          },
+          {
+            "claim": "It can consume all memory for large files.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q011",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 281.6,
+        "retrieve_dense": 18.9,
+        "generate": 10887.4,
+        "total": 11193.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7678,
+          "source": "fastapi/tutorial/request-forms-and-files.md",
+          "start": 739,
+          "end": 1781,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7628,
+          "source": "fastapi/tutorial/body-fields.md",
+          "start": 0,
+          "end": 245,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7626,
+          "source": "fastapi/tutorial/request-forms.md",
+          "start": 1590,
+          "end": 2608,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 0.7597,
+          "source": "fastapi/tutorial/path-params.md",
+          "start": 0,
+          "end": 539,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7595,
+          "source": "fastapi/tutorial/body-multiple-params.md",
+          "start": 1131,
+          "end": 2399,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      },
+      "answer": "Because the request body will be encoded using `multipart/form-data` instead of `application/json`, which is part of the HTTP protocol, not a limitation of FastAPI [1][3].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1427,
+        "completion_tokens": 61
+      },
+      "citations": [
+        1,
+        3
+      ],
+      "citation_precision": 0.5,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately explains that form-encoded requests use `multipart/form-data` and not `application/json`, aligning with the reference's explanation of the HTTP protocol's requirements."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Because the request body will be encoded using `multipart/form-data` instead of `application/json`",
+            "supported": true
+          },
+          {
+            "claim": "this is part of the HTTP protocol",
+            "supported": true
+          },
+          {
+            "claim": "not a limitation of FastAPI",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q015",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 232.9,
+        "retrieve_dense": 19.0,
+        "generate": 11652.5,
+        "total": 11918.8
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.8489,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 2532,
+          "end": 3279,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7824,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 3281,
+          "end": 4081,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7515,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 25492,
+          "end": 26921,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7413,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 13103,
+          "end": 14533,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7357,
+          "source": "fastapi/tutorial/security/first-steps.md",
+          "start": 4259,
+          "end": 5481,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "The recommended algorithm is \"Argon2\" [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1733,
+        "completion_tokens": 32
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately identifies Argon2 as the recommended password hashing algorithm according to the FastAPI security tutorial."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The recommended algorithm is \"Argon2\".",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q016",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 305.6,
+        "retrieve_dense": 15.8,
+        "generate": 14197.5,
+        "total": 14523.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7895,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 8536,
+          "end": 9643,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7809,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 10669,
+          "end": 12165,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7763,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 9388,
+          "end": 10903,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7706,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 7660,
+          "end": 8728,
+          "relevant": true
+        },
+        {
+          "rank": 5,
+          "score": 0.769,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 8523,
+          "end": 8940,
+          "relevant": true
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.25,
+        "ndcg": 0.43067655807339306
+      },
+      "answer": "To prevent timing attacks that could be used to enumerate existing usernames by making the endpoint take roughly the same amount of time to respond whether the username is valid or not [4].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1850,
+        "completion_tokens": 55
+      },
+      "citations": [
+        4
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately explains the purpose of the dummy hash verification as a defense against timing attacks, aligning with the reference answer's core concept."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "To prevent timing attacks that could be used to enumerate existing usernames by making the endpoint take roughly the same amount of time to respond whether the username is valid or not.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q017",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 244.8,
+        "retrieve_dense": 18.3,
+        "generate": 8853.4,
+        "total": 9123.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.875,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 7324,
+          "end": 7943,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7742,
+          "source": "fastapi/tutorial/stream-json-lines.md",
+          "start": 5054,
+          "end": 5308,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.765,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 5550,
+          "end": 6607,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7554,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 0,
+          "end": 371,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7467,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 6609,
+          "end": 7322,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "FastAPI sends a \"keep alive\" ping every 15 seconds when there hasn't been any message [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1189,
+        "completion_tokens": 44
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states that FastAPI sends a keep-alive ping every 15 seconds when no message has been sent, matching the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "FastAPI sends a \"keep alive\" ping every 15 seconds when there hasn't been any message.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q018",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 322.9,
+        "retrieve_dense": 11.7,
+        "generate": 16216.4,
+        "total": 16560.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7874,
+          "source": "python/howto-logging.pdf",
+          "start": 6323,
+          "end": 7815,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.77,
+          "source": "python/howto-logging.pdf",
+          "start": 24765,
+          "end": 25876,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7694,
+          "source": "python/howto-logging.pdf",
+          "start": 23690,
+          "end": 24983,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7658,
+          "source": "python/howto-logging.pdf",
+          "start": 5269,
+          "end": 6603,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.758,
+          "source": "python/howto-logging.pdf",
+          "start": 25711,
+          "end": 27241,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "The default level of Python's logging module is WARNING [4].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2118,
+        "completion_tokens": 33
+      },
+      "citations": [
+        4
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the default logging level as WARNING, which aligns with the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The default level of Python's logging module is WARNING.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q020",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 207.8,
+        "retrieve_dense": 19.4,
+        "generate": 22465.3,
+        "total": 22696.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.8142,
+          "source": "python/howto-regex.pdf",
+          "start": 49314,
+          "end": 50782,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7879,
+          "source": "python/howto-regex.pdf",
+          "start": 16391,
+          "end": 17922,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7731,
+          "source": "python/howto-regex.pdf",
+          "start": 9327,
+          "end": 10791,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7652,
+          "source": "python/howto-regex.pdf",
+          "start": 19912,
+          "end": 21409,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7626,
+          "source": "python/howto-regex.pdf",
+          "start": 17628,
+          "end": 18963,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "re.match() only checks if the RE matches at the beginning of the string, while re.search() scans forward through the string for a match. match() will only report a successful match starting at 0, whereas search() reports the first match found anywhere in the string [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2232,
+        "completion_tokens": 77
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes the core difference between `re.match()` and `re.search()` by explaining their behavior regarding matching positions within a string."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "re.match() only checks if the RE matches at the beginning of the string.",
+            "supported": true
+          },
+          {
+            "claim": "re.search() scans forward through the string for a match.",
+            "supported": true
+          },
+          {
+            "claim": "re.match() will only report a successful match which will start at 0.",
+            "supported": true
+          },
+          {
+            "claim": "re.search() reports the first match found anywhere in the string.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q022",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 195.4,
+        "retrieve_dense": 12.2,
+        "generate": 17230.1,
+        "total": 17441.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7908,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 4323,
+          "end": 5578,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7809,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 5580,
+          "end": 6171,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7499,
+          "source": "fastapi/tutorial/request-forms.md",
+          "start": 547,
+          "end": 1588,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7465,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 145,
+          "end": 1651,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7311,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 1440,
+          "end": 1686,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "no_valid_citations",
+      "usage": {
+        "prompt_tokens": 1564,
+        "completion_tokens": 59
+      },
+      "citations": [],
+      "citation_precision": null,
+      "correctness": {
+        "verdict": "incorrect",
+        "score": 0.0,
+        "reason": "abstained"
+      }
+    },
+    {
+      "id": "q024",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 357.0,
+        "retrieve_dense": 8.5,
+        "generate": 22198.7,
+        "total": 22576.3
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7909,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 15761,
+          "end": 16985,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7614,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 16732,
+          "end": 17926,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.7569,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 21127,
+          "end": 21359,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7562,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 17796,
+          "end": 19157,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7243,
+          "source": "fastapi/tutorial/response-model.md",
+          "start": 19089,
+          "end": 20124,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "It returns only the values explicitly set in the model, omitting default values. For example, if a field has a default value and is not set in the data, it won't appear in the response [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1794,
+        "completion_tokens": 64
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately explains that `response_model_exclude_unset=True` prevents default values from being included in the response, only returning explicitly set values."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "It returns only the values explicitly set in the model, omitting default values.",
+            "supported": true
+          },
+          {
+            "claim": "For example, if a field has a default value and is not set in the data, it won't appear in the response.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q025",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 314.8,
+        "retrieve_dense": 25.6,
+        "generate": 19812.4,
+        "total": 20159.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7793,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 2811,
+          "end": 4097,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7764,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 3984,
+          "end": 5130,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.7195,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1850,
+          "end": 3104,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.6944,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1471,
+          "end": 1848,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.6835,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 19022,
+          "end": 19803,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "The default value of `allow_credentials` in `CORSMiddleware` is `False` [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1535,
+        "completion_tokens": 41
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states that the default value of `allow_credentials` in `CORSMiddleware` is `False`."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The default value of `allow_credentials` in `CORSMiddleware` is `False`.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q030",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 314.1,
+        "retrieve_dense": 23.4,
+        "generate": 21296.9,
+        "total": 21643.6
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.764,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 4140,
+          "end": 5022,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.7396,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 6117,
+          "end": 6762,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7196,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 3135,
+          "end": 4281,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 0.7151,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 1937,
+          "end": 3195,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7073,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 726,
+          "end": 1935,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "You would call `await myfile.seek(0)` to go to the start of the file, which is especially useful if you ran `await myfile.read()` once and then need to read the contents again [3].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1634,
+        "completion_tokens": 63
+      },
+      "citations": [
+        3
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately explains the purpose of `await myfile.seek(0)` in the context of an UploadFile, mirroring the key information in the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "You would call `await myfile.seek(0)` to go to the start of the file.",
+            "supported": true
+          },
+          {
+            "claim": "This is especially useful if you ran `await myfile.read()` once and then need to read the contents again.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q035",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 328.7,
+        "retrieve_dense": 9.3,
+        "generate": 24506.6,
+        "total": 24855.3
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7798,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 25492,
+          "end": 26921,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7659,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 3830,
+          "end": 5154,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7604,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 13103,
+          "end": 14533,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7534,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 13908,
+          "end": 15231,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.752,
+          "source": "fastapi/tutorial/security/oauth2-jwt.md",
+          "start": 18459,
+          "end": 19679,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "The tutorial uses Argon2id to hash passwords and HS256 to sign JWT tokens [2][4].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2365,
+        "completion_tokens": 47
+      },
+      "citations": [
+        2,
+        4
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "While the answer specifies Argon2id instead of Argon2, both are acceptable Argon2 variants and the core information about the algorithms used for password hashing and JWT signing is accurate."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The tutorial uses Argon2id to hash passwords",
+            "supported": true
+          },
+          {
+            "claim": "The tutorial uses HS256 to sign JWT tokens",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q036",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 276.7,
+        "retrieve_dense": 19.4,
+        "generate": 22258.3,
+        "total": 22560.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7461,
+          "source": "python/howto-logging.pdf",
+          "start": 5269,
+          "end": 6603,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7362,
+          "source": "python/howto-logging.pdf",
+          "start": 29912,
+          "end": 31247,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7312,
+          "source": "python/howto-logging.pdf",
+          "start": 10100,
+          "end": 11552,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7279,
+          "source": "python/howto-logging.pdf",
+          "start": 13984,
+          "end": 15547,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7268,
+          "source": "python/howto-logging.pdf",
+          "start": 8909,
+          "end": 10333,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "Debug messages don't show up by default because the default logging level is WARNING [1]. To log everything from DEBUG up into example.log, use logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG) [5].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2031,
+        "completion_tokens": 71
+      },
+      "citations": [
+        1,
+        5
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer correctly explains why debug messages are hidden and provides the correct code snippet to enable them and redirect logging to a file, including the important 'filemode' argument."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Debug messages don't show up by default because the default logging level is WARNING.",
+            "supported": true
+          },
+          {
+            "claim": "To log everything from DEBUG up into example.log, use logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG).",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q037",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 287.9,
+        "retrieve_dense": 8.5,
+        "generate": 18253.5,
+        "total": 18559.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7633,
+          "source": "python/howto-sorting.pdf",
+          "start": 4555,
+          "end": 5002,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.754,
+          "source": "python/howto-sorting.pdf",
+          "start": 2484,
+          "end": 3021,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7388,
+          "source": "python/howto-sorting.pdf",
+          "start": 1411,
+          "end": 2628,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7355,
+          "source": "python/howto-sorting.pdf",
+          "start": 752,
+          "end": 1409,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7318,
+          "source": "python/howto-sorting.pdf",
+          "start": 6449,
+          "end": 7943,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "Use sorted() with a key function that extracts the second item and set reverse=True: sorted(tuple_list, key=lambda x: x[1], reverse=True) [1]",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1607,
+        "completion_tokens": 54
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer correctly uses `sorted()` with a lambda function to sort a list of tuples by the second element in descending order, which is equivalent to the reference answer."
+      },
+      "faithfulness": {
+        "score": 0.9,
+        "claims": [
+          {
+            "claim": "list.sort() and sorted() accept a reverse parameter with a boolean value.",
+            "supported": true
+          },
+          {
+            "claim": "sorted() returns a new sorted list.",
+            "supported": true
+          },
+          {
+            "claim": "list.sort() modifies the list in-place.",
+            "supported": true
+          },
+          {
+            "claim": "sorted() accepts any iterable.",
+            "supported": true
+          },
+          {
+            "claim": "The key parameter specifies a function to be called on each list element prior to making comparisons.",
+            "supported": true
+          },
+          {
+            "claim": "The key function is called exactly once for each input record.",
+            "supported": true
+          },
+          {
+            "claim": "Tuples are compared lexicographically.",
+            "supported": true
+          },
+          {
+            "claim": "Including an index in the decorated list provides stability.",
+            "supported": true
+          },
+          {
+            "claim": "The original items do not have to be comparable when using the decorate-sort-undecorate idiom.",
+            "supported": true
+          },
+          {
+            "claim": "Use sorted() with a key function that extracts the second item and set reverse=True: sorted(tuple_list, key=lambda x: x[1], reverse=True)",
+            "supported": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "q039",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 360.9,
+        "retrieve_dense": 19.0,
+        "generate": 26497.6,
+        "total": 26884.2
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.81,
+          "source": "python/howto-regex.pdf",
+          "start": 13628,
+          "end": 15324,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.8018,
+          "source": "python/howto-regex.pdf",
+          "start": 12284,
+          "end": 13942,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.7963,
+          "source": "python/howto-regex.pdf",
+          "start": 15075,
+          "end": 16631,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.789,
+          "source": "python/howto-regex.pdf",
+          "start": 2498,
+          "end": 4047,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7624,
+          "source": "python/howto-regex.pdf",
+          "start": 47751,
+          "end": 49556,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "no_valid_citations",
+      "usage": {
+        "prompt_tokens": 2217,
+        "completion_tokens": 99
+      },
+      "citations": [],
+      "citation_precision": null,
+      "correctness": {
+        "verdict": "incorrect",
+        "score": 0.0,
+        "reason": "abstained"
+      }
+    },
+    {
+      "id": "q042",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 325.1,
+        "retrieve_dense": 39.7,
+        "generate": 16718.5,
+        "total": 17087.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7597,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1471,
+          "end": 1848,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7392,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 2811,
+          "end": 4097,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7243,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 3984,
+          "end": 5130,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 0.705,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1850,
+          "end": 3104,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.6976,
+          "source": "fastapi/tutorial/security/simple-oauth2.md",
+          "start": 19022,
+          "end": 19803,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.5
+      },
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "no_valid_citations",
+      "usage": {
+        "prompt_tokens": 1538,
+        "completion_tokens": 51
+      },
+      "citations": [],
+      "citation_precision": null,
+      "correctness": {
+        "verdict": "incorrect",
+        "score": 0.0,
+        "reason": "abstained"
+      }
+    },
+    {
+      "id": "q045",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 325.6,
+        "retrieve_dense": 24.6,
+        "generate": 12685.6,
+        "total": 13047.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.8362,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 4944,
+          "end": 5787,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.8271,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 3495,
+          "end": 4942,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7886,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 744,
+          "end": 1539,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.763,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 6483,
+          "end": 6613,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7615,
+          "source": "fastapi/tutorial/background-tasks.md",
+          "start": 2504,
+          "end": 3493,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "You should import `BackgroundTasks` for background tasks in FastAPI [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1292,
+        "completion_tokens": 36
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer correctly identifies `BackgroundTasks` as the class to import for background tasks in FastAPI, aligning with the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "You should import `BackgroundTasks` for background tasks in FastAPI.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q047",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 319.8,
+        "retrieve_dense": 11.7,
+        "generate": 18178.5,
+        "total": 18517.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.8137,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 1538,
+          "end": 2268,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.8124,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 6192,
+          "end": 7650,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.8003,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 8591,
+          "end": 10450,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7966,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 4575,
+          "end": 5233,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7934,
+          "source": "fastapi/tutorial/dependencies/dependencies-with-yield.md",
+          "start": 7423,
+          "end": 8589,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      "answer": "The client gets an HTTP 500 Internal Server Error response, and the server will have no logs or indication of the error [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1784,
+        "completion_tokens": 49
+      },
+      "citations": [
+        2
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes the client's response and the server's lack of logging in the scenario of a dependency with yield catching and suppressing an exception."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "If you use a `try` block in a dependency with `yield`, you'll receive any exception that was thrown when using the dependency.",
+            "supported": true
+          },
+          {
+            "claim": "If some code at some point in the middle, in another dependency or in a *path operation*, made a database transaction \"rollback\" or created any other exception, you would receive the exception in your dependency.",
+            "supported": true
+          },
+          {
+            "claim": "You can use `finally` to make sure the exit steps are executed, no matter if there was an exception or not.",
+            "supported": true
+          },
+          {
+            "claim": "If you catch an exception using `except` in a dependency with `yield` and you don't raise it again, FastAPI won't be able to notice there was an exception.",
+            "supported": true
+          },
+          {
+            "claim": "If you catch an exception in a dependency with `yield`, unless you are raising another `HTTPException` or similar, you should re-raise the original exception.",
+            "supported": true
+          },
+          {
+            "claim": "If you don't raise an `HTTPException` or similar, the client will see an *HTTP 500 Internal Server Error* response.",
+            "supported": true
+          },
+          {
+            "claim": "If you don't raise an `HTTPException` or similar, the server will have no logs or any other indication of what was the error.",
+            "supported": true
+          },
+          {
+            "claim": "If you raise any exception in the code from the *path operation function*, it will be passed to the dependencies with yield, including `HTTPException`.",
+            "supported": true
+          },
+          {
+            "claim": "Only one response will be sent to the client.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "q049",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 334.1,
+        "retrieve_dense": 19.4,
+        "generate": 8225.9,
+        "total": 8586.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7029,
+          "source": "fastapi/tutorial/server-sent-events.md",
+          "start": 7324,
+          "end": 7943,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.6913,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 0,
+          "end": 345,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.675,
+          "source": "fastapi/tutorial/cors.md",
+          "start": 1850,
+          "end": 3104,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.672,
+          "source": "fastapi/tutorial/body.md",
+          "start": 7328,
+          "end": 7589,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.6699,
+          "source": "fastapi/tutorial/testing.md",
+          "start": 1317,
+          "end": 1955,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 1120,
+        "completion_tokens": 21
+      },
+      "citations": []
+    },
+    {
+      "id": "q053",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 209.4,
+        "retrieve_dense": 17.3,
+        "generate": 12604.3,
+        "total": 12837.2
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7602,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 6117,
+          "end": 6762,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7546,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 6764,
+          "end": 7325,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.7425,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 1937,
+          "end": 3195,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.7316,
+          "source": "fastapi/tutorial/request-files.md",
+          "start": 325,
+          "end": 724,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.7266,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 0,
+          "end": 349,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 1138,
+        "completion_tokens": 34
+      },
+      "citations": []
+    },
+    {
+      "id": "q054",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 256.5,
+        "retrieve_dense": 16.5,
+        "generate": 11145.7,
+        "total": 11425.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6841,
+          "source": "fastapi/tutorial/sql-databases.md",
+          "start": 16859,
+          "end": 17371,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.666,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 13877,
+          "end": 15060,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.6542,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 23828,
+          "end": 24250,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.6537,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 0,
+          "end": 349,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.6475,
+          "source": "fastapi/tutorial/bigger-applications.md",
+          "start": 14881,
+          "end": 15921,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 1310,
+        "completion_tokens": 21
+      },
+      "citations": []
+    },
+    {
+      "id": "q058",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 258.9,
+        "retrieve_dense": 23.6,
+        "generate": 12696.1,
+        "total": 12986.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.7138,
+          "source": "python/howto-argparse.pdf",
+          "start": 0,
+          "end": 165,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.7038,
+          "source": "python/howto-argparse.pdf",
+          "start": 9560,
+          "end": 10218,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.697,
+          "source": "python/howto-argparse.pdf",
+          "start": 10220,
+          "end": 11461,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.6955,
+          "source": "python/howto-argparse.pdf",
+          "start": 17173,
+          "end": 18301,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.695,
+          "source": "python/howto-argparse.pdf",
+          "start": 692,
+          "end": 1238,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 1360,
+        "completion_tokens": 42
+      },
+      "citations": []
+    },
+    {
+      "id": "q059",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 309.2,
+        "retrieve_dense": 16.9,
+        "generate": 16073.8,
+        "total": 16405.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.714,
+          "source": "python/howto-sorting.pdf",
+          "start": 8804,
+          "end": 9920,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.6837,
+          "source": "fastapi/tutorial/path-params-numeric-validations.md",
+          "start": 1808,
+          "end": 3102,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.6792,
+          "source": "python/howto-argparse.pdf",
+          "start": 1907,
+          "end": 3076,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.6747,
+          "source": "python/howto-sorting.pdf",
+          "start": 1411,
+          "end": 2628,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.6724,
+          "source": "python/howto-sorting.pdf",
+          "start": 2484,
+          "end": 3021,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 1768,
+        "completion_tokens": 43
+      },
+      "citations": []
+    }
+  ]
+}

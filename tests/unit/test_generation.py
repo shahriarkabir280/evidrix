@@ -8,7 +8,9 @@ from app.rag.generation import (
     ABSTAIN_MESSAGE,
     JSON_REMINDER,
     BadModelOutputError,
+    _RawAnswer,
     generate_answer,
+    validate_citations,
 )
 from tests.fakes import FakeLLM
 
@@ -176,3 +178,19 @@ def test_reply_cut_off_by_the_output_limit_is_an_error_without_retry():
     with pytest.raises(BadModelOutputError):
         answer_with(llm)
     assert len(llm.calls) == 1
+
+
+@pytest.mark.parametrize(
+    ("answer", "citations", "kept_text"),
+    [
+        ("Sort with key=lambda x: x[1] [2].", [2], "x[1]"),
+        ("Index rows with m[1][2] first [1].", [1], "m[1][2]"),
+        ("Call f(x)[0] then cite [1][2].", [1, 2], "f(x)[0]"),
+    ],
+)
+def test_brackets_glued_to_code_are_not_citations(answer, citations, kept_text):
+    text, valid, dropped = validate_citations(_RawAnswer(answer, citations, False), 5)
+
+    assert valid == citations
+    assert dropped == []
+    assert kept_text in text

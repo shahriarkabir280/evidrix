@@ -282,3 +282,61 @@ Rank of the document that answers the question, within the top 10:
 
 **Next**
 - Part 7: Docker images, deployment, CI/CD.
+
+## Part 7 — Deployment and CI/CD (2026-10-13)
+
+**Built**
+- A two-stage Dockerfile (uv, CPU-only torch, models downloaded at build time, non-root UID 1000);
+  one image for the API and the worker. 2.44 GB: 1.4 GB virtualenv, 217 MB models.
+- `docker-compose.prod.yml`: Postgres, Redis, a `migrate` release step, API, worker.
+- `BLOB_BACKEND=postgres` (uploads in a `blobs` table), `INGESTION_MODE=inline` (jobs in an
+  API thread, resubmitted at startup), `CHAT_ENABLED=false` (retrieval-only demo).
+- `scripts/smoke.py` with a persistence check; CI with coverage (≥ 85%, at 92%) and a Docker
+  build; manual `Smoke test` and `Deploy` workflows (migrate Neon, then push to the HF Space).
+
+**Decided (with the owner)**
+- Public demo retrieval-only, so the published numbers stay those of the local 8B model.
+- Hugging Face Space + Neon + Upstash rather than Render: measured peak memory in the container
+  was 687 MiB by default and 488 MiB at best, too close to Render's 512 MB instances.
+
+**Measured**
+- Container memory per setting (docs/deploy.md); the reranker batch size was the lever
+  (687 → 518 MiB), `MALLOC_ARENA_MAX` did nothing.
+- Smoke test and persistence check pass against the container stack; the demo configuration
+  passes via `/retrieve`.
+
+**Surprises**
+- The first smoke run found the worker listening on RQ's `default` queue: in a folded YAML
+  block, more-indented continuation lines keep their newlines, so `sh` ran `rq worker` without
+  its queue name. Nothing failed loudly; jobs just stayed queued.
+
+**Not done (needs the owner's accounts)**
+- The public deployment and its smoke run; branch protection on `main` (GitHub settings).
+
+## Part 8 — Ablations, error analysis, report (2026-10-13)
+
+**Built**
+- `scripts/run_ablations.sh` (12 full runs on the test split, once each), `evals.ablations`
+  (pooled tables with paired differences), `evals.failures` (failure listing), `evals.rescore`,
+  `app.cli index-version` (E4), presets for E5. docs/REPORT.md and docs/demo-script.md.
+
+**Measured (test split, 35 questions)**
+- Reranking (E3) vs dense: Recall@5 +0.125, MRR@5 +0.193, nDCG@5 +0.145, all significant;
+  correctness +0.089 (0.768 → 0.857), not yet significant. Hybrid without reranking: slightly
+  worse than dense. 256-token chunks: 26% fewer tokens, worse on every quality measure. Top 3:
+  32% fewer tokens, −0.036 correctness; top 8: +55% tokens, no gain.
+- 14 failures of the default (test + dev): 6 retrieval (4 a missing second hop), 2 table
+  extraction, 2 false abstentions, 4 judge errors. No missed abstention.
+
+**Surprises**
+- The error analysis found a bug rather than a failure: `x[1]` in a code answer was parsed as
+  a citation marker, and the judge, which strips markers, graded `lambda x: x`. Fixed in the app
+  and the judge; the one affected question was re-scored in the three runs that contained it.
+- The first version of the re-score condition also matched `][` between consecutive citations
+  and started re-judging most answers; caught by its output, results restored from git, the
+  condition narrowed and checked with a dry run first.
+- With eight passages, one judge reply was cut off mid-JSON.
+- Four of 14 failures were the judge's: the measured correctness understates the system.
+
+**Not done**
+- Demo video (docs/demo-script.md), `v1.0.0` tag, the public deployment (Part 7).

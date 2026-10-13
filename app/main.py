@@ -17,6 +17,7 @@ from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.rag.embeddings import get_embedder
 from app.rag.rerank import get_reranker
+from app.worker.queue import get_ingestion_queue
 
 
 def create_app(*, preload_models: bool = True) -> FastAPI:
@@ -35,6 +36,9 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
             structlog.get_logger(__name__).info(
                 "models_warmed_up", duration_ms=round((time.perf_counter() - started) * 1000, 1)
             )
+            if get_settings().ingestion_mode == "inline":
+                # No worker to restart in this mode: pick up what the last process left.
+                get_ingestion_queue().recover()  # type: ignore[attr-defined]
         yield
 
     app = FastAPI(

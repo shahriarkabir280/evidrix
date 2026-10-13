@@ -888,6 +888,8 @@ Branch `feature/observability` · Milestone M4
 
 Branch `feature/deploy` · Milestone M5
 
+**Status: built and verified locally (2026-10-13); the public deployment needs the owner's Neon, Upstash and Hugging Face accounts (steps in docs/deploy.md).**
+
 **Components**
 - **7A** Production Dockerfile (step 1)
 - **7B** Memory decision and hosting setup (steps 2–3)
@@ -958,7 +960,7 @@ Branch `feature/deploy` · Milestone M5
 
 **DoD**
 - [ ] Public URL with Swagger UI. Smoke script passes against it.
-- [ ] Data survives restarts. Migrations ran via the release command.
+- [x] Data survives restarts. Migrations ran via the release command. (container stack)
 - [ ] CI green on `main` with branch protection. Deployment steps documented in the README.
 
 
@@ -972,6 +974,8 @@ Branch `feature/deploy` · Milestone M5
 ### Part 8 — Research report & portfolio
 
 Branch `feature/report` · Milestone M5
+
+**Status: experiments, error analysis and report done (2026-10-13, built on the `feature/deploy` branch); the demo video and the `v1.0.0` tag remain.**
 
 **Components**
 - **8A** Ablation runs E1–E5
@@ -1026,7 +1030,7 @@ with its page → ask an unanswerable question to show abstention → `/retrieve
 hybrid on an identifier query → eval results table.
 
 **DoD**
-- [ ] Results table contains measured numbers for E1–E5 on the held-out test split.
+- [x] Results table contains measured numbers for E1–E5 on the held-out test split.
 - [ ] Report, README, diagram, and video are published. `v1.0.0` tagged.
 
 

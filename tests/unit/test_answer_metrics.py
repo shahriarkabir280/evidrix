@@ -102,3 +102,10 @@ def test_citation_markers_are_removed_before_judging():
     assert strip_citations("Use Cookie [1], like Query [2][3] or Path [1, 4].") == (
         "Use Cookie, like Query or Path."
     )
+
+
+def test_indexing_in_code_is_not_mistaken_for_a_citation_when_judging():
+    # Part 8 error analysis: the judge saw `lambda x: x` and graded a correct answer wrong.
+    answer = "Use sorted(pairs, key=lambda x: x[1], reverse=True) [4][2]."
+
+    assert strip_citations(answer) == "Use sorted(pairs, key=lambda x: x[1], reverse=True)."

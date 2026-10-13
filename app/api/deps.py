@@ -22,7 +22,7 @@ from app.rag.embeddings import Embedder, get_embedder
 from app.rag.llm import LLMProvider, get_llm
 from app.rag.rerank import Reranker, get_reranker
 from app.rag.retrieval import RetrievalConfig, load_preset
-from app.storage.blob import BlobStore, LocalBlobStore
+from app.storage.blob import BlobStore, make_blob_store
 from app.worker.queue import IngestionQueue, get_ingestion_queue
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ def get_redis() -> Redis:
 
 
 def get_blob_store(settings: Annotated[Settings, Depends(get_settings)]) -> BlobStore:
-    return LocalBlobStore(settings.blob_dir)
+    return make_blob_store(settings)
 
 
 SettingsDep = Annotated[Settings, Depends(get_settings)]
