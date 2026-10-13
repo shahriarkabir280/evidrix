@@ -1,0 +1,1404 @@
+{
+  "provenance": {
+    "created_at": "2026-10-13T15:48:34+00:00",
+    "git_commit": "28ce1bd7308a8cc26bd898412bb3a212ca882668",
+    "git_dirty": true,
+    "benchmark": "papers",
+    "preset": "hybrid_rerank_k8",
+    "retrieval": {
+      "mode": "hybrid",
+      "rerank": true,
+      "top_k": 8,
+      "candidate_k": 20,
+      "rrf_k": 60,
+      "min_score": -2.84,
+      "exclude_references": false
+    },
+    "split": "test",
+    "mode": "full",
+    "k": 5,
+    "index_version": "bge-small_c400_o64",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+    "benchmark_sha256": "790854ce6b3c5dbd98cbb076b133b6c30ee234060ffa4af927c5878eda402ee5",
+    "corpus_manifest_sha256": "9216ea461e5f02049d788d5f8f58689fd7d16f2e46705c404805f25e3f2b22d0",
+    "llm_model": "qwen3-vl:8b-instruct",
+    "prompt_version": "answer_v2",
+    "judge_model": "gemma3:12b",
+    "judge_prompts": [
+      "judge_faithfulness_v1",
+      "judge_correctness_v1"
+    ],
+    "duration_s": 397.2,
+    "judge_duration_s": 621.5
+  },
+  "summary": {
+    "questions": 11,
+    "errors": 1,
+    "retrieval": {
+      "recall": 0.7222,
+      "all_evidence": 0.6667,
+      "hit": 0.7778,
+      "mrr": 0.5222,
+      "ndcg": 0.4805
+    },
+    "retrieval_by_type": {
+      "distractor": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "factual": {
+        "recall": 0.6667,
+        "all_evidence": 0.6667,
+        "hit": 0.6667,
+        "mrr": 0.5,
+        "ndcg": 0.5169
+      },
+      "identifier": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.2,
+        "ndcg": 0.3869
+      },
+      "multi_hop": {
+        "recall": 0.25,
+        "all_evidence": 0.0,
+        "hit": 0.5,
+        "mrr": 0.25,
+        "ndcg": 0.1934
+      },
+      "table": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.75,
+        "ndcg": 0.5
+      }
+    },
+    "latency_ms": {
+      "embed": {
+        "p50": 230.9,
+        "p95": 470.7
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.1
+      },
+      "generate": {
+        "p50": 32920.8,
+        "p95": 38403.6
+      },
+      "rerank": {
+        "p50": 204.2,
+        "p95": 258.4
+      },
+      "retrieve_dense": {
+        "p50": 12.7,
+        "p95": 41.7
+      },
+      "retrieve_keyword": {
+        "p50": 10.1,
+        "p95": 14.0
+      },
+      "total": {
+        "p50": 33417.1,
+        "p95": 39197.9
+      }
+    },
+    "answers": {
+      "correctness": 0.7222,
+      "faithfulness": 1.0,
+      "citation_precision": 0.4815,
+      "abstention": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "false_abstention_rate": 0.0
+      },
+      "prompt_tokens": 3401.6364,
+      "completion_tokens": 60.6364
+    }
+  },
+  "questions": [
+    {
+      "id": "p001",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 470.7,
+        "retrieve_dense": 41.7,
+        "retrieve_keyword": 14.0,
+        "fuse": 0.1,
+        "rerank": 258.4,
+        "generate": 38403.6,
+        "total": 39197.9
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 6.3471,
+          "source": "papers/ragas.pdf",
+          "start": 11617,
+          "end": 13267,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 4.869,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 4.8109,
+          "source": "papers/ragas.pdf",
+          "start": 10260,
+          "end": 11900,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 4.565,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 4.0164,
+          "source": "papers/ragas.pdf",
+          "start": 19239,
+          "end": 20166,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 3.8329,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 3.0587,
+          "source": "papers/ares.pdf",
+          "start": 30250,
+          "end": 31349,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 2.9749,
+          "source": "papers/self-rag.pdf",
+          "start": 68860,
+          "end": 69634,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.9197207891481876
+      },
+      "answer": "Ragas computes its faithfulness score as F = |V| / |S|, where |V| is the number of statements supported by the context and |S| is the total number of statements extracted from the answer [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3086,
+        "completion_tokens": 68
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes Ragas' faithfulness score calculation, using mathematical notation to represent the core concept of supported statements divided by total statements."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Ragas computes its faithfulness score as F = |V| / |S|",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 183.3,
+        "retrieve_dense": 6.1,
+        "retrieve_keyword": 3.2,
+        "fuse": 0.1,
+        "rerank": 248.2,
+        "generate": 32563.4,
+        "total": 33008.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.0237,
+          "source": "papers/self-rag.pdf",
+          "start": 4403,
+          "end": 6182,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 6.7372,
+          "source": "papers/self-rag.pdf",
+          "start": 40330,
+          "end": 41566,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 6.6589,
+          "source": "papers/self-rag.pdf",
+          "start": 60216,
+          "end": 62075,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 6.3516,
+          "source": "papers/self-rag.pdf",
+          "start": 5839,
+          "end": 6855,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 6.2724,
+          "source": "papers/self-rag.pdf",
+          "start": 12273,
+          "end": 13533,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 5.7385,
+          "source": "papers/self-rag.pdf",
+          "start": 59285,
+          "end": 59589,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 5.5255,
+          "source": "papers/self-rag.pdf",
+          "start": 10866,
+          "end": 12531,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 5.3445,
+          "source": "papers/self-rag.pdf",
+          "start": 14342,
+          "end": 16020,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "Reflection tokens in SELF-RAG are special tokens that signal when to retrieve, and critique the output's relevance, support, or usefulness. They are predicted by the model as part of the generation process and include types like Retrieve (Yes/No/Continue), ISREL (Relevant/Irrelevant), ISSUP (Fully supported/Partially supported/No support), and ISUSE (a 5-scale utility score) [1][3][7].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3092,
+        "completion_tokens": 117
+      },
+      "citations": [
+        1,
+        3,
+        7
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes reflection tokens, their purpose (retrieval and critique), and provides specific examples of token types as outlined in the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Reflection tokens are special tokens that signal when to retrieve.",
+            "supported": true
+          },
+          {
+            "claim": "Reflection tokens critique the output's relevance.",
+            "supported": true
+          },
+          {
+            "claim": "Reflection tokens critique the output's support.",
+            "supported": true
+          },
+          {
+            "claim": "Reflection tokens critique the output's usefulness.",
+            "supported": true
+          },
+          {
+            "claim": "Reflection tokens are predicted by the model as part of the generation process.",
+            "supported": true
+          },
+          {
+            "claim": "Retrieve tokens can be Yes, No, or Continue.",
+            "supported": true
+          },
+          {
+            "claim": "ISREL tokens can be Relevant or Irrelevant.",
+            "supported": true
+          },
+          {
+            "claim": "ISSUP tokens can be Fully supported, Partially supported, or No support.",
+            "supported": true
+          },
+          {
+            "claim": "ISUSE tokens are a 5-scale utility score.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 280.8,
+        "retrieve_dense": 15.3,
+        "retrieve_keyword": 11.6,
+        "fuse": 0.1,
+        "rerank": 203.8,
+        "generate": 31280.5,
+        "total": 31794.6
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.4443,
+          "source": "papers/colbertv2.pdf",
+          "start": 4313,
+          "end": 6063,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 6.2289,
+          "source": "papers/colbertv2.pdf",
+          "start": 947,
+          "end": 2399,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 5.8757,
+          "source": "papers/colbertv2.pdf",
+          "start": 3795,
+          "end": 4582,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 5.1639,
+          "source": "papers/colbertv2.pdf",
+          "start": 16130,
+          "end": 17687,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 5.1503,
+          "source": "papers/colbertv2.pdf",
+          "start": 12503,
+          "end": 14109,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 4.415,
+          "source": "papers/colbertv2.pdf",
+          "start": 2092,
+          "end": 3992,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 3.3455,
+          "source": "papers/colbertv2.pdf",
+          "start": 0,
+          "end": 1257,
+          "relevant": true
+        },
+        {
+          "rank": 8,
+          "score": 3.331,
+          "source": "papers/colbertv2.pdf",
+          "start": 29744,
+          "end": 30944,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6309297535714575
+      },
+      "answer": "ColBERTv2 reduces the space footprint of late interaction models by 6–10× [1][3][7].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3339,
+        "completion_tokens": 52
+      },
+      "citations": [
+        1,
+        3,
+        7
+      ],
+      "citation_precision": 0.3333333333333333,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the space footprint reduction of ColBERTv2 as 6–10 times, matching the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "ColBERTv2 reduces the space footprint of late interaction models by 6–10×.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p009",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [
+        "faithfulness: Judge reply is not JSON: '{\"claims\": [{\"claim\": \"PPI leverages both the labeled datapoints and the ARES judge predictions on the non-annotated datapoints to construct confidence intervals for the RAG system’s performance.\", \"s'"
+      ],
+      "timings_ms": {
+        "embed": 242.4,
+        "retrieve_dense": 12.7,
+        "retrieve_keyword": 5.8,
+        "fuse": 0.1,
+        "rerank": 190.0,
+        "generate": 35059.2,
+        "total": 35512.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 6.0695,
+          "source": "papers/ares.pdf",
+          "start": 15586,
+          "end": 17359,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 4.9468,
+          "source": "papers/ares.pdf",
+          "start": 24821,
+          "end": 26600,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 4.5401,
+          "source": "papers/ares.pdf",
+          "start": 32468,
+          "end": 33274,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 4.0638,
+          "source": "papers/ares.pdf",
+          "start": 28754,
+          "end": 30248,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 3.9179,
+          "source": "papers/ares.pdf",
+          "start": 0,
+          "end": 1376,
+          "relevant": true
+        },
+        {
+          "rank": 6,
+          "score": 3.5991,
+          "source": "papers/ares.pdf",
+          "start": 32967,
+          "end": 34463,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 3.1478,
+          "source": "papers/ares.pdf",
+          "start": 9047,
+          "end": 10518,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 2.5802,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.2,
+        "ndcg": 0.38685280723454163
+      },
+      "answer": "ARES uses PPI (prediction-powered inference) to construct confidence intervals for the performance of RAG systems by leveraging both labeled datapoints and ARES judge predictions on non-annotated datapoints. This allows for more accurate ranking and estimation of performance metrics like context relevance, answer faithfulness, and answer relevance [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3367,
+        "completion_tokens": 85
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer correctly identifies PPI's core function of leveraging predictions but expands on the application to confidence intervals and performance metrics, which isn't the focus of the reference answer."
+      }
+    },
+    {
+      "id": "p011",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 206.0,
+        "retrieve_dense": 7.0,
+        "retrieve_keyword": 6.1,
+        "fuse": 0.1,
+        "rerank": 206.4,
+        "generate": 30338.0,
+        "total": 30765.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 5.7952,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 5.6093,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 5.4657,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 4.2989,
+          "source": "papers/ragas.pdf",
+          "start": 14000,
+          "end": 15705,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 3.2371,
+          "source": "papers/ragas.pdf",
+          "start": 20168,
+          "end": 21100,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": -0.411,
+          "source": "papers/ares.pdf",
+          "start": 5487,
+          "end": 6789,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": -0.4829,
+          "source": "papers/ares.pdf",
+          "start": 4099,
+          "end": 5804,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": -0.5312,
+          "source": "papers/ragas.pdf",
+          "start": 26326,
+          "end": 27614,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.38685280723454163
+      },
+      "answer": "Ragas reached an agreement of 0.95 with human annotators for faithfulness on WikiEval [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3169,
+        "completion_tokens": 44
+      },
+      "citations": [
+        2
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the agreement score of 0.95 between Ragas and human annotators for faithfulness on WikiEval, matching the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "WikiEval requires the model to compare two answers or two context fragments.",
+            "supported": true
+          },
+          {
+            "claim": "The accuracy is reported as the fraction of instances on which the model agrees with the annotators.",
+            "supported": true
+          },
+          {
+            "claim": "For evaluating faithfulness, ChatGPT was used to assign a score between 0 and 10.",
+            "supported": true
+          },
+          {
+            "claim": "The prompt for evaluating faithfulness included a definition of the quality metric.",
+            "supported": true
+          },
+          {
+            "claim": "Answer Relevancy measures the degree to which a response directly addresses and is appropriate for a given question.",
+            "supported": true
+          },
+          {
+            "claim": "For evaluating answer relevance, ChatGPT was used to rank each answer based on Answer Relevancy.",
+            "supported": true
+          },
+          {
+            "claim": "The prompt for evaluating answer relevance included a definition of the quality metric.",
+            "supported": true
+          },
+          {
+            "claim": "Ragas achieved an agreement of 0.95 with human annotators for faithfulness on WikiEval.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p014",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 227.4,
+        "retrieve_dense": 12.2,
+        "retrieve_keyword": 12.2,
+        "fuse": 0.1,
+        "rerank": 240.2,
+        "generate": 34188.4,
+        "total": 34686.3
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 3.8041,
+          "source": "papers/sentence-bert.pdf",
+          "start": 15738,
+          "end": 16784,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 3.1157,
+          "source": "papers/sentence-bert.pdf",
+          "start": 16557,
+          "end": 17984,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 2.4523,
+          "source": "papers/sentence-bert.pdf",
+          "start": 14437,
+          "end": 15940,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 1.5236,
+          "source": "papers/sentence-bert.pdf",
+          "start": 26821,
+          "end": 28321,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 1.328,
+          "source": "papers/sentence-bert.pdf",
+          "start": 31695,
+          "end": 32802,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 0.8648,
+          "source": "papers/sentence-bert.pdf",
+          "start": 8278,
+          "end": 9560,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 0.4969,
+          "source": "papers/sentence-bert.pdf",
+          "start": 1186,
+          "end": 2814,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 0.4868,
+          "source": "papers/sentence-bert.pdf",
+          "start": 6954,
+          "end": 8482,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "SRoBERTa-NLI-STSb-large scored highest on the STS benchmark test set with 88.77 ± 0.46 [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3483,
+        "completion_tokens": 55
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "incorrect",
+        "score": 0.0,
+        "reason": "The answer incorrectly identifies SRoBERTa-NLI-STSb-large as the highest-scoring model, when the reference answer states it was BERT-NLI-STSb-large."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "BERT set a new state-of-the-art performance on the STS benchmark dataset.",
+            "supported": true
+          },
+          {
+            "claim": "SRoBERTa-NLI-STSb-large scored 88.77 ± 0.46 on the STS benchmark test set.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p015",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 197.6,
+        "retrieve_dense": 14.5,
+        "retrieve_keyword": 5.9,
+        "fuse": 0.1,
+        "rerank": 201.9,
+        "generate": 31862.0,
+        "total": 32285.0
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 4.2311,
+          "source": "papers/sentence-bert.pdf",
+          "start": 9562,
+          "end": 11156,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.3492,
+          "source": "papers/sentence-bert.pdf",
+          "start": 28323,
+          "end": 29680,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": -0.0664,
+          "source": "papers/sentence-bert.pdf",
+          "start": 26821,
+          "end": 28321,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": -4.2669,
+          "source": "papers/sentence-bert.pdf",
+          "start": 16557,
+          "end": 17984,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": -4.5678,
+          "source": "papers/sentence-bert.pdf",
+          "start": 31695,
+          "end": 32802,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": -5.2921,
+          "source": "papers/sentence-bert.pdf",
+          "start": 29682,
+          "end": 31121,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": -6.0513,
+          "source": "papers/sentence-bert.pdf",
+          "start": 4004,
+          "end": 5521,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": -6.2321,
+          "source": "papers/sentence-bert.pdf",
+          "start": 19229,
+          "end": 20721,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "The default configuration for SBERT is the MEAN strategy [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3470,
+        "completion_tokens": 34
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately identifies SBERT's default pooling strategy as MEAN pooling, aligning with the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "SBERT adds a pooling operation to the output of BERT / RoBERTa to derive a fixed sized sentence embedding.",
+            "supported": true
+          },
+          {
+            "claim": "The default configuration is MEAN.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p018",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 262.5,
+        "retrieve_dense": 14.6,
+        "retrieve_keyword": 10.1,
+        "fuse": 0.1,
+        "rerank": 204.2,
+        "generate": 36807.1,
+        "total": 37302.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 5.2574,
+          "source": "papers/ares.pdf",
+          "start": 24821,
+          "end": 26600,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 5.0779,
+          "source": "papers/ares.pdf",
+          "start": 5487,
+          "end": 6789,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 4.9771,
+          "source": "papers/ares.pdf",
+          "start": 14244,
+          "end": 15826,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 4.9114,
+          "source": "papers/ares.pdf",
+          "start": 1082,
+          "end": 2725,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 4.8269,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 4.7596,
+          "source": "papers/ares.pdf",
+          "start": 15586,
+          "end": 17359,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 4.6782,
+          "source": "papers/ares.pdf",
+          "start": 27574,
+          "end": 28952,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 4.5573,
+          "source": "papers/ares.pdf",
+          "start": 4099,
+          "end": 5804,
+          "relevant": true
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "Both RAGAS and ARES require human-annotated data. RAGAS uses GPT-3.5 with few-shot prompts, but the exact amount of annotations is not specified. ARES requires approximately 150 annotated datapoints for its human preference validation set, and it uses 78% fewer annotations than the baseline annotation-based method [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3470,
+        "completion_tokens": 98
+      },
+      "citations": [
+        2
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer correctly identifies that ARES needs human annotations and provides the approximate number, but incorrectly states that RAGAS requires human annotations when the reference explicitly states it does not."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "RAGAS requires human-annotated data.",
+            "supported": true
+          },
+          {
+            "claim": "ARES requires approximately 150 annotated datapoints for its human preference validation set.",
+            "supported": true
+          },
+          {
+            "claim": "ARES uses 78% fewer annotations than the baseline annotation-based method.",
+            "supported": true
+          },
+          {
+            "claim": "RAGAS uses GPT-3.5 with few-shot prompts.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p019",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 230.9,
+        "retrieve_dense": 15.7,
+        "retrieve_keyword": 12.5,
+        "fuse": 0.1,
+        "rerank": 255.3,
+        "generate": 36845.9,
+        "total": 37363.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 7.8778,
+          "source": "papers/e5.pdf",
+          "start": 18484,
+          "end": 19697,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 5.4664,
+          "source": "papers/e5.pdf",
+          "start": 2506,
+          "end": 4237,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 4.4952,
+          "source": "papers/e5.pdf",
+          "start": 0,
+          "end": 1636,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 3.7195,
+          "source": "papers/e5.pdf",
+          "start": 6192,
+          "end": 7544,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 2.9166,
+          "source": "papers/beir.pdf",
+          "start": 25235,
+          "end": 26678,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 2.1711,
+          "source": "papers/e5.pdf",
+          "start": 22530,
+          "end": 23460,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 2.017,
+          "source": "papers/e5.pdf",
+          "start": 57123,
+          "end": 58146,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 1.8753,
+          "source": "papers/e5.pdf",
+          "start": 21600,
+          "end": 22756,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.38685280723454163
+      },
+      "answer": "E5 is reported as the first model to beat BM25 without labeled data on the BEIR benchmark, which contains 15 datasets [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 3826,
+        "completion_tokens": 51
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer correctly identifies BEIR as the benchmark and acknowledges E5's achievement, but it incorrectly states the number of datasets (15 instead of 18)."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "E5 is reported as the first model to beat BM25 on the BEIR benchmark.",
+            "supported": true
+          },
+          {
+            "claim": "The BEIR benchmark contains 15 datasets.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p022",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 188.4,
+        "retrieve_dense": 12.4,
+        "retrieve_keyword": 11.6,
+        "fuse": 0.1,
+        "rerank": 178.2,
+        "generate": 31819.2,
+        "total": 32212.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.6934,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 4294,
+          "end": 6139,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": -0.3483,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 13646,
+          "end": 14871,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": -1.1271,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 11344,
+          "end": 12823,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": -1.1472,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 17833,
+          "end": 19864,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": -1.3835,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 5893,
+          "end": 7016,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": -1.6952,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 16544,
+          "end": 17831,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": -2.0688,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 0,
+          "end": 1782,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": -2.3151,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 14873,
+          "end": 16818,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 3592,
+        "completion_tokens": 21
+      },
+      "citations": []
+    },
+    {
+      "id": "p023",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 270.8,
+        "retrieve_dense": 7.7,
+        "retrieve_keyword": 5.7,
+        "fuse": 0.1,
+        "rerank": 204.2,
+        "generate": 32920.8,
+        "total": 33417.1
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 2.776,
+          "source": "papers/colbertv2.pdf",
+          "start": 4313,
+          "end": 6063,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 2.3853,
+          "source": "papers/colbertv2.pdf",
+          "start": 28578,
+          "end": 29855,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 1.7136,
+          "source": "papers/colbertv2.pdf",
+          "start": 37352,
+          "end": 38806,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 1.3725,
+          "source": "papers/colbertv2.pdf",
+          "start": 0,
+          "end": 1257,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 1.2188,
+          "source": "papers/colbertv2.pdf",
+          "start": 33980,
+          "end": 35040,
+          "relevant": false
+        },
+        {
+          "rank": 6,
+          "score": 1.101,
+          "source": "papers/colbertv2.pdf",
+          "start": 36183,
+          "end": 37570,
+          "relevant": false
+        },
+        {
+          "rank": 7,
+          "score": 0.9566,
+          "source": "papers/colbertv2.pdf",
+          "start": 12503,
+          "end": 14109,
+          "relevant": false
+        },
+        {
+          "rank": 8,
+          "score": 0.3201,
+          "source": "papers/colbertv2.pdf",
+          "start": 947,
+          "end": 2399,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 3524,
+        "completion_tokens": 42
+      },
+      "citations": []
+    }
+  ]
+}

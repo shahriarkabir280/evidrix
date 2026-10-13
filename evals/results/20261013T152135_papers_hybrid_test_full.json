@@ -1,0 +1,1185 @@
+{
+  "provenance": {
+    "created_at": "2026-10-13T15:13:56+00:00",
+    "git_commit": "28ce1bd7308a8cc26bd898412bb3a212ca882668",
+    "git_dirty": true,
+    "benchmark": "papers",
+    "preset": "hybrid",
+    "retrieval": {
+      "mode": "hybrid",
+      "rerank": false,
+      "top_k": 5,
+      "candidate_k": 20,
+      "rrf_k": 60,
+      "min_score": null,
+      "exclude_references": false
+    },
+    "split": "test",
+    "mode": "full",
+    "k": 5,
+    "index_version": "bge-small_c400_o64",
+    "embedding_model": "BAAI/bge-small-en-v1.5",
+    "reranker_model": null,
+    "benchmark_sha256": "790854ce6b3c5dbd98cbb076b133b6c30ee234060ffa4af927c5878eda402ee5",
+    "corpus_manifest_sha256": "9216ea461e5f02049d788d5f8f58689fd7d16f2e46705c404805f25e3f2b22d0",
+    "llm_model": "qwen3-vl:8b-instruct",
+    "prompt_version": "answer_v2",
+    "judge_model": "gemma3:12b",
+    "judge_prompts": [
+      "judge_faithfulness_v1",
+      "judge_correctness_v1"
+    ],
+    "duration_s": 279.5,
+    "judge_duration_s": 458.3
+  },
+  "summary": {
+    "questions": 11,
+    "errors": 0,
+    "retrieval": {
+      "recall": 0.4444,
+      "all_evidence": 0.3333,
+      "hit": 0.5556,
+      "mrr": 0.337,
+      "ndcg": 0.309
+    },
+    "retrieval_by_type": {
+      "distractor": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "factual": {
+        "recall": 0.5,
+        "all_evidence": 0.3333,
+        "hit": 0.6667,
+        "mrr": 0.4444,
+        "ndcg": 0.4355
+      },
+      "identifier": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "multi_hop": {
+        "recall": 0.25,
+        "all_evidence": 0.0,
+        "hit": 0.5,
+        "mrr": 0.1,
+        "ndcg": 0.1186
+      },
+      "table": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.75,
+        "ndcg": 0.6186
+      }
+    },
+    "latency_ms": {
+      "embed": {
+        "p50": 207.3,
+        "p95": 415.4
+      },
+      "fuse": {
+        "p50": 0.1,
+        "p95": 0.1
+      },
+      "generate": {
+        "p50": 23913.2,
+        "p95": 31879.3
+      },
+      "retrieve_dense": {
+        "p50": 12.6,
+        "p95": 40.1
+      },
+      "retrieve_keyword": {
+        "p50": 9.8,
+        "p95": 28.7
+      },
+      "total": {
+        "p50": 24152.4,
+        "p95": 32227.7
+      }
+    },
+    "answers": {
+      "correctness": 0.6667,
+      "faithfulness": 1.0,
+      "citation_precision": 0.4167,
+      "abstention": {
+        "precision": 0.6666666666666666,
+        "recall": 1.0,
+        "f1": 0.8,
+        "false_abstention_rate": 0.1111111111111111
+      },
+      "prompt_tokens": 2235.4545,
+      "completion_tokens": 67.3636
+    }
+  },
+  "questions": [
+    {
+      "id": "p001",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 317.1,
+        "retrieve_dense": 40.1,
+        "retrieve_keyword": 28.7,
+        "fuse": 0.1,
+        "generate": 27530.3,
+        "total": 27925.3
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0325,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0294,
+          "source": "papers/self-rag.pdf",
+          "start": 68860,
+          "end": 69634,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0293,
+          "source": "papers/ragas.pdf",
+          "start": 11617,
+          "end": 13267,
+          "relevant": true
+        },
+        {
+          "rank": 4,
+          "score": 0.0289,
+          "source": "papers/ragas.pdf",
+          "start": 20168,
+          "end": 21100,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0279,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 0.3333333333333333,
+        "ndcg": 0.3065735963827292
+      },
+      "answer": "Ragas computes its faithfulness score as F = |V| / |S|, where |V| is the number of statements supported according to the LLM and |S| is the total number of statements [3].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1869,
+        "completion_tokens": 66
+      },
+      "citations": [
+        3
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes Ragas' faithfulness score calculation, using mathematical notation to represent the key components as described in the reference."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "WikiEval requires the model to compare two answers or two context fragments.",
+            "supported": true
+          },
+          {
+            "claim": "The accuracy is reported as the fraction of instances on which the model agrees with the annotators.",
+            "supported": true
+          },
+          {
+            "claim": "For evaluating faithfulness, ChatGPT is prompted with a definition of faithfulness and then asked to score the answer/context.",
+            "supported": true
+          },
+          {
+            "claim": "Answer Relevancy measures the degree to which a response directly addresses and is appropriate for a given question.",
+            "supported": true
+          },
+          {
+            "claim": "Answer relevance does not take into account factuality.",
+            "supported": true
+          },
+          {
+            "claim": "To estimate answer relevance, the LLM is prompted to generate potential questions based on the answer.",
+            "supported": true
+          },
+          {
+            "claim": "Context relevance aims to penalize the inclusion of information that is not needed to answer the question.",
+            "supported": true
+          },
+          {
+            "claim": "Ragas is easy to use and can provide developers of RAG systems with valuable insights, even in the absence of any ground truth.",
+            "supported": true
+          },
+          {
+            "claim": "The predictions from Ragas are closely aligned with human predictions, especially for faithfulness and answer relevance.",
+            "supported": true
+          },
+          {
+            "claim": "Ragas computes its faithfulness score as F = |V| / |S|.",
+            "supported": true
+          },
+          {
+            "claim": "V represents the number of statements that were supported according to the LLM.",
+            "supported": true
+          },
+          {
+            "claim": "S represents the total number of statements.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p004",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 174.8,
+        "retrieve_dense": 12.6,
+        "retrieve_keyword": 8.8,
+        "fuse": 0.1,
+        "generate": 23689.0,
+        "total": 23888.8
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0308,
+          "source": "papers/self-rag.pdf",
+          "start": 4403,
+          "end": 6182,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0305,
+          "source": "papers/self-rag.pdf",
+          "start": 15829,
+          "end": 17460,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0304,
+          "source": "papers/self-rag.pdf",
+          "start": 10866,
+          "end": 12531,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0299,
+          "source": "papers/self-rag.pdf",
+          "start": 14342,
+          "end": 16020,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0296,
+          "source": "papers/self-rag.pdf",
+          "start": 40330,
+          "end": 41566,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "Reflection tokens in SELF-RAG are special tokens that signal the need for retrieval or confirm the output's relevance, support, or completeness. They are generated by a critic model and inserted into the text to enable the generator LM to self-assess its output and guide generation. These tokens are part of the expanded model vocabulary and are predicted as next tokens during generation [1][3].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2304,
+        "completion_tokens": 99
+      },
+      "citations": [
+        1,
+        3
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately describes reflection tokens as signals for retrieval and relevance assessment, generated by a critic model and integrated into the generation process, aligning with the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "Reflection tokens in SELF-RAG are special tokens that signal the need for retrieval or confirm the output's relevance, support, or completeness.",
+            "supported": true
+          },
+          {
+            "claim": "They are generated by a critic model and inserted into the text to enable the generator LM to self-assess its output and guide generation.",
+            "supported": true
+          },
+          {
+            "claim": "These tokens are part of the expanded model vocabulary and are predicted as next tokens during generation.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p007",
+      "type": "factual",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 92.2,
+        "retrieve_dense": 4.4,
+        "retrieve_keyword": 11.4,
+        "fuse": 0.1,
+        "generate": 17228.8,
+        "total": 17338.5
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0325,
+          "source": "papers/colbertv2.pdf",
+          "start": 0,
+          "end": 1257,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0308,
+          "source": "papers/colbertv2.pdf",
+          "start": 3795,
+          "end": 4582,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.03,
+          "source": "papers/colbertv2.pdf",
+          "start": 44715,
+          "end": 45521,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0293,
+          "source": "papers/colbertv2.pdf",
+          "start": 4313,
+          "end": 6063,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0292,
+          "source": "papers/colbertv2.pdf",
+          "start": 12503,
+          "end": 14109,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 1.0
+      },
+      "answer": "ColBERTv2 reduces the space footprint of late interaction models by 6–10× [1][2][4].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1877,
+        "completion_tokens": 52
+      },
+      "citations": [
+        1,
+        2,
+        4
+      ],
+      "citation_precision": 0.3333333333333333,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the space footprint reduction of ColBERTv2 as 6–10 times, matching the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "ColBERTv2 reduces the space footprint of late interaction models by 6–10×.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p009",
+      "type": "identifier",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 95.9,
+        "retrieve_dense": 11.8,
+        "retrieve_keyword": 7.9,
+        "fuse": 0.1,
+        "generate": 24755.0,
+        "total": 24872.2
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0323,
+          "source": "papers/ares.pdf",
+          "start": 15586,
+          "end": 17359,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0315,
+          "source": "papers/ares.pdf",
+          "start": 28754,
+          "end": 30248,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0315,
+          "source": "papers/ares.pdf",
+          "start": 24821,
+          "end": 26600,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0313,
+          "source": "papers/ares.pdf",
+          "start": 27574,
+          "end": 28952,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0303,
+          "source": "papers/ares.pdf",
+          "start": 23707,
+          "end": 25126,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "ARES uses PPI to construct confidence intervals for the performance of RAG systems by leveraging both labeled datapoints and ARES judge predictions on non-annotated datapoints, allowing for more accurate ranking and estimation of context relevance, answer faithfulness, and answer relevance [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2439,
+        "completion_tokens": 76
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer mentions PPI but describes a broader application of PPI within ARES that goes beyond the reference's concise definition of prediction-powered inference."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "ARES uses PPI to construct confidence intervals for the performance of RAG systems",
+            "supported": true
+          },
+          {
+            "claim": "PPI leverages both labeled datapoints and ARES judge predictions on non-annotated datapoints",
+            "supported": true
+          },
+          {
+            "claim": "PPI allows for more accurate ranking",
+            "supported": true
+          },
+          {
+            "claim": "PPI allows for estimation of context relevance",
+            "supported": true
+          },
+          {
+            "claim": "PPI allows for estimation of answer faithfulness",
+            "supported": true
+          },
+          {
+            "claim": "PPI allows for estimation of answer relevance",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p011",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 196.8,
+        "retrieve_dense": 15.4,
+        "retrieve_keyword": 8.5,
+        "fuse": 0.1,
+        "generate": 15291.5,
+        "total": 15514.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0323,
+          "source": "papers/ragas.pdf",
+          "start": 17649,
+          "end": 19545,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.032,
+          "source": "papers/ragas.pdf",
+          "start": 15380,
+          "end": 17190,
+          "relevant": true
+        },
+        {
+          "rank": 3,
+          "score": 0.0309,
+          "source": "papers/ragas.pdf",
+          "start": 20168,
+          "end": 21100,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0306,
+          "source": "papers/ragas.pdf",
+          "start": 14000,
+          "end": 15705,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0303,
+          "source": "papers/ragas.pdf",
+          "start": 17032,
+          "end": 17647,
+          "relevant": true
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 0.5,
+        "ndcg": 0.6240505200038379
+      },
+      "answer": "Ragas reached an agreement of 0.95 with human annotators for faithfulness on WikiEval [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 1996,
+        "completion_tokens": 44
+      },
+      "citations": [
+        2
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer accurately states the agreement score of 0.95 between Ragas and human annotators for faithfulness on WikiEval, matching the reference answer."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "WikiEval instances require the model to compare two answers or two context fragments.",
+            "supported": true
+          },
+          {
+            "claim": "The accuracy is reported as the fraction of instances on which the model agrees with the annotators.",
+            "supported": true
+          },
+          {
+            "claim": "For evaluating faithfulness, ChatGPT was used to assign a score between 0 and 10.",
+            "supported": true
+          },
+          {
+            "claim": "The prompt for evaluating faithfulness included a definition of the quality metric.",
+            "supported": true
+          },
+          {
+            "claim": "Answer Relevancy measures the degree to which a response directly addresses and is appropriate for a given question.",
+            "supported": true
+          },
+          {
+            "claim": "For answer relevance, ChatGPT was asked to rank each answer.",
+            "supported": true
+          },
+          {
+            "claim": "Annotators agreed in around 95% of cases for faithfulness and context relevance.",
+            "supported": true
+          },
+          {
+            "claim": "Annotators agreed in around 90% of the cases for answer relevance.",
+            "supported": true
+          },
+          {
+            "claim": "ChatGPT was used to answer the question without access to any additional context to obtain human judgements about faithfulness.",
+            "supported": true
+          },
+          {
+            "claim": "WikiEval is a dataset which human judgements of faithfulness, answer relevance and context relevance.",
+            "supported": true
+          },
+          {
+            "claim": "Ragas predictions are closely aligned with human predictions, especially for faithfulness and answer relevance.",
+            "supported": true
+          },
+          {
+            "claim": "50 Wikipedia pages covering events that have happened since the start of 2022 were selected for WikiEval.",
+            "supported": true
+          },
+          {
+            "claim": "ChatGPT was used to suggest a question that can be answered based on the introductory section of the page.",
+            "supported": true
+          },
+          {
+            "claim": "The question should be fully answered from the given context.",
+            "supported": true
+          },
+          {
+            "claim": "The question should be of moderate difficulty.",
+            "supported": true
+          },
+          {
+            "claim": "The question must be reasonable and must be understood and responded to by humans.",
+            "supported": true
+          },
+          {
+            "claim": "Ragas reached an agreement of 0.95 with human annotators for faithfulness on WikiEval.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p014",
+      "type": "table",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 157.3,
+        "retrieve_dense": 19.1,
+        "retrieve_keyword": 14.2,
+        "fuse": 0.1,
+        "generate": 25546.4,
+        "total": 25739.6
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0323,
+          "source": "papers/sentence-bert.pdf",
+          "start": 15738,
+          "end": 16784,
+          "relevant": true
+        },
+        {
+          "rank": 2,
+          "score": 0.0315,
+          "source": "papers/sentence-bert.pdf",
+          "start": 14437,
+          "end": 15940,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0311,
+          "source": "papers/sentence-bert.pdf",
+          "start": 5523,
+          "end": 7168,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0311,
+          "source": "papers/sentence-bert.pdf",
+          "start": 1186,
+          "end": 2814,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0308,
+          "source": "papers/sentence-bert.pdf",
+          "start": 16557,
+          "end": 17984,
+          "relevant": true
+        }
+      ],
+      "retrieval": {
+        "recall": 1.0,
+        "all_evidence": 1.0,
+        "hit": 1.0,
+        "mrr": 1.0,
+        "ndcg": 0.6131471927654584
+      },
+      "answer": "SRoBERTa-NLI-STSb-large scored highest on the STS benchmark test set with a Spearman correlation of 88.77 ± 0.46 [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2429,
+        "completion_tokens": 60
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 1.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer names a different model (SRoBERTa-NLI-STSb-large) as the highest-scoring model, although it does correctly state the score of 88.77."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "SRoBERTa-NLI-STSb-large scored highest on the STS benchmark test set.",
+            "supported": true
+          },
+          {
+            "claim": "The Spearman correlation for SRoBERTa-NLI-STSb-large was 88.77 ± 0.46.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p015",
+      "type": "distractor",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 214.5,
+        "retrieve_dense": 13.3,
+        "retrieve_keyword": 7.9,
+        "fuse": 0.1,
+        "generate": 23913.2,
+        "total": 24152.4
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0328,
+          "source": "papers/sentence-bert.pdf",
+          "start": 26821,
+          "end": 28321,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0318,
+          "source": "papers/sentence-bert.pdf",
+          "start": 28323,
+          "end": 29680,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0308,
+          "source": "papers/sentence-bert.pdf",
+          "start": 4004,
+          "end": 5521,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0301,
+          "source": "papers/sentence-bert.pdf",
+          "start": 31695,
+          "end": 32802,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0286,
+          "source": "papers/sentence-bert.pdf",
+          "start": 16557,
+          "end": 17984,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "The default pooling strategy for SBERT is not explicitly stated in the sources, but the CLS-token strategy is mentioned as one of the evaluated pooling strategies [1]. However, the ablation study suggests that the MEAN pooling strategy performs similarly to CLS in some cases [2].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2141,
+        "completion_tokens": 80
+      },
+      "citations": [
+        1,
+        2
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer acknowledges MEAN pooling but introduces uncertainty and mentions CLS, which isn't the definitive default."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "The default pooling strategy for SBERT is not explicitly stated in the sources.",
+            "supported": true
+          },
+          {
+            "claim": "The CLS-token strategy is one of the evaluated pooling strategies.",
+            "supported": true
+          },
+          {
+            "claim": "The MEAN pooling strategy performs similarly to CLS in some cases.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p018",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 322.8,
+        "retrieve_dense": 10.2,
+        "retrieve_keyword": 9.8,
+        "fuse": 0.1,
+        "generate": 31879.3,
+        "total": 32227.7
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0318,
+          "source": "papers/ares.pdf",
+          "start": 14244,
+          "end": 15826,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0315,
+          "source": "papers/ares.pdf",
+          "start": 24821,
+          "end": 26600,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.031,
+          "source": "papers/ares.pdf",
+          "start": 27574,
+          "end": 28952,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0306,
+          "source": "papers/ares.pdf",
+          "start": 2386,
+          "end": 4339,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0301,
+          "source": "papers/ares.pdf",
+          "start": 56591,
+          "end": 57883,
+          "relevant": false
+        }
+      ],
+      "retrieval": {
+        "recall": 0.0,
+        "all_evidence": 0.0,
+        "hit": 0.0,
+        "mrr": 0.0,
+        "ndcg": 0.0
+      },
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "no_valid_citations",
+      "usage": {
+        "prompt_tokens": 2459,
+        "completion_tokens": 151
+      },
+      "citations": [],
+      "citation_precision": null,
+      "correctness": {
+        "verdict": "incorrect",
+        "score": 0.0,
+        "reason": "abstained"
+      }
+    },
+    {
+      "id": "p019",
+      "type": "multi_hop",
+      "answerable": true,
+      "errors": [],
+      "timings_ms": {
+        "embed": 415.4,
+        "retrieve_dense": 12.8,
+        "retrieve_keyword": 16.5,
+        "fuse": 0.1,
+        "generate": 24804.5,
+        "total": 25254.2
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0323,
+          "source": "papers/e5.pdf",
+          "start": 18484,
+          "end": 19697,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0302,
+          "source": "papers/e5.pdf",
+          "start": 21600,
+          "end": 22756,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0297,
+          "source": "papers/beir.pdf",
+          "start": 27762,
+          "end": 29119,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0293,
+          "source": "papers/beir.pdf",
+          "start": 15048,
+          "end": 16551,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0291,
+          "source": "papers/e5.pdf",
+          "start": 2506,
+          "end": 4237,
+          "relevant": true
+        }
+      ],
+      "retrieval": {
+        "recall": 0.5,
+        "all_evidence": 0.0,
+        "hit": 1.0,
+        "mrr": 0.2,
+        "ndcg": 0.23719771276929622
+      },
+      "answer": "E5 is reported as the first model to beat BM25 without labeled data on the BEIR benchmark, which contains 15 datasets [1].",
+      "abstained": false,
+      "abstain_reason": null,
+      "usage": {
+        "prompt_tokens": 2447,
+        "completion_tokens": 51
+      },
+      "citations": [
+        1
+      ],
+      "citation_precision": 0.0,
+      "correctness": {
+        "verdict": "partial",
+        "score": 0.5,
+        "reason": "The answer correctly identifies BEIR as the benchmark and acknowledges E5's achievement, but it incorrectly states the number of datasets (15 instead of 18)."
+      },
+      "faithfulness": {
+        "score": 1.0,
+        "claims": [
+          {
+            "claim": "E5 is reported as the first model to beat BM25 without labeled data on the BEIR benchmark.",
+            "supported": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "p022",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 207.3,
+        "retrieve_dense": 11.5,
+        "retrieve_keyword": 10.3,
+        "fuse": 0.1,
+        "generate": 19343.0,
+        "total": 19574.3
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0317,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 4294,
+          "end": 6139,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0315,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 13646,
+          "end": 14871,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0313,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 5893,
+          "end": 7016,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0308,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 0,
+          "end": 1782,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0303,
+          "source": "papers/rag-failure-points.pdf",
+          "start": 11344,
+          "end": 12823,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 2223,
+        "completion_tokens": 21
+      },
+      "citations": []
+    },
+    {
+      "id": "p023",
+      "type": "unanswerable",
+      "answerable": false,
+      "errors": [],
+      "timings_ms": {
+        "embed": 300.8,
+        "retrieve_dense": 4.8,
+        "retrieve_keyword": 9.8,
+        "fuse": 0.1,
+        "generate": 22785.5,
+        "total": 23105.8
+      },
+      "retrieved": [
+        {
+          "rank": 1,
+          "score": 0.0315,
+          "source": "papers/colbertv2.pdf",
+          "start": 4313,
+          "end": 6063,
+          "relevant": false
+        },
+        {
+          "rank": 2,
+          "score": 0.0275,
+          "source": "papers/colbertv2.pdf",
+          "start": 12503,
+          "end": 14109,
+          "relevant": false
+        },
+        {
+          "rank": 3,
+          "score": 0.0164,
+          "source": "papers/beir.pdf",
+          "start": 27762,
+          "end": 29119,
+          "relevant": false
+        },
+        {
+          "rank": 4,
+          "score": 0.0164,
+          "source": "papers/colbertv2.pdf",
+          "start": 28578,
+          "end": 29855,
+          "relevant": false
+        },
+        {
+          "rank": 5,
+          "score": 0.0161,
+          "source": "papers/beir.pdf",
+          "start": 37813,
+          "end": 39528,
+          "relevant": false
+        }
+      ],
+      "answer": "I couldn't find this in the selected documents.",
+      "abstained": true,
+      "abstain_reason": "model",
+      "usage": {
+        "prompt_tokens": 2406,
+        "completion_tokens": 41
+      },
+      "citations": []
+    }
+  ]
+}
