@@ -25,7 +25,7 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import get_settings
-from app.db.models import Chunk, Document, DocumentStatus, User
+from app.db.models import Chunk, Document, DocumentStatus, IndexVersion, User
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.repositories import users as users_repo
 from app.db.repositories.users import DEV_USER_ID
@@ -153,6 +153,29 @@ def _print_key(email: str, key: str) -> None:
     print(f'Use it as:  curl -H "Authorization: Bearer {key}" ...')
 
 
+def index_version(action: str, name: str, chunk_size: int | None, overlap: int | None) -> None:
+    with get_session_factory()() as session:
+        if action == "create":
+            if chunk_size is None:
+                raise SystemExit("--chunk-size is required to create an index version.")
+            overlap = overlap if overlap is not None else chunk_size // 6
+            chunking = {
+                "chunk_size_tokens": chunk_size,
+                "max_tokens": round(chunk_size * 1.2),
+                "overlap_tokens": overlap,
+                "min_chunk_tokens": chunk_size // 4,
+            }
+            version = index_versions_repo.create_like_active(session, name, chunking)
+            print(f"Created {version.name}: {version.chunking}. Activate it, then run reindex.")
+        elif action == "activate":
+            version = index_versions_repo.activate(session, name)
+            print(f"{version.name} is now active.")
+        else:
+            for version in session.scalars(select(IndexVersion).order_by(IndexVersion.id)):
+                mark = "*" if version.is_active else " "
+                print(f"{mark} {version.name}  {version.chunking}")
+
+
 def search(question: str, preset: str, k: int | None) -> None:
     config = load_preset(preset)
     if k is not None:
@@ -212,6 +235,13 @@ def main() -> None:
         user_command.add_argument("--name", help="a label for the key, e.g. the machine")
     revoke = commands.add_parser("revoke-key", help="revoke keys by their prefix (evx_ + 8)")
     revoke.add_argument("prefix")
+    versions = commands.add_parser(
+        "index-version", help="list, create or activate index versions (chunking experiments)"
+    )
+    versions.add_argument("action", choices=["list", "create", "activate"])
+    versions.add_argument("name", nargs="?", default="")
+    versions.add_argument("--chunk-size", type=int, help="target tokens per chunk (create)")
+    versions.add_argument("--overlap", type=int, help="overlap tokens (create; default size/6)")
     args = parser.parse_args()
 
     if args.command == "ingest-dir":
@@ -226,6 +256,8 @@ def main() -> None:
         create_key(args.email, args.name)
     elif args.command == "revoke-key":
         revoke_key(args.prefix)
+    elif args.command == "index-version":
+        index_version(args.action, args.name, args.chunk_size, args.overlap)
     else:
         search(args.question, args.preset, args.k)
 

@@ -1,0 +1,7 @@
+# Experiment E5 (retrieval depth): hybrid_rerank with the best 8 passages sent to the model.
+mode = "hybrid"
+rerank = true
+top_k = 8
+candidate_k = 20
+rrf_k = 60
+min_score = -2.84
