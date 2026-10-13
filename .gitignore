@@ -19,3 +19,4 @@ evals/results/work/
 
 # OS
 .DS_Store
+.smoke-state.json
