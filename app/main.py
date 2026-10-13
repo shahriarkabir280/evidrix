@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from app.api.errors import install_error_handlers
 from app.api.middleware import RequestContextMiddleware
 from app.api.routes import chat, documents, health, jobs, retrieve
+from app.api.ui import install_ui
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.rag.embeddings import get_embedder
@@ -54,6 +55,7 @@ def create_app(*, preload_models: bool = True) -> FastAPI:
     app.include_router(jobs.router)
     app.include_router(chat.router)
     app.include_router(retrieve.router)
+    install_ui(app)  # last: /ui must not shadow an API route
     return app
 
 

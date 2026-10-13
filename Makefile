@@ -1,4 +1,4 @@
-.PHONY: up down migrate dev worker prod-up prod-down smoke test test-live lint fmt psql corpus eval eval-full
+.PHONY: up down migrate dev worker prod-up prod-down smoke test test-ui test-live lint fmt psql corpus eval eval-full
 
 up:        ## Start Postgres and Redis in Docker
 	docker compose up -d --wait
@@ -30,6 +30,9 @@ test:      ## Run the test suite (everything except tests that call a live LLM)
 
 test-live: ## Run tests against the real LLM (start Ollama first)
 	uv run pytest -m live
+
+test-ui:   ## Unit tests of the chat page's rendering (Node)
+	node --test 'tests/ui/*.test.mjs'
 
 lint:      ## Check lint and formatting
 	uv run ruff check . && uv run ruff format --check .

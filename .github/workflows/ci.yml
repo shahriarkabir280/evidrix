@@ -19,6 +19,8 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen
+      # The chat page's rendering tests; Node is preinstalled on the runner.
+      - run: node --test 'tests/ui/*.test.mjs'
       - run: uv run ruff check .
       - run: uv run ruff format --check .
 
