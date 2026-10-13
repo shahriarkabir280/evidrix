@@ -251,12 +251,20 @@ class ChatQuery(Base):
     """
 
     __tablename__ = "chat_queries"
-    __table_args__ = (Index("ix_chat_queries_user_id_created_at", "user_id", "created_at"),)
+    __table_args__ = (
+        Index("ix_chat_queries_user_id_created_at", "user_id", "created_at"),
+        Index("ix_chat_queries_conversation_id_created_at", "conversation_id", "created_at"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    # The chats of one conversation share this id; the first one's is issued by the server.
+    conversation_id: Mapped[uuid.UUID] = mapped_column(Uuid(), default=uuid.uuid4)
     request_id: Mapped[str | None] = mapped_column(String(64))
     question: Mapped[str] = mapped_column(Text)
+    # For a follow-up, the question rewritten to stand on its own, which retrieval and the
+    # answer used ("And for headers?" -> "How do I declare header parameters?"). Null otherwise.
+    search_query: Mapped[str | None] = mapped_column(Text)
     document_ids: Mapped[list[uuid.UUID] | None] = mapped_column(ARRAY(Uuid()))
     retrieval_config: Mapped[dict[str, Any]] = mapped_column(JSONB)
     index_version_id: Mapped[int | None] = mapped_column(

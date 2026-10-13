@@ -39,6 +39,10 @@ local LLM through Ollama).
 - **Answers measured, not assumed.** With the default configuration, answers score 0.857
   correctness and 1.000 faithfulness (claims supported by the sources) on the held-out test
   split, graded by a calibrated LLM judge; every unanswerable test question abstained.
+- **A chat page with follow-ups.** `/ui` is a ChatGPT-style page: upload, ask, click a citation
+  to read the passage. Follow-up questions ("And for headers?") are rewritten into standalone
+  questions before the search, and the page shows what was searched; answers still come only
+  from the documents.
 - **Honest failure modes.** Unanswerable questions abstain; a model reply cut off or not in the
   required JSON is retried once, then reported (502), never passed off as an answer.
 - **Tested.** 282 tests (unit + integration against real Postgres) plus live tests against the
@@ -230,7 +234,10 @@ export EVIDRIX_API_KEY=evx_...
 uv run python -m scripts.ask "How do I declare a cookie parameter?"
 ```
 
-Or upload your own file:
+Or open **http://127.0.0.1:8000/ui/** in a browser and paste the key: upload files, ask
+questions, follow up, and click any citation to read the passage it points to.
+
+Or upload your own file from the command line:
 
 ```bash
 AUTH="Authorization: Bearer $EVIDRIX_API_KEY"
@@ -248,7 +255,7 @@ curl -s -H "$AUTH" localhost:8000/jobs/<job_id>                     # queued →
 | `GET` | `/documents`, `/documents/{id}` | List your documents / one document with its status |
 | `GET` | `/jobs/{id}` | Ingestion job status, attempts and last error |
 | `POST` | `/retrieve` | Retrieval only, with per-stage ranks and scores |
-| `POST` | `/chat` | Answer with citations, retrieved passages, timings, tokens and cost |
+| `POST` | `/chat` | Answer with citations, retrieved passages, timings, tokens and cost; pass `conversation_id` to ask a follow-up |
 | `GET` | `/chats`, `/chats/{id}` | Your question history; one exchange with its full retrieval trace |
 
 Every endpoint except `/health` needs `Authorization: Bearer evx_…`. Keys are created with
@@ -269,6 +276,12 @@ Every response carries `X-Request-ID` (a client's own is kept if it is short and
 are JSON lines, and every line of a request, including the worker's lines for the job it
 created, carries that ID. Questions are logged as length and hash; keys, questions, answers and
 document text are never logged.
+
+**Follow-ups.** Every `/chat` answer has a `conversation_id`; sending it with the next question
+makes that question a follow-up. The model first rewrites it from the last three turns into a
+standalone question (`search_query` in the response), which is then searched and answered with
+the same prompt as a first question. Earlier turns help to understand the question; they are
+never a source.
 
 `/chat` and `/retrieve` accept `document_ids` to restrict the search and a `retrieval` override,
 e.g. `{"mode": "dense", "rerank": false, "top_k": 3}`. Every `/chat` is stored, failures
@@ -452,6 +465,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 5** — background ingestion jobs (RQ, retries, recovery), hashed API keys, authorization audit, rate limits, prompt-injection suite, JSON logs with request IDs
 - [x] **Part 6** — persisted chats with full traces, per-stage timing and cost, error envelope, `/ready`, load test and perf report, caching decision
 - [x] **Part 7** — Docker image, container stack with a release-step migration, CI with coverage and image build, smoke and persistence tests ([deploy](docs/deploy.md)); public Space pending accounts
+- [x] **Web UI** — chat page at `/ui` with citations, upload, history, and follow-up questions
 - [x] **Part 8** — ablations E1–E5 on the held-out split, error analysis, [report](docs/REPORT.md); demo video pending
 
 ## Limitations

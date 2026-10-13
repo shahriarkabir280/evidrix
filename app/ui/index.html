@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Evidrix</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">◆</span> Evidrix
+      </div>
+      <button type="button" class="new-chat" id="new-chat">+ New chat</button>
+
+      <section class="panel">
+        <h2>Documents</h2>
+        <p class="hint" id="filter-hint">Ask about all of them, or tick some to narrow the search.</p>
+        <ul class="documents" id="documents"></ul>
+        <label class="upload">
+          <input type="file" id="upload" accept=".pdf,.md,.markdown,.txt" hidden>
+          <span>⬆ Upload a file</span>
+        </label>
+        <p class="hint">PDF, Markdown or text, up to 10 MB.</p>
+      </section>
+
+      <section class="panel history-panel">
+        <h2>History</h2>
+        <ul class="history" id="history"></ul>
+      </section>
+
+      <button type="button" class="link" id="sign-out">Change API key</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button type="button" class="menu" id="menu" aria-label="Show the sidebar">☰</button>
+        <span id="scope">All documents</span>
+        <span class="mode" id="mode" hidden>Retrieval only</span>
+      </header>
+
+      <div class="thread" id="thread" aria-live="polite">
+        <div class="empty" id="empty">
+          <h1>Ask your documents</h1>
+          <p>Answers come only from the files in the sidebar, with a source for every claim.
+            If the answer isn't there, Evidrix says so instead of guessing.</p>
+        </div>
+      </div>
+
+      <form class="composer" id="composer">
+        <textarea id="question" rows="1" maxlength="1000"
+          placeholder="Ask a question about your documents…" required></textarea>
+        <button type="submit" id="send" aria-label="Send">➤</button>
+      </form>
+      <p class="footnote">Follow-up questions use the conversation to understand what you mean;
+        answers still come only from your documents.</p>
+    </main>
+  </div>
+
+  <dialog id="key-dialog">
+    <form method="dialog" id="key-form">
+      <h2>API key</h2>
+      <p>Paste your Evidrix key (<code>evx_…</code>). Create one with
+        <code>uv run python -m app.cli create-key --email you@example.com</code>.
+        It is kept in this browser only.</p>
+      <input id="key-input" type="password" autocomplete="off" placeholder="evx_…" required>
+      <p class="error" id="key-error" hidden></p>
+      <button type="submit">Continue</button>
+    </form>
+  </dialog>
+
+  <dialog id="source-dialog">
+    <form method="dialog">
+      <h2 id="source-title"></h2>
+      <p class="location" id="source-location"></p>
+      <blockquote id="source-text"></blockquote>
+      <button type="submit">Close</button>
+    </form>
+  </dialog>
+</body>
+</html>
