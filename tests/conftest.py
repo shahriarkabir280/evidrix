@@ -140,10 +140,16 @@ def run_worker(queue, session_factory, blob_store, embedder):
     return run
 
 
+# A fixed instant 20 s into a minute. With the real clock, a test that sends 61 requests could
+# cross a minute boundary, start a new window, and never see its 429 (it happened in CI).
+# Window rollover itself is tested with a clock of its own in tests/unit/test_rate_limit.py.
+FROZEN_RATE_LIMIT_TIME = 1_000_040.0
+
+
 @pytest.fixture
 def rate_limiter() -> RateLimiter:
-    """The real limiter on an in-memory Redis, fresh for every test."""
-    return RateLimiter(fakeredis.FakeRedis())
+    """The real limiter on an in-memory Redis, fresh for every test, with a stopped clock."""
+    return RateLimiter(fakeredis.FakeRedis(), clock=lambda: FROZEN_RATE_LIMIT_TIME)
 
 
 @pytest.fixture
