@@ -1,4 +1,4 @@
-.PHONY: up down migrate dev worker test test-live lint fmt psql corpus eval eval-full
+.PHONY: up down migrate dev worker prod-up prod-down smoke test test-live lint fmt psql corpus eval eval-full
 
 up:        ## Start Postgres and Redis in Docker
 	docker compose up -d --wait
@@ -15,6 +15,15 @@ dev:       ## Run the API with auto-reload
 worker:    ## Recover jobs a dead worker left behind, then run the ingestion worker
 	uv run python -m app.cli reap-jobs
 	uv run rq worker --worker-class rq.worker.SimpleWorker --with-scheduler ingestion
+
+prod-up:   ## Build the image and run the whole stack in containers (API on :8080)
+	docker compose -f docker-compose.prod.yml up -d --build --wait
+
+prod-down: ## Stop the container stack (its data volume is kept)
+	docker compose -f docker-compose.prod.yml down
+
+smoke:     ## Smoke-test a deployment: make smoke URL=http://localhost:8080 KEY=evx_...
+	uv run python -m scripts.smoke --base-url $(URL) --api-key $(KEY)
 
 test:      ## Run the test suite (everything except tests that call a live LLM)
 	uv run pytest -m "not live"

@@ -52,4 +52,20 @@ jobs:
       - name: Check models match migrations
         run: uv run alembic check
       # Real-model tests download ~130 MB of weights and live tests need Ollama; both run locally.
-      - run: uv run pytest -m "not model and not live"
+      # Redis is not a service here: the tests use fakeredis.
+      - run: uv run pytest -m "not model and not live" --cov=app --cov-report=term --cov-fail-under=85
+
+  # Builds the production image without pushing it, so a broken Dockerfile fails the PR rather
+  # than the deploy. The layer cache keeps the dependency and model layers between runs.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: evidrix:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

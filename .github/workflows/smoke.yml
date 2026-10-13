@@ -1,0 +1,24 @@
+name: Smoke test
+
+# Run by hand against a deployment: Actions → Smoke test → Run workflow. Needs the repository
+# secret EVIDRIX_SMOKE_API_KEY, a key for a user of that deployment.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Deployment URL, e.g. https://<user>-evidrix.hf.space"
+        required: true
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --only-group smoke
+      - run: uv run --no-sync python -m scripts.smoke --base-url "$BASE_URL" --api-key "$API_KEY"
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          API_KEY: ${{ secrets.EVIDRIX_SMOKE_API_KEY }}
