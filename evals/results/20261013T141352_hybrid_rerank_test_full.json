@@ -30,7 +30,17 @@
       "judge_correctness_v1"
     ],
     "duration_s": 392.7,
-    "judge_duration_s": 696.8
+    "judge_duration_s": 696.8,
+    "rescored": [
+      {
+        "ids": [
+          "q037"
+        ],
+        "reason": "code indexing such as x[1] was read as a citation marker (fixed in b3de835)",
+        "git_commit": "b3de8359438d7f3b15544ed84d55012be6114e3e",
+        "at": "2026-10-13T16:41:33+00:00"
+      }
+    ]
   },
   "summary": {
     "questions": 24,
@@ -103,9 +113,9 @@
       }
     },
     "answers": {
-      "correctness": 0.8947,
-      "faithfulness": 0.9889,
-      "citation_precision": 0.8148,
+      "correctness": 0.9474,
+      "faithfulness": 1.0,
+      "citation_precision": 0.8241,
       "abstention": {
         "precision": 0.8333333333333334,
         "recall": 1.0,
@@ -1465,29 +1475,20 @@
         "completion_tokens": 55
       },
       "citations": [
-        1,
         4,
         2
       ],
-      "citation_precision": 0.3333333333333333,
+      "citation_precision": 0.5,
       "correctness": {
-        "verdict": "incorrect",
-        "score": 0.0,
-        "reason": "The answer's lambda function `lambda x: x` doesn't specify the second item for sorting, rendering the sorting ineffective and contradicting the reference's use of `itemgetter(1)`."
+        "verdict": "correct",
+        "score": 1.0,
+        "reason": "The answer correctly uses the `sorted()` function with a lambda function to sort a list of tuples by the second element in descending order, which is equivalent to the reference answer."
       },
       "faithfulness": {
-        "score": 0.8,
+        "score": 1.0,
         "claims": [
           {
-            "claim": "The sorted() function can be used for a simple ascending sort.",
-            "supported": true
-          },
-          {
-            "claim": "The list.sort() method modifies the list in-place.",
-            "supported": true
-          },
-          {
-            "claim": "The sorted() function accepts any iterable.",
+            "claim": "The sorted() function can accept any iterable.",
             "supported": true
           },
           {
@@ -1495,8 +1496,28 @@
             "supported": true
           },
           {
-            "claim": "To sort a list in reverse order, use the sorted() function with a key parameter and reverse=True.",
-            "supported": false
+            "claim": "The list.sort() method modifies the list in-place.",
+            "supported": true
+          },
+          {
+            "claim": "The sorted() function returns a new sorted list.",
+            "supported": true
+          },
+          {
+            "claim": "The sorted() function can be used with a key parameter.",
+            "supported": true
+          },
+          {
+            "claim": "The key parameter should be a function that takes a single argument and returns a key for sorting.",
+            "supported": true
+          },
+          {
+            "claim": "The reverse parameter can be used to flag descending sorts.",
+            "supported": true
+          },
+          {
+            "claim": "The sorted() function can be used with a lambda function to sort by a specific element in a tuple.",
+            "supported": true
           }
         ]
       }
