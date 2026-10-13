@@ -13,9 +13,10 @@ from app.db.models import DocumentStatus
 from app.db.repositories import documents as documents_repo
 from app.db.repositories import index_versions as index_versions_repo
 from app.db.repositories.chunks import ChunkHit
+from app.rag.conversation import Turn, condense
 from app.rag.embeddings import Embedder
 from app.rag.generation import PROMPT_VERSION, GeneratedAnswer, generate_answer
-from app.rag.llm import LLMProvider
+from app.rag.llm import LLMProvider, LLMResult
 from app.rag.rerank import Reranker
 from app.rag.retrieval import RetrievalConfig, retrieve
 from app.services.ingestion import ensure_compatible
@@ -45,6 +46,9 @@ class ChatResult:
     embedding_model: str
     reranker_model: str | None
     llm_model: str
+    # Set when a follow-up was rewritten to stand on its own; that query was searched and answered.
+    search_query: str | None = None
+    rewrite_call: LLMResult | None = None
 
 
 def answer_question(
@@ -60,14 +64,25 @@ def answer_question(
     max_tokens: int,
     prompt_version: str = PROMPT_VERSION,
     timer: StageTimer | None = None,
+    history: list[Turn] | None = None,
 ) -> ChatResult:
-    """Retrieve and answer. Pass a `timer` to keep the stage timings even if a stage fails."""
+    """Retrieve and answer. Pass a `timer` to keep the stage timings even if a stage fails.
+
+    With `history` (earlier turns of the conversation), the question is first rewritten to
+    stand on its own (app/rag/conversation.py); the rewritten question is searched and answered.
+    """
     timer = timer or StageTimer()
     if document_ids is not None:
         document_ids = list(dict.fromkeys(document_ids))  # drop duplicates, keep order
         check_documents(session, owner_id, document_ids)
     index_version = index_versions_repo.get_active(session)
     ensure_compatible(index_version, embedder)
+
+    condensed = None
+    if history:
+        with timer.stage("rewrite"):
+            condensed = condense(llm, history, question)
+        question = condensed.query
 
     found = retrieve(
         session,
@@ -102,6 +117,8 @@ def answer_question(
         embedding_model=embedder.model_name,
         reranker_model=reranker.model_name if retrieval.rerank else None,
         llm_model=llm.model,
+        search_query=question if condensed and condensed.rewritten else None,
+        rewrite_call=condensed.llm_call if condensed else None,
     )
 
 

@@ -78,7 +78,8 @@ class QuestionRequest(BaseModel):
 
 
 class ChatRequest(QuestionRequest):
-    pass
+    # Continue a conversation: pass the conversation_id of an earlier answer. Omit to start one.
+    conversation_id: uuid.UUID | None = None
 
 
 class RetrieveRequest(QuestionRequest):
@@ -133,6 +134,8 @@ class ChatConfig(RetrievalConfigOut):
 class ChatResponse(BaseModel):
     id: uuid.UUID  # GET /chats/{id} shows this exchange again
     request_id: str | None
+    conversation_id: uuid.UUID  # send it with the next question to ask a follow-up
+    search_query: str | None  # a follow-up rewritten to stand on its own; null otherwise
     answer: str
     abstained: bool
     abstain_reason: str | None
@@ -147,6 +150,7 @@ class ChatSummary(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    conversation_id: uuid.UUID
     created_at: datetime
     question: str
     abstained: bool | None
@@ -164,6 +168,7 @@ class ChatTrace(ChatSummary):
     """A stored /chat: enough to see why it answered what it answered."""
 
     request_id: str | None
+    search_query: str | None
     document_ids: list[uuid.UUID] | None
     answer: str | None
     abstain_reason: str | None

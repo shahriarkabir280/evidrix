@@ -34,6 +34,7 @@ from app.core.logging import current_request_id, text_fingerprint
 from app.core.timing import StageTimer
 from app.db.repositories import chats as chats_repo
 from app.db.repositories.chunks import ChunkHit
+from app.rag.conversation import MAX_TURNS, Turn
 from app.rag.generation import BadModelOutputError
 from app.rag.llm import LLMBusyError, LLMError, PromptTooLongError
 from app.rag.pricing import cost_usd
@@ -86,6 +87,7 @@ def chat(
             },
         )
     config = retrieval_config(settings, request.retrieval)
+    conversation_id, history = load_conversation(session, owner_id, request.conversation_id)
     timer = StageTimer()
     try:
         result = answer_question(
@@ -100,6 +102,7 @@ def chat(
             max_tokens=settings.llm_max_output_tokens,
             prompt_version=settings.answer_prompt_version,
             timer=timer,
+            history=history,
         )
     except Exception as exc:
         status_code, code = next(
@@ -107,18 +110,22 @@ def chat(
             (status.HTTP_500_INTERNAL_SERVER_ERROR, "internal_error"),
         )
         session.rollback()  # the failure may have left the transaction unusable
-        record_failure(session, owner_id, request, config, code, timer.finish(), llm.model)
+        record_failure(
+            session, owner_id, request, config, code, timer.finish(), llm.model, conversation_id
+        )
         if code == "internal_error":
             raise  # the 500 handler logs the stack trace
         busy = {"Retry-After": str(LLM_BUSY_RETRY_AFTER_SECONDS)} if code == "llm_busy" else None
         raise error(status_code, code, exc, headers=busy) from exc
 
-    response = to_response(result)
+    response = to_response(result).model_copy(update={"conversation_id": conversation_id})
     chat_record = chats_repo.create(
         session,
         owner_id,
+        conversation_id=conversation_id,
         request_id=current_request_id(),
         question=request.question,
+        search_query=result.search_query,
         document_ids=request.document_ids,
         retrieval_config=config.model_dump(),
         index_version_id=result.index_version_id,
@@ -139,6 +146,8 @@ def chat(
         chat_id=str(chat_record.id),
         question=text_fingerprint(request.question),
         document_filter=len(request.document_ids or []),
+        follow_up=bool(history),
+        rewritten=result.search_query is not None,
         hits=len(result.hits),
         abstained=response.abstained,
         abstain_reason=response.abstain_reason,
@@ -151,14 +160,42 @@ def chat(
     return response.model_copy(update={"id": chat_record.id})
 
 
+def load_conversation(
+    session, owner_id: uuid.UUID, conversation_id: uuid.UUID | None
+) -> tuple[uuid.UUID, list[Turn]]:
+    """The conversation to add to, and its last turns. A new id when none was given.
+
+    An id with no chats of this user's is refused like any other resource that isn't theirs:
+    404, whether it belongs to someone else or never existed.
+    """
+    if conversation_id is None:
+        return uuid.uuid4(), []
+    turns = chats_repo.conversation_turns(session, owner_id, conversation_id, MAX_TURNS)
+    if not turns:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            {"code": "conversation_not_found", "message": "Conversation not found."},
+        )
+    # The standalone form of earlier follow-ups, so that "and the third?" resolves through them.
+    history = [
+        Turn(question=t.search_query or t.question, answer=None if t.abstained else t.answer)
+        for t in turns
+    ]
+    return conversation_id, history
+
+
 @router.get("/chats")
 def list_chats(
     session: DbSession,
     owner_id: CurrentUserId,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     offset: Annotated[int, Query(ge=0)] = 0,
+    conversation_id: uuid.UUID | None = None,
 ) -> ChatList:
-    chats, total = chats_repo.list_for_owner(session, owner_id, limit=limit, offset=offset)
+    """Newest first. With conversation_id, only that conversation's chats."""
+    chats, total = chats_repo.list_for_owner(
+        session, owner_id, limit=limit, offset=offset, conversation_id=conversation_id
+    )
     return ChatList(
         items=[ChatSummary.model_validate(c) for c in chats],
         total=total,
@@ -185,10 +222,12 @@ def record_failure(
     error_code: str,
     timings_ms: dict[str, float],
     llm_model: str,
+    conversation_id: uuid.UUID,
 ) -> None:
     chats_repo.create(
         session,
         owner_id,
+        conversation_id=conversation_id,
         request_id=current_request_id(),
         question=request.question,
         document_ids=request.document_ids,
@@ -202,12 +241,15 @@ def record_failure(
 
 def to_response(result: ChatResult) -> ChatResponse:
     generated = result.generated
-    prompt_tokens = sum(c.prompt_tokens for c in generated.llm_calls)
-    completion_tokens = sum(c.completion_tokens for c in generated.llm_calls)
+    calls = [*([result.rewrite_call] if result.rewrite_call else []), *generated.llm_calls]
+    prompt_tokens = sum(c.prompt_tokens for c in calls)
+    completion_tokens = sum(c.completion_tokens for c in calls)
     cost = cost_usd(result.llm_model, prompt_tokens, completion_tokens)
     return ChatResponse(
         id=uuid.UUID(int=0),  # replaced by the stored chat's id
         request_id=current_request_id(),
+        conversation_id=uuid.UUID(int=0),  # set by the caller
+        search_query=result.search_query,
         answer=generated.answer,
         abstained=generated.abstained,
         abstain_reason=generated.abstain_reason,
@@ -219,7 +261,7 @@ def to_response(result: ChatResult) -> ChatResponse:
         usage=Usage(
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
-            llm_calls=len(generated.llm_calls),
+            llm_calls=len(calls),
             cost_usd=float(cost) if cost is not None else None,
         ),
         timings_ms=result.timings_ms,
