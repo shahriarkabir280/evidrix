@@ -19,7 +19,10 @@ from app.rag.llm import LLMProvider, LLMResult
 
 logger = structlog.get_logger(__name__)
 
-CONDENSE_PROMPT_VERSION = "condense_v1"
+# condense_v1 asked to keep standalone questions unchanged, and qwen3-vl:8b kept most follow-ups
+# unchanged ("And for headers?"): 1 of 5 rewritten (evals/condense_check.py). condense_v2 says what
+# makes a question depend on context and gives examples on other topics: 5 of 5.
+CONDENSE_PROMPT_VERSION = "condense_v2"
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 MAX_TURNS = 3  # earlier exchanges given to the rewrite
 ANSWER_PREVIEW_CHARS = 400  # of each earlier answer: enough to resolve "it", short to read

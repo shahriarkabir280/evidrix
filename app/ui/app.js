@@ -15,6 +15,7 @@ const state = {
   selected: new Set(), // document ids that narrow the search; empty = all
   retrievalOnly: false, // the server answered /chat with chat_disabled
   busy: false,
+  conversationId: null, // set by the first answer; sent with follow-ups
 };
 
 class ApiError extends Error {
@@ -167,45 +168,61 @@ async function waitForJob(jobId) {
 // --- History -------------------------------------------------------------------------------
 
 async function loadHistory() {
-  const { data } = await api("/chats?limit=50");
+  const { data } = await api("/chats?limit=100");
+  // Chats come newest first; one entry per conversation, titled by its first question.
+  const conversations = new Map();
+  for (const chat of data.items) {
+    const entry = conversations.get(chat.conversation_id) ?? { turns: 0 };
+    entry.title = chat.question; // ends as the oldest one
+    entry.turns += 1;
+    conversations.set(chat.conversation_id, entry);
+  }
   const list = $("history");
   list.replaceChildren();
-  for (const chat of data.items) {
-    const button = el("button", {
-      text: chat.question,
-      attrs: { type: "button", title: chat.question, "data-chat": chat.id },
-    });
-    button.addEventListener("click", () => showChat(chat.id, button));
+  for (const [conversationId, { title, turns }] of conversations) {
+    const label = turns > 1 ? `${title} (${turns})` : title;
+    const button = el("button", { text: label, attrs: { type: "button", title } });
+    if (conversationId === state.conversationId) button.classList.add("active");
+    button.addEventListener("click", () => showConversation(conversationId, button));
     list.append(el("li", {}, button));
   }
 }
 
-async function showChat(chatId, button) {
+async function showConversation(conversationId, button) {
   document.querySelectorAll(".history button.active").forEach((b) => b.classList.remove("active"));
   button?.classList.add("active");
   closeSidebar();
   clearThread();
+  state.conversationId = conversationId; // asking now continues this conversation
   try {
-    const { data: chat } = await api(`/chats/${chatId}`);
-    appendUser(chat.question);
-    const container = appendAssistant();
-    if (chat.error_code) {
-      renderError(container, `This question failed (${chat.error_code}).`);
-    } else {
-      renderAnswerMessage(container, {
-        answer: chat.answer,
-        abstained: chat.abstained,
-        abstain_reason: chat.abstain_reason,
-        citations: chat.citations,
-        retrieved: chat.retrieved, // stored without passage text
-        timings_ms: chat.timings_ms,
-        usage: { prompt_tokens: chat.prompt_tokens, completion_tokens: chat.completion_tokens },
-        prompt_version: chat.prompt_version,
-      });
-    }
+    const { data } = await api(`/chats?limit=100&conversation_id=${conversationId}`);
+    const traces = await Promise.all(
+      data.items.reverse().map((chat) => api(`/chats/${chat.id}`).then((r) => r.data)),
+    );
+    for (const chat of traces) showStoredChat(chat);
   } catch (error) {
     renderError(appendAssistant(), describeError(error));
   }
+}
+
+function showStoredChat(chat) {
+  appendUser(chat.question);
+  const container = appendAssistant();
+  if (chat.error_code) {
+    renderError(container, `This question failed (${chat.error_code}).`);
+    return;
+  }
+  renderAnswerMessage(container, {
+    answer: chat.answer,
+    abstained: chat.abstained,
+    abstain_reason: chat.abstain_reason,
+    search_query: chat.search_query,
+    citations: chat.citations,
+    retrieved: chat.retrieved, // stored without passage text
+    timings_ms: chat.timings_ms,
+    usage: { prompt_tokens: chat.prompt_tokens, completion_tokens: chat.completion_tokens },
+    prompt_version: chat.prompt_version,
+  });
 }
 
 // --- Thread --------------------------------------------------------------------------------
@@ -250,6 +267,10 @@ function renderError(container, message) {
 }
 
 function renderAnswerMessage(container, data) {
+  if (data.search_query) {
+    // A follow-up: show what was actually searched, so the answer can be judged by it.
+    container.append(el("div", { className: "searched", text: `Searched for: ${data.search_query}` }));
+  }
   const bubble = el("div", { className: "bubble" });
   if (data.abstained) {
     container.classList.add("abstained");
@@ -330,14 +351,21 @@ function openSource(citation, passage) {
 async function ask(question) {
   const body = { question };
   if (state.selected.size) body.document_ids = [...state.selected];
+  if (state.conversationId) body.conversation_id = state.conversationId;
   appendUser(question);
   const container = appendAssistant();
 
   if (!state.retrievalOnly) {
-    const stop = renderThinking(container, "Searching your documents and writing an answer…");
+    const stop = renderThinking(
+      container,
+      state.conversationId
+        ? "Reading the conversation, searching and writing an answer…"
+        : "Searching your documents and writing an answer…",
+    );
     try {
       const { data } = await api("/chat", { method: "POST", json: body });
       stop();
+      state.conversationId = data.conversation_id;
       renderAnswerMessage(container, { ...data, prompt_version: data.config?.prompt_version });
       loadHistory().catch(() => {});
       return;
@@ -420,6 +448,7 @@ function wire() {
 
   $("new-chat").addEventListener("click", () => {
     document.querySelectorAll(".history button.active").forEach((b) => b.classList.remove("active"));
+    state.conversationId = null;
     clearThread();
     $("thread").append(
       el("div", { className: "empty", attrs: { id: "empty" } }, el("h1", { text: "Ask your documents" })),
