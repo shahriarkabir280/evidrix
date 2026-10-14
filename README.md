@@ -21,11 +21,21 @@ model through Ollama.
 
 ## Contents
 
-[Highlights](#highlights) · [Results](#results) · [How it works](#how-it-works) ·
-[Quickstart](#quickstart) · [Using Evidrix](#using-evidrix) · [Evaluation](#evaluation) ·
-[Engineering notes](#engineering-notes) · [Operations](#operations) ·
-[Deployment](#deployment) · [Development](#development) · [Documentation](#documentation) ·
-[Limitations](#limitations)
+1. [Highlights](#highlights)
+2. [Results](#results)
+3. [How it works](#how-it-works)
+4. [Quickstart](#quickstart)
+5. [Using Evidrix](#using-evidrix)
+   - [Web page](#web-page)
+   - [API](#api)
+6. [Evaluation](#evaluation)
+7. [Engineering notes](#engineering-notes)
+8. [Operations](#operations)
+9. [Deployment](#deployment)
+10. [Development](#development)
+11. [Documentation](#documentation)
+12. [Limitations](#limitations)
+13. [License](#license)
 
 ## Highlights
 
@@ -251,11 +261,13 @@ What the measurements caught that a plan wouldn't have. The full log is in
 - **Measure before fixing.** Two-column papers were expected to scramble the reading order; they
   didn't. The real problems were ligatures (`ﬁne-tune`) and PDF chunks without section paths.
 
-Design decisions are recorded as ADRs: [pgvector](docs/adr/0001-postgres-pgvector.md) ·
-[embedding model and chunk size](docs/adr/0002-embedding-model-and-chunk-size.md) ·
-[keyword search](docs/adr/0003-keyword-search.md) ·
-[API key storage](docs/adr/0004-api-key-storage.md) ·
-[no caching yet](docs/adr/0005-no-caching-yet.md).
+Design decisions are recorded as architecture decision records (ADRs):
+
+- [ADR-0001](docs/adr/0001-postgres-pgvector.md): Postgres with pgvector instead of a separate vector database
+- [ADR-0002](docs/adr/0002-embedding-model-and-chunk-size.md): the embedding model and the chunk size
+- [ADR-0003](docs/adr/0003-keyword-search.md): keyword search with Postgres full-text search
+- [ADR-0004](docs/adr/0004-api-key-storage.md): API keys stored as hashes and looked up by hash
+- [ADR-0005](docs/adr/0005-no-caching-yet.md): no query or answer cache, for now
 
 ## Operations
 
