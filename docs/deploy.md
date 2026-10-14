@@ -20,7 +20,8 @@ The same image serves both, configured only through environment variables.
 **No LLM in the public demo.** A free CPU instance can't run the 8B model that produced the
 published answer numbers, and pointing the demo at a different hosted model would mean either
 re-running the evaluation with it or showing answers the numbers don't describe. The demo is
-retrieval-only; `/chat` is shown in the recorded demo, against the local model the report used.
+retrieval-only; `/chat` runs in the local setup (`make dev` and the `/ui` page), against the
+local model the report used.
 
 **Memory.** Measured in the container (`linux/arm64`, CPU torch, 30 `/retrieve` calls):
 

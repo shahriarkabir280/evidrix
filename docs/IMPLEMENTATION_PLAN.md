@@ -975,7 +975,7 @@ Branch `feature/deploy` · Milestone M5
 
 Branch `feature/report` · Milestone M5
 
-**Status: experiments, error analysis and report done (2026-10-13, built on the `feature/deploy` branch); the demo video and the `v1.0.0` tag remain.**
+**Status: experiments, error analysis and report done (2026-10-13, built on the `feature/deploy` branch); the `v1.0.0` tag remains. The demo video was dropped (2026-10-14): the `/ui` page shows the system directly.**
 
 **Components**
 - **8A** Ablation runs E1–E5
@@ -1031,7 +1031,8 @@ hybrid on an identifier query → eval results table.
 
 **DoD**
 - [x] Results table contains measured numbers for E1–E5 on the held-out test split.
-- [ ] Report, README, diagram, and video are published. `v1.0.0` tagged.
+- [x] Report, README and diagram are published (the demo video was dropped, 2026-10-14).
+- [ ] `v1.0.0` tagged.
 
 
 **Check your understanding**
