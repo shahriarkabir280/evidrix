@@ -15,6 +15,6 @@ short_description: Evidence-grounded retrieval over technical docs and papers
 This Space runs the [Evidrix](https://github.com/shahriarkabir280/evidrix) API in
 **retrieval-only** mode: `POST /retrieve` returns the ranked passages (dense + keyword search,
 fused and reranked) for a question, with per-stage scores. Answer generation (`/chat`) needs an
-8B model and is shown in the project's recorded demo instead.
+8B model and runs in the project's local setup (see its README).
 
 Open `/docs` for the interactive API. Requests need an API key (`Authorization: Bearer evx_…`).

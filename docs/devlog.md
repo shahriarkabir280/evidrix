@@ -365,3 +365,9 @@ Rank of the document that answers the question, within the top 10:
   every question. Saying what makes a question depend on context fixed it; examples helped.
 - The page's own CSP blocked the test harness's `page.waitForFunction` (it evaluates strings),
   evidence that the policy forbids eval.
+
+## Demo video dropped (2026-10-14)
+
+The owner decided against a demo video: the `/ui` page shows the system directly (upload,
+answers with citations, follow-ups). `docs/demo-script.md` was removed, and the places that
+pointed `/chat` users to a recording now point to the local setup.

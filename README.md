@@ -466,7 +466,7 @@ docs/             plan, ADRs, devlog
 - [x] **Part 6** — persisted chats with full traces, per-stage timing and cost, error envelope, `/ready`, load test and perf report, caching decision
 - [x] **Part 7** — Docker image, container stack with a release-step migration, CI with coverage and image build, smoke and persistence tests ([deploy](docs/deploy.md)); public Space pending accounts
 - [x] **Web UI** — chat page at `/ui` with citations, upload, history, and follow-up questions
-- [x] **Part 8** — ablations E1–E5 on the held-out split, error analysis, [report](docs/REPORT.md); demo video pending
+- [x] **Part 8** — ablations E1–E5 on the held-out split, error analysis, [report](docs/REPORT.md)
 
 ## Limitations
 
