@@ -103,6 +103,13 @@ def chat(
             prompt_version=settings.answer_prompt_version,
             timer=timer,
             history=history,
+            # The threshold was calibrated on questions about content, searched across all of a
+            # user's documents. A user who picked the documents has said where the answer is,
+            # and a question about the document itself ("give me the abstract") shares no words
+            # with the passage, so the reranker scores it far below the threshold (-9.8 vs -2.84)
+            # even when the right passage is first. The model reads the passages instead, and
+            # still abstains, with citation checks, when they don't answer the question.
+            score_gate=not request.document_ids,
         )
     except Exception as exc:
         status_code, code = next(

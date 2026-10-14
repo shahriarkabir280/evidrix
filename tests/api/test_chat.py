@@ -210,3 +210,18 @@ def test_preset_threshold_abstains_without_calling_the_model(client, ingest, mon
     assert body["abstain_reason"] == "low_retrieval_score"
     assert body["config"]["retrieval"]["min_score"] == 2.0
     assert llm.calls == []
+
+
+def test_threshold_is_skipped_when_the_user_picked_the_documents(client, ingest, monkeypatch):
+    from app.api import deps
+    from app.rag.retrieval import RetrievalConfig
+
+    document_id = ingest("cookies.md", COOKIES)
+    llm = use_llm(client, FakeLLM(reply("Use Cookie [1].", [1])))
+    strict = RetrievalConfig(mode="dense", rerank=False, min_score=2.0)  # cosine never reaches 2
+    monkeypatch.setattr(deps, "load_preset", lambda name: strict)
+
+    body = ask(client, "Give me the abstract.", document_ids=[document_id]).json()
+
+    assert body["abstained"] is False
+    assert len(llm.calls) == 1
