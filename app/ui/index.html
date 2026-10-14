@@ -9,75 +9,87 @@
   <script type="module" src="app.js"></script>
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar" id="sidebar">
-      <div class="brand">
-        <span class="logo" aria-hidden="true">◆</span> Evidrix
+  <div class="app empty" id="app">
+    <aside class="sidebar" id="sidebar" aria-label="Chats">
+      <div class="sidebar-head">
+        <span class="brand"><span class="logo" aria-hidden="true">◆</span> Evidrix</span>
+        <button type="button" class="icon-btn" id="close-sidebar" aria-label="Close sidebar" data-icon="sidebar"></button>
       </div>
-      <button type="button" class="new-chat" id="new-chat">+ New chat</button>
-
-      <section class="panel">
-        <h2>Documents</h2>
-        <p class="hint" id="filter-hint">Ask about all of them, or tick some to narrow the search.</p>
-        <ul class="documents" id="documents"></ul>
-        <label class="upload">
-          <input type="file" id="upload" accept=".pdf,.md,.markdown,.txt" hidden>
-          <span>⬆ Upload a file</span>
-        </label>
-        <p class="hint">PDF, Markdown or text, up to 10 MB.</p>
-      </section>
-
-      <section class="panel history-panel">
-        <h2>History</h2>
-        <ul class="history" id="history"></ul>
-      </section>
-
-      <button type="button" class="link" id="sign-out">Change API key</button>
+      <button type="button" class="side-item" id="new-chat"><span data-icon="edit"></span>New chat</button>
+      <button type="button" class="side-item" id="open-library">
+        <span data-icon="files"></span>Documents<span class="count" id="doc-count"></span>
+      </button>
+      <nav class="history" id="history" aria-label="Chat history"></nav>
+      <button type="button" class="side-item bottom" id="settings"><span data-icon="key"></span>API key</button>
     </aside>
+    <div class="scrim" id="scrim" hidden></div>
 
     <main class="main">
       <header class="topbar">
-        <button type="button" class="menu" id="menu" aria-label="Show the sidebar">☰</button>
-        <span id="scope">All documents</span>
+        <button type="button" class="icon-btn" id="open-sidebar" aria-label="Open sidebar" data-icon="sidebar"></button>
+        <button type="button" class="icon-btn mobile-only" id="new-chat-top" aria-label="New chat" data-icon="edit"></button>
+        <span class="title">Evidrix</span>
         <span class="mode" id="mode" hidden>Retrieval only</span>
       </header>
 
-      <div class="thread" id="thread" aria-live="polite">
-        <div class="empty" id="empty">
-          <h1>Ask your documents</h1>
-          <p>Answers come only from the files in the sidebar, with a source for every claim.
-            If the answer isn't there, Evidrix says so instead of guessing.</p>
-        </div>
+      <div class="scroll" id="scroll">
+        <div class="thread" id="thread" aria-live="polite"></div>
       </div>
 
-      <form class="composer" id="composer">
-        <textarea id="question" rows="1" maxlength="1000"
-          placeholder="Ask a question about your documents…" required></textarea>
-        <button type="submit" id="send" aria-label="Send">➤</button>
-      </form>
-      <p class="footnote">Follow-up questions use the conversation to understand what you mean;
-        answers still come only from your documents.</p>
+      <div class="composer-area">
+        <h1 class="greeting">What do you want to know?</h1>
+        <form class="composer" id="composer">
+          <div class="chips" id="chips"></div>
+          <textarea id="question" rows="1" maxlength="1000" placeholder="Ask anything" aria-label="Your question" required></textarea>
+          <div class="composer-row">
+            <div class="plus">
+              <button type="button" class="icon-btn round" id="plus" aria-label="Add files and more" aria-haspopup="menu" aria-expanded="false" data-icon="plus"></button>
+              <div class="menu" id="plus-menu" role="menu" hidden>
+                <button type="button" role="menuitem" id="menu-upload"><span data-icon="clip"></span>Upload a file</button>
+                <button type="button" role="menuitem" id="menu-scope"><span data-icon="files"></span>Search specific documents</button>
+              </div>
+            </div>
+            <button type="submit" class="send" id="send" aria-label="Send" data-icon="arrow-up" disabled></button>
+          </div>
+          <input type="file" id="upload" accept=".pdf,.md,.markdown,.txt" hidden>
+        </form>
+        <p class="disclaimer">Answers come only from your documents, with sources. Check them for anything important.</p>
+      </div>
     </main>
+
+    <aside class="sources" id="sources" aria-label="Sources" hidden>
+      <div class="sources-head">
+        <h2>Sources</h2>
+        <button type="button" class="icon-btn" id="close-sources" aria-label="Close sources" data-icon="close"></button>
+      </div>
+      <div class="sources-body" id="sources-body"></div>
+    </aside>
   </div>
 
-  <dialog id="key-dialog">
+  <dialog id="key-dialog" class="modal">
     <form method="dialog" id="key-form">
-      <h2>API key</h2>
-      <p>Paste your Evidrix key (<code>evx_…</code>). Create one with
+      <h2>Sign in with your API key</h2>
+      <p class="muted">Paste your Evidrix key (<code>evx_…</code>). Create one with
         <code>uv run python -m app.cli create-key --email you@example.com</code>.
-        It is kept in this browser only.</p>
+        It stays in this browser.</p>
       <input id="key-input" type="password" autocomplete="off" placeholder="evx_…" required>
       <p class="error" id="key-error" hidden></p>
-      <button type="submit">Continue</button>
+      <div class="modal-actions"><button type="submit" class="primary">Continue</button></div>
     </form>
   </dialog>
 
-  <dialog id="source-dialog">
+  <dialog id="library-dialog" class="modal wide">
     <form method="dialog">
-      <h2 id="source-title"></h2>
-      <p class="location" id="source-location"></p>
-      <blockquote id="source-text"></blockquote>
-      <button type="submit">Close</button>
+      <div class="modal-head">
+        <h2>Documents</h2>
+        <button type="submit" class="icon-btn" aria-label="Close" data-icon="close"></button>
+      </div>
+      <p class="muted">Questions search all of these. Tick some to search only those.</p>
+      <ul class="library" id="library"></ul>
+      <div class="modal-actions">
+        <button type="button" class="secondary" id="library-upload"><span data-icon="clip"></span>Upload a file</button>
+        <button type="submit" class="primary">Done</button>
+      </div>
     </form>
   </dialog>
 </body>
