@@ -65,11 +65,15 @@ def answer_question(
     prompt_version: str = PROMPT_VERSION,
     timer: StageTimer | None = None,
     history: list[Turn] | None = None,
+    score_gate: bool = True,
 ) -> ChatResult:
     """Retrieve and answer. Pass a `timer` to keep the stage timings even if a stage fails.
 
     With `history` (earlier turns of the conversation), the question is first rewritten to
     stand on its own (app/rag/conversation.py); the rewritten question is searched and answered.
+
+    `score_gate=False` skips the abstention threshold (the preset's min_score) and lets the model
+    judge the passages: see the /chat route for when.
     """
     timer = timer or StageTimer()
     if document_ids is not None:
@@ -102,7 +106,7 @@ def answer_question(
             question,
             found.hits,
             max_tokens=max_tokens,
-            min_score=retrieval.min_score,
+            min_score=retrieval.min_score if score_gate else None,
             prompt_version=prompt_version,
         )
     timings = timer.finish()
