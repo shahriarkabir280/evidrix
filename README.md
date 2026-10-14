@@ -166,13 +166,23 @@ uv run python -m app.cli create-key --email dev@evidrix.local   # the owner of t
 
 ### Web page
 
-`/ui` is a single page served by the API: documents with their processing status, upload,
-conversations, and answers whose citations open the passage they point to. Questions that the
-documents don't answer are shown as such.
+`/ui` is a chat page in the style of ChatGPT, served by the API with no build step:
+
+- **Ask anything.** A new chat is an empty page and a box; there is no list of topics to pick from.
+- **Attach files with `+`.** Upload a file or pick documents to search; they show as chips above
+  the box, with their processing status, and a question waits until they are ready.
+- **Check every claim.** Citation numbers and source pills open a side panel with the passage,
+  its document and section; the panel also lists the other passages that were searched.
+- **Follow up.** The conversation continues where it left off, and a follow-up shows what it was
+  searched as. History is grouped by day, as in ChatGPT.
+- **Honest answers.** A question the documents don't answer says so instead of guessing.
 
 <p align="center">
-  <img src="docs/images/ui-source.png" alt="A citation opened: the cited passage with its document and section" width="49%">
-  <img src="docs/images/ui-abstain.png" alt="An abstention: the answer is not in the documents" width="49%">
+  <img src="docs/images/ui-home.png" alt="A new chat: an empty page with a question box" width="49%">
+  <img src="docs/images/ui-source.png" alt="The sources panel: the cited passage with its document and section" width="49%">
+</p>
+<p align="center">
+  <img src="docs/images/ui-abstain.png" alt="An abstention: the answer is not in the documents" width="70%">
 </p>
 
 ### API

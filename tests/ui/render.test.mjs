@@ -8,8 +8,10 @@ import {
   escapeHtml,
   formatSeconds,
   locationLabel,
+  plainAnswer,
   previewText,
   renderAnswer,
+  renderPassage,
 } from "../../app/ui/render.js";
 
 test("escapes everything that could be markup", () => {
@@ -80,4 +82,23 @@ test("previews drop Markdown markers and stay short", () => {
 
   assert.equal(previewText(text), "Declare `Cookie` parameters Then: from fastapi import Cookie");
   assert.equal(previewText("a".repeat(300), 10), "aaaaaaaaa…");
+});
+
+test("copied answers keep code but drop citation markers", () => {
+  assert.equal(plainAnswer("Use `x[1]` as the key [1][2]. Then sort [3]."), "Use `x[1]` as the key. Then sort.");
+});
+
+test("passages show headings, bold and code, and keep brackets as text", () => {
+  const html = renderPassage("## Declare `Header`\n\nSee **this** and [1].\n```python\nx = a[1] < b\n```");
+
+  assert.ok(html.startsWith("<strong>Declare <code>Header</code></strong>"));
+  assert.ok(html.includes("<strong>this</strong>"));
+  assert.ok(html.includes("[1]") && !html.includes("data-cite"));
+  assert.ok(html.includes("<pre><code>x = a[1] &lt; b</code></pre>"));
+});
+
+test("markup planted in a passage stays text", () => {
+  const html = renderPassage('<img src=x onerror="steal()"> **<script>x</script>**');
+
+  assert.ok(!html.includes("<img") && !html.includes("<script>"));
 });

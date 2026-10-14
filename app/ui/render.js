@@ -66,6 +66,48 @@ export function renderAnswer(text) {
     .join("");
 }
 
+/**
+ * A source passage (document text) as HTML: headings, **bold**, inline code and code blocks.
+ * Unlike renderAnswer, brackets stay text: "[1]" in a document is not one of our citations.
+ */
+export function renderPassage(text) {
+  return String(text ?? "")
+    .split(/(```[^\n]*\n[\s\S]*?(?:```|$))/g)
+    .map((part) => {
+      const block = part.match(/^```[^\n]*\n([\s\S]*?)(?:```)?$/);
+      if (block) return `<pre><code>${escapeHtml(block[1].replace(/\n$/, ""))}</code></pre>`;
+      return part
+        .replace(/\n{3,}/g, "\n\n")
+        .split("\n")
+        .map((line) => {
+          const heading = line.match(/^#{1,6}[ \t]+(.+)$/);
+          return heading ? `<strong>${renderInline(heading[1])}</strong>` : renderInline(line);
+        })
+        .join("<br>");
+    })
+    .join("");
+}
+
+function renderInline(line) {
+  return line
+    .split(/(`[^`]+`)/g)
+    .map((piece) =>
+      piece.length > 2 && piece.startsWith("`") && piece.endsWith("`")
+        ? `<code>${escapeHtml(piece.slice(1, -1))}</code>`
+        : escapeHtml(piece).replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>"),
+    )
+    .join("");
+}
+
+/** The answer as plain text for copying: citation markers removed, code and text kept. */
+export function plainAnswer(text) {
+  return String(text ?? "")
+    .replace(CITATION_RUN, "")
+    .replace(/[ \t]+([.,;:!?])/g, "$1")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
 /** A passage as one line of plain text for a preview: no Markdown heading or fence markers. */
 export function previewText(text, limit = 280) {
   const plain = String(text ?? "")
