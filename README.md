@@ -164,8 +164,12 @@ LLM_API_KEY=sk-or-...                                   # from openrouter.ai/key
 LLM_MODEL=nvidia/nemotron-3-super-120b-a12b:free
 LLM_CONTEXT_TOKENS=32768
 LLM_RESPONSE_FORMAT=json_schema                         # json_object for models with JSON mode only
+LLM_MAX_OUTPUT_TOKENS=2048                              # reasoning models think before answering
 ```
 
+Tried with `nvidia/nemotron-3-super-120b-a12b:free`: it answered a two-paper question that the
+local 8B model got wrong, resisted all four planted instructions in the injection suite, and,
+unlike the local model with `answer_v2`, repeated a false statement planted in a document.
 Embeddings and reranking stay local. Two things change with a hosted model: your documents'
 text is sent to the provider (free endpoints may log prompts), and the published results were
 measured with the local `qwen3-vl:8b`, so re-run `make eval-full` to measure another model.

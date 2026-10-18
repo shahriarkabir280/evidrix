@@ -212,6 +212,11 @@ def validate_citations(raw: _RawAnswer, source_count: int) -> tuple[str, list[in
     Returns the cleaned answer text, the valid markers in order of first appearance, and the
     markers that were dropped. Out-of-range markers are also removed from the text, so the
     reader never sees "[7]" pointing at nothing.
+
+    Some models put their sources only in the `citations` list and none in the text (seen with
+    nvidia/nemotron-3-super-120b on OpenRouter; qwen3-vl:8b always cites inline). Then the
+    declared sources that exist are appended to the end of the answer: still checked against
+    the retrieved sources, but attached to the answer as a whole rather than to each claim.
     """
     in_text = [
         int(n)
@@ -228,7 +233,14 @@ def validate_citations(raw: _RawAnswer, source_count: int) -> tuple[str, list[in
 
     cleaned = CITATION_RUN.sub(lambda run: _CITATION_GROUP.sub(keep_valid, run.group()), raw.answer)
     cleaned = re.sub(r"[ \t]+([.,;:!?])", r"\1", cleaned)  # "text [7]." became "text ."
-    return re.sub(r"[ \t]{2,}", " ", cleaned).strip(), valid, dropped
+    cleaned = re.sub(r"[ \t]{2,}", " ", cleaned).strip()
+    if not in_text:
+        declared = list(dict.fromkeys(n for n in raw.citations if 1 <= n <= source_count))
+        if declared:
+            logger.info("citations_appended", declared=declared)
+            cleaned += " " + "".join(f"[{n}]" for n in declared)
+            return cleaned, declared, sorted(set(raw.citations) - set(declared))
+    return cleaned, valid, dropped
 
 
 def _abstain(
