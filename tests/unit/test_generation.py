@@ -194,3 +194,26 @@ def test_brackets_glued_to_code_are_not_citations(answer, citations, kept_text):
     assert valid == citations
     assert dropped == []
     assert kept_text in text
+
+
+def test_sources_declared_only_in_the_list_are_appended_to_the_answer():
+    raw = _RawAnswer("BERT-NLI-STSb-large scored highest, 88.77.", [1, 7, 1], False)
+
+    text, valid, dropped = validate_citations(raw, 5)
+
+    assert text == "BERT-NLI-STSb-large scored highest, 88.77. [1]"
+    assert (valid, dropped) == ([1], [7])
+
+
+def test_inline_markers_win_over_the_declared_list():
+    raw = _RawAnswer("Use Cookie [2].", [1, 2], False)
+
+    text, valid, dropped = validate_citations(raw, 5)
+
+    assert (text, valid, dropped) == ("Use Cookie [2].", [2], [1])
+
+
+def test_no_valid_source_anywhere_is_still_no_citation():
+    text, valid, _ = validate_citations(_RawAnswer("Something.", [9], False), 5)
+
+    assert valid == [] and text == "Something."
