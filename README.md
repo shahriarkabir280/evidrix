@@ -10,8 +10,13 @@ claim, and says *"I couldn't find this"* instead of guessing.
 
 It is built as a measurable system, not a demo. Every retrieval change was tested on a labeled
 benchmark with a held-out split and confidence intervals, and every failure of the final system
-was classified. The whole stack runs locally: FastAPI, Postgres with pgvector, Redis, and an 8B
-model through Ollama.
+was classified. It runs fully locally (FastAPI, Postgres with pgvector, Redis and an 8B model
+through Ollama) or with any OpenAI-compatible hosted model.
+
+**At a glance:** reranking lifts MRR@5 by **+0.193** over dense retrieval on a held-out split ·
+answers **0.857** correct and **1.000** faithful to their sources · **all** unanswerable test
+questions declined · **461** automated tests at 92% coverage · a ChatGPT-style web page with
+follow-up questions.
 
 <p align="center">
   <img src="docs/images/ui-conversation.png" alt="The Evidrix chat page: an answer with citations, then a follow-up question rewritten into a standalone search" width="860">
@@ -22,20 +27,22 @@ model through Ollama.
 ## Contents
 
 1. [Highlights](#highlights)
-2. [Results](#results)
-3. [How it works](#how-it-works)
-4. [Quickstart](#quickstart)
-5. [Using Evidrix](#using-evidrix)
+2. [Tech stack](#tech-stack)
+3. [Results](#results)
+4. [How it works](#how-it-works)
+5. [Quickstart](#quickstart)
+   - [Using a hosted model](#using-a-hosted-model)
+6. [Using Evidrix](#using-evidrix)
    - [Web page](#web-page)
    - [API](#api)
-6. [Evaluation](#evaluation)
-7. [Engineering notes](#engineering-notes)
-8. [Operations](#operations)
-9. [Deployment](#deployment)
-10. [Development](#development)
-11. [Documentation](#documentation)
-12. [Limitations](#limitations)
-13. [License](#license)
+7. [Evaluation](#evaluation)
+8. [Engineering notes](#engineering-notes)
+9. [Operations](#operations)
+10. [Deployment](#deployment)
+11. [Development](#development)
+12. [Documentation](#documentation)
+13. [Limitations](#limitations)
+14. [License](#license)
 
 ## Highlights
 
@@ -59,8 +66,23 @@ model through Ollama.
 - **Observable.** Every answer is stored with the retrieved passages and their scores, tokens,
   cost and time per stage; logs are JSON lines that carry one request ID from the API into the
   worker.
-- **Tested.** 454 Python tests (unit and integration against real Postgres, 92% coverage) and
+- **Local or hosted models.** The answer model is any OpenAI-compatible endpoint: a local model
+  through Ollama by default, or a hosted one such as a free model on OpenRouter, set in `.env`.
+- **Tested.** 461 Python tests (unit and integration against real Postgres, 92% coverage) and
   rendering tests for the web page in CI, plus tests against the real local models.
+
+## Tech stack
+
+| Area | Technologies |
+|---|---|
+| API | Python 3.12, FastAPI, Pydantic v2, uvicorn |
+| Data | PostgreSQL 17 with pgvector (HNSW) and full-text search, SQLAlchemy 2, Alembic |
+| Retrieval | sentence-transformers: `bge-small-en-v1.5` embeddings, `ms-marco-MiniLM-L-6-v2` cross-encoder; Reciprocal Rank Fusion |
+| Generation | Ollama (`qwen3-vl:8b`) or any OpenAI-compatible API, JSON output with citation validation |
+| Background work | Redis, RQ, retries with backoff, job recovery |
+| Web page | HTML, CSS and JavaScript modules, no framework or build step, strict Content-Security-Policy |
+| Evaluation | Labeled benchmarks, LLM judge (`gemma3:12b`), bootstrap confidence intervals, ablations |
+| Operations | Docker (multi-stage, uv), GitHub Actions CI, structlog JSON logs, pytest, Node test runner |
 
 ## Results
 
@@ -105,7 +127,7 @@ flowchart LR
         D --> F[RRF fusion]
         K --> F
         F --> R[Cross-encoder rerank<br/>20 → 5]
-        R --> G[LLM with numbered sources<br/>qwen3-vl:8b · Ollama]
+        R --> G[LLM with numbered sources<br/>Ollama or hosted]
         G --> CV[Validate citations<br/>abstain if unsupported]
     end
     DB --> D
@@ -121,13 +143,15 @@ chunk's exact character range, page range and section path
 
 **Retrieval.** Presets in `configs/retrieval/*.toml`. The default, `hybrid_rerank`, takes 20
 candidates each from dense and keyword search, fuses them by rank, and reranks them with
-`cross-encoder/ms-marco-MiniLM-L-6-v2`; the best 5 go to the model. Below a calibrated reranker
-score the system abstains without calling the model.
+`cross-encoder/ms-marco-MiniLM-L-6-v2`; the best 5 go to the model.
 
 **Generation.** A versioned prompt (`answer_v2`) puts numbered sources before the question and
-treats their text as untrusted data. The reply must be JSON, its citations must point at
-retrieved sources and appear in the text, and a context guard refuses prompts that would
-overflow the model's window (Ollama would silently drop the start).
+treats their text as untrusted data. The reply must be JSON, and every citation must point at a
+retrieved source; a model that lists its sources without marking them in the text has them
+attached to the answer. A context guard refuses prompts that would overflow the model's window
+(Ollama would silently drop the start). When the user picks the documents, the model judges the
+passages itself; otherwise a calibrated reranker score below which it abstains spares a model
+call.
 
 **Follow-ups.** With a `conversation_id`, the last three turns are used to rewrite the question
 into a standalone one (prompt `condense_v2`), which is then searched and answered like a first
@@ -415,8 +439,8 @@ docs/           report, performance, security, deployment, ADRs, devlog, plan
 - **Two kinds of documents.** Technical documentation and retrieval papers; tables in PDFs lose
   their row structure, and scanned PDFs are rejected (no OCR).
 - **Multi-hop questions** that need two documents are the largest failure category.
-- **Local model.** One 8B model generates one answer at a time; a public demo can only offer
-  retrieval without a hosted model.
+- **Measured with one model.** The results are for the local `qwen3-vl:8b`, which generates one
+  answer at a time; hosted models work through the same settings but have not been benchmarked.
 - **Keyword ranking** uses Postgres `ts_rank_cd`, not BM25.
 
 ## License
