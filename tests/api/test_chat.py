@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app.api.deps import get_llm
 from app.rag.generation import ABSTAIN_MESSAGE
 from app.rag.llm import LLMError
+from tests.factories import make_paper_pdf
 from tests.fakes import FakeLLM
 
 pytestmark = pytest.mark.integration
@@ -30,6 +31,17 @@ def ask(client, question: str, **body):
 
 
 # --- Answers -----------------------------------------------------------------------------
+
+
+def test_citations_show_the_display_title_and_the_model_sees_the_indexed_one(client, ingest):
+    document_id = ingest("1703.10717v4.pdf", make_paper_pdf(["BEGAN: Boundary Equilibrium"]))
+    llm = use_llm(client, FakeLLM(reply("An equilibrium term [1].", [1])))
+
+    body = ask(client, "How is the generator trained?", document_ids=[document_id]).json()
+
+    assert body["citations"][0]["document_title"] == "BEGAN: Boundary Equilibrium"
+    assert body["retrieved"][0]["document_title"] == "BEGAN: Boundary Equilibrium"
+    assert 'title="1703.10717v4"' in llm.calls[0]["user"]
 
 
 def test_answer_comes_back_with_citations_and_the_evidence(client, ingest):

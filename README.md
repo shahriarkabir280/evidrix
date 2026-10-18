@@ -15,7 +15,7 @@ through Ollama) or with any OpenAI-compatible hosted model.
 
 **At a glance:** reranking lifts MRR@5 by **+0.193** over dense retrieval on a held-out split ·
 answers **0.857** correct and **1.000** faithful to their sources · **all** unanswerable test
-questions declined · **461** automated tests at 92% coverage · a ChatGPT-style web page with
+questions declined · **469** automated tests at 92% coverage · a ChatGPT-style web page with
 follow-up questions.
 
 <p align="center">
@@ -68,7 +68,7 @@ follow-up questions.
   worker.
 - **Local or hosted models.** The answer model is any OpenAI-compatible endpoint: a local model
   through Ollama by default, or a hosted one such as a free model on OpenRouter, set in `.env`.
-- **Tested.** 461 Python tests (unit and integration against real Postgres, 92% coverage) and
+- **Tested.** 469 Python tests (unit and integration against real Postgres, 92% coverage) and
   rendering tests for the web page in CI, plus tests against the real local models.
 
 ## Tech stack
@@ -315,6 +315,11 @@ What the measurements caught that a plan wouldn't have. The full log is in
   unrelated paragraph; hence bge-small (512 tokens) and chunks capped by its own tokenizer.
 - **Measure before fixing.** Two-column papers were expected to scramble the reading order; they
   didn't. The real problems were ligatures (`ﬁne-tune`) and PDF chunks without section paths.
+- **A better title made retrieval worse.** arXiv PDFs have no title in their metadata, so they
+  were listed by file name. Reading the title from the first page and putting it in every
+  chunk's header lowered paper MRR@5 (dev 0.712 → 0.659, test 0.522 → 0.500): a long title adds
+  the same words to every chunk. Users now see the real title; the index keeps the one it was
+  measured with.
 
 Design decisions are recorded as architecture decision records (ADRs):
 

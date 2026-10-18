@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, StringConstraints
 
 from app.db.models import DocumentStatus, JobStatus
 from app.rag.retrieval import RetrievalConfig
@@ -17,7 +17,7 @@ class DocumentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    title: str
+    title: str = Field(validation_alias=AliasChoices("shown_title", "title"))
     filename: str
     mime_type: str
     size_bytes: int

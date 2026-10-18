@@ -226,6 +226,7 @@ def run_ingestion_job(
         document.chunks = [c for c in document.chunks if c.index_version_id != index_version.id]
         session.flush()
         document.title = extracted.title
+        document.display_title = extracted.display_title
         document.extracted_text = extracted.text
         document.page_count = len(extracted.pages) if kind is DocumentKind.PDF else None
         document.pages = [
@@ -393,6 +394,27 @@ def reindex_document(session: Session, embedder: Embedder, document: Document) -
     document.chunks.extend(new_chunks)
     session.commit()
     return len(new_chunks)
+
+
+def retitle_document(
+    session: Session, embedder: Embedder, blob_store: BlobStore, document: Document
+) -> bool:
+    """Read a stored PDF's titles again with the current rules; True if either changed.
+
+    For PDFs ingested before display titles were read from the first page. The indexed title is
+    part of every chunk's embedding header and section path, so if it changed, the chunks of the
+    active index version are rebuilt.
+    """
+    extracted = extract(blob_store.get(document.storage_key), document.filename, DocumentKind.PDF)
+    if (extracted.title, extracted.display_title) == (document.title, document.display_title):
+        return False
+    document.display_title = extracted.display_title
+    if extracted.title == document.title:
+        session.commit()
+    else:
+        document.title = extracted.title
+        reindex_document(session, embedder, document)
+    return True
 
 
 def mark_failed(session: Session, job: IngestionJob, code: str, message: str) -> None:

@@ -7,7 +7,7 @@ from app.db.repositories import index_versions as index_versions_repo
 from app.db.repositories.users import DEV_USER_ID
 from app.rag.extract import DocumentKind, extract
 from app.services import ingestion
-from tests.factories import make_pdf
+from tests.factories import make_paper_pdf, make_pdf
 
 pytestmark = pytest.mark.integration
 
@@ -126,3 +126,32 @@ def test_reindex_rebuilds_chunks_without_duplicates(session_factory, blob_store,
 
     assert first == second == len(original)
     assert [(c.chunk_index, c.text) for c in stored] == original
+
+
+def test_retitle_adds_a_display_title_without_rebuilding_chunks(
+    session_factory, blob_store, embedder
+):
+    with session_factory() as session:
+        document = ingest(session, blob_store, embedder, "began.pdf", make_paper_pdf(["BEGAN"]))
+        document.display_title = None  # as ingested before display titles existed
+        session.commit()
+        chunk_ids = [c.id for c in document.chunks]
+
+        assert ingestion.retitle_document(session, embedder, blob_store, document) is True
+        assert document.display_title == "BEGAN"
+        assert [c.id for c in document.chunks] == chunk_ids
+        assert ingestion.retitle_document(session, embedder, blob_store, document) is False
+
+
+def test_retitle_rebuilds_chunks_when_the_indexed_title_changes(
+    session_factory, blob_store, embedder
+):
+    with session_factory() as session:
+        document = ingest(session, blob_store, embedder, "began.pdf", make_paper_pdf(["BEGAN"]))
+        document.title = "BEGAN: Boundary Equilibrium GAN"
+        session.commit()
+        chunk_ids = [c.id for c in document.chunks]
+
+        assert ingestion.retitle_document(session, embedder, blob_store, document) is True
+        assert document.title == "began"
+        assert {c.id for c in document.chunks}.isdisjoint(chunk_ids)

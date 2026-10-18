@@ -6,7 +6,7 @@ from sqlalchemy import func, select
 from app.db.models import Document, DocumentPage
 from app.storage.blob import content_key
 from tests.conftest import TEST_MAX_UPLOAD_BYTES
-from tests.factories import make_image_only_pdf, make_pdf
+from tests.factories import make_image_only_pdf, make_paper_pdf, make_pdf
 
 pytestmark = pytest.mark.integration
 
@@ -47,6 +47,15 @@ def test_markdown_upload_is_extracted_by_the_worker(client, ingest):
     assert document["title"] == "Dependencies with yield"
     assert document["mime_type"] == "text/markdown"
     assert document["page_count"] is None
+
+
+def test_pdf_without_metadata_title_shows_its_first_page_title(client, ingest, db_session):
+    pdf = make_paper_pdf(["BEGAN: Boundary Equilibrium", "Generative Adversarial Networks"])
+
+    body = upload_and_process(client, ingest, "1703.10717v4.pdf", pdf)
+
+    assert body["title"] == "BEGAN: Boundary Equilibrium Generative Adversarial Networks"
+    assert db_session.get(Document, uuid.UUID(body["id"])).title == "1703.10717v4"  # indexed
 
 
 def test_pdf_upload_records_pages(client, ingest, db_session):

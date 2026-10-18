@@ -96,7 +96,8 @@ class Document(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     owner_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    title: Mapped[str] = mapped_column(Text)
+    title: Mapped[str] = mapped_column(Text)  # indexed into chunk headers
+    display_title: Mapped[str | None] = mapped_column(Text)  # e.g. a PDF's first-page title
     filename: Mapped[str] = mapped_column(Text)
     mime_type: Mapped[str] = mapped_column(String(100))
     size_bytes: Mapped[int]
@@ -125,6 +126,10 @@ class Document(Base):
         passive_deletes=True,
         order_by="Chunk.chunk_index",
     )
+
+    @property
+    def shown_title(self) -> str:
+        return self.display_title or self.title
 
 
 class DocumentPage(Base):

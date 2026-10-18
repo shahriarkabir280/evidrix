@@ -297,7 +297,7 @@ def location(hit: ChunkHit) -> dict:
     return {
         "chunk_id": hit.chunk_id,
         "document_id": hit.document_id,
-        "document_title": hit.document_title,
+        "document_title": hit.document_display_title or hit.document_title,
         "section_path": hit.section_path,
         "page_start": hit.page_start,
         "page_end": hit.page_end,
