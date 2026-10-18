@@ -1,4 +1,4 @@
-"""Command-line tasks: ingest-dir, reindex, search, reap-jobs, and API users and keys.
+"""Command-line tasks: ingest-dir, reindex, retitle, search, reap-jobs, and API users and keys.
 
 Component 2D (ingest-dir, reindex, search) · 5B (reap-jobs) · 5C (create-user, create-key,
 revoke-key).
@@ -8,6 +8,7 @@ the API, create a key for that user with create-key.
 
     uv run python -m app.cli ingest-dir evals/corpus/raw
     uv run python -m app.cli reindex
+    uv run python -m app.cli retitle
     uv run python -m app.cli search "How do I declare a cookie parameter?"
     uv run python -m app.cli search "OAuth2PasswordRequestForm" --preset dense -k 3
     uv run python -m app.cli reap-jobs
@@ -38,6 +39,7 @@ from app.services.ingestion import (
     ingest_upload,
     reap_stale_jobs,
     reindex_document,
+    retitle_document,
 )
 from app.storage.blob import make_blob_store
 from app.worker.queue import get_ingestion_queue
@@ -104,6 +106,26 @@ def reindex() -> None:
             count = reindex_document(session, embedder, document)
             print(f"  reindexed  {document.title}  ({count} chunks)")
         print(f"{len(documents)} documents reindexed into {index_version.name}")
+
+
+def retitle() -> None:
+    """Re-read the titles of completed PDFs, for those ingested before display titles."""
+    embedder = get_embedder()
+    blob_store = make_blob_store(get_settings())
+    with get_session_factory()() as session:
+        documents = session.scalars(
+            select(Document).where(
+                Document.status == DocumentStatus.COMPLETED,
+                Document.mime_type == "application/pdf",
+            )
+        ).all()
+        changed = 0
+        for document in documents:
+            old_title = document.shown_title
+            if retitle_document(session, embedder, blob_store, document):
+                changed += 1
+                print(f"  retitled   {old_title}  ->  {document.shown_title}")
+        print(f"{changed} of {len(documents)} PDF titles changed")
 
 
 def reap_jobs(lease_seconds: int) -> None:
@@ -213,6 +235,7 @@ def main() -> None:
     ingest = commands.add_parser("ingest-dir", help="ingest every supported file in a folder")
     ingest.add_argument("directory", type=Path)
     commands.add_parser("reindex", help="build missing chunks for the active index version")
+    commands.add_parser("retitle", help="re-read PDF titles, e.g. after display titles were added")
     query = commands.add_parser("search", help="dense search over your documents")
     query.add_argument("question")
     query.add_argument(
@@ -248,6 +271,8 @@ def main() -> None:
         ingest_dir(args.directory)
     elif args.command == "reindex":
         reindex()
+    elif args.command == "retitle":
+        retitle()
     elif args.command == "reap-jobs":
         reap_jobs(args.lease_seconds)
     elif args.command == "create-user":

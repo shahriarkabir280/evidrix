@@ -371,3 +371,19 @@ Rank of the document that answers the question, within the top 10:
 The owner decided against a demo video: the `/ui` page shows the system directly (upload,
 answers with citations, follow-ups). `docs/demo-script.md` was removed, and the places that
 pointed `/chat` users to a recording now point to the local setup.
+
+## PDF titles from the first page (2026-10-18)
+
+arXiv PDFs have no title in their metadata, so the page listed them by file name
+(`1703.10717v4`). The title is now read from the first page: the lines in the largest type,
+using upright characters only (arXiv's sideways identifier stamp is larger than most titles).
+It found the right title for all 13 PDFs tried (8 corpus papers, 4 Python docs, 2 others).
+
+**Measured**
+- With the long title also in every chunk's embedding header and section path, paper retrieval
+  got worse: hybrid_rerank MRR@5 dev 0.712 → 0.659, test 0.522 → 0.500, Recall@5 test
+  0.722 → 0.611; dense test MRR@5 0.361 → 0.213.
+- So the title is stored separately (`documents.display_title`, migration 0009) and shown in
+  the API and the page, while the index, the reranker and the prompt keep the title the
+  benchmarks were measured with. After the change the four runs matched the baseline exactly.
+- `python -m app.cli retitle` fills in display titles for PDFs ingested earlier.

@@ -10,7 +10,7 @@ from app.rag.extract import (
     extract,
     normalize_pdf_text,
 )
-from tests.factories import encrypt_pdf, make_image_only_pdf, make_pdf
+from tests.factories import encrypt_pdf, make_image_only_pdf, make_paper_pdf, make_pdf
 
 PAGE_ONE = "Dependency injection lets a path operation declare what it needs."
 PAGE_TWO = "OAuth2 with Password and Bearer tokens secures the API endpoints."
@@ -45,9 +45,40 @@ def test_pdf_title_comes_from_metadata():
 
 
 def test_pdf_title_falls_back_to_filename():
+    # One font size: no line stands out as a title.
     document = extract(make_pdf([PAGE_ONE]), "security-intro.pdf", DocumentKind.PDF)
 
     assert document.title == "security-intro"
+    assert document.display_title is None
+
+
+def test_pdf_display_title_comes_from_the_largest_type_on_the_first_page():
+    data = make_paper_pdf(["BEGAN: Boundary Equilibrium Genera-", "tive Adversarial Networks"])
+
+    document = extract(data, "1703.10717v4.pdf", DocumentKind.PDF)
+
+    assert document.display_title == "BEGAN: Boundary Equilibrium Generative Adversarial Networks"
+    assert document.title == "1703.10717v4"  # the indexed title stays as measured
+
+
+def test_pdf_display_title_ignores_sideways_text():
+    data = make_paper_pdf(["Dense Retrieval"], stamp="arXiv:2104.08663v4 [cs.IR] 21 Oct 2021")
+
+    assert extract(data, "x.pdf", DocumentKind.PDF).display_title == "Dense Retrieval"
+
+
+def test_pdf_metadata_title_needs_no_display_title():
+    data = make_paper_pdf(["Dense Retrieval"], metadata_title="Dense Retrieval for QA")
+
+    document = extract(data, "x.pdf", DocumentKind.PDF)
+
+    assert (document.title, document.display_title) == ("Dense Retrieval for QA", None)
+
+
+def test_pdf_placeholder_metadata_title_is_not_shown():
+    data = make_paper_pdf(["Dense Retrieval"], metadata_title="Microsoft Word - draft3.docx")
+
+    assert extract(data, "x.pdf", DocumentKind.PDF).display_title == "Dense Retrieval"
 
 
 def test_pdf_blank_pages_keep_their_numbers():

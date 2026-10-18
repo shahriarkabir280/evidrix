@@ -35,6 +35,7 @@ class ChunkHit:
     # Position of the chunk in Document.extracted_text (used to match evaluation labels).
     char_start: int | None = None
     char_end: int | None = None
+    document_display_title: str | None = None  # shown to users; the model sees document_title
 
 
 def search_dense(
@@ -130,6 +131,7 @@ def _searchable(
             Chunk.id,
             Chunk.document_id,
             Document.title,
+            Document.display_title,
             Chunk.chunk_index,
             Chunk.text,
             Chunk.section_path,
@@ -173,4 +175,5 @@ def _hit(row, *, score: float, rank: int) -> ChunkHit:
         rank=rank,
         char_start=row.char_start,
         char_end=row.char_end,
+        document_display_title=row.display_title,
     )
