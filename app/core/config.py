@@ -72,6 +72,8 @@ class Settings(BaseSettings):
     # slot, then get 503 llm_busy. See OpenAICompatibleProvider for the measurement.
     llm_max_concurrency: int = 1
     llm_queue_timeout_seconds: float = 120.0
+    # json_schema (Ollama, most hosted models) | json_object (models with JSON mode only) | none.
+    llm_response_format: Literal["json_schema", "json_object", "none"] = "json_schema"
     # Evaluation only: a different model family from llm_model grades the answers. Calibration
     # (evals/judge_calibration.jsonl, judge_correctness_v1): gemma3:12b 100%, llama3.1:8b 88%.
     judge_model: str = "gemma3:12b"

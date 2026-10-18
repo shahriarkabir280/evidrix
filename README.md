@@ -153,6 +153,23 @@ uv run python -m app.cli create-user --email you@example.com   # prints your API
 
 Open **http://127.0.0.1:8000/ui/**, paste the key, upload a few documents and ask away.
 
+### Using a hosted model
+
+The answer model is any OpenAI-compatible endpoint, so a larger hosted model needs only settings
+in `.env`, for example a free model on [OpenRouter](https://openrouter.ai/models):
+
+```bash
+LLM_BASE_URL=https://openrouter.ai/api/v1
+LLM_API_KEY=sk-or-...                                   # from openrouter.ai/keys; never commit it
+LLM_MODEL=nvidia/nemotron-3-super-120b-a12b:free
+LLM_CONTEXT_TOKENS=32768
+LLM_RESPONSE_FORMAT=json_schema                         # json_object for models with JSON mode only
+```
+
+Embeddings and reranking stay local. Two things change with a hosted model: your documents'
+text is sent to the provider (free endpoints may log prompts), and the published results were
+measured with the local `qwen3-vl:8b`, so re-run `make eval-full` to measure another model.
+
 To try it on the evaluation corpus instead (FastAPI tutorial, four Python HOWTOs, eight
 retrieval papers):
 
@@ -338,6 +355,7 @@ Settings come from environment variables (see `.env.example`).
 | `LLM_BASE_URL` / `LLM_MODEL` | `http://localhost:11434/v1` / `qwen3-vl:8b-instruct` | Any OpenAI-compatible endpoint |
 | `LLM_CONTEXT_TOKENS` | `8192` | Must match the server (`OLLAMA_CONTEXT_LENGTH`) |
 | `LLM_TIMEOUT_SECONDS` / `LLM_MAX_CONCURRENCY` | `60` / `1` | Per call; calls in flight (match the server's parallelism) |
+| `LLM_RESPONSE_FORMAT` | `json_schema` | `json_object` or `none` for models without schema support |
 | `EMBEDDING_MODEL` / `EMBEDDING_DEVICE` | `BAAI/bge-small-en-v1.5` / `auto` | `auto` picks CUDA, then Apple MPS, then CPU |
 | `RETRIEVAL_PRESET` | `hybrid_rerank` | A file in `configs/retrieval/` |
 | `ANSWER_PROMPT_VERSION` | `answer_v2` | A prompt in `app/rag/prompts/` |

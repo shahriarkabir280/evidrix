@@ -10,7 +10,7 @@ import threading
 import time
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Literal, Protocol
 
 import structlog
 
@@ -30,6 +30,13 @@ MESSAGE_OVERHEAD_TOKENS = 16
 
 class LLMError(Exception):
     """The model could not be reached, timed out, or returned an error."""
+
+
+# How a reply is constrained to JSON. Ollama and many hosted models follow a JSON schema; some
+# hosted models only accept "JSON mode" (json_object), and some neither (none). In every case the
+# prompt asks for JSON and the reply is validated, so a weaker mode means more retries, not
+# unchecked answers.
+ResponseFormat = Literal["json_schema", "json_object", "none"]
 
 
 class LLMBusyError(LLMError):
@@ -80,6 +87,7 @@ class OpenAICompatibleProvider:
         temperature: float = 0.0,
         max_concurrency: int = 1,
         queue_timeout_seconds: float = 120.0,
+        response_format: ResponseFormat = "json_schema",
         http_client: "httpx.Client | None" = None,
     ) -> None:
         from openai import OpenAI
@@ -87,6 +95,7 @@ class OpenAICompatibleProvider:
         self.model = model
         self.context_tokens = context_tokens
         self._temperature = temperature
+        self._response_format = response_format
         # At most as many calls in flight as the model server runs in parallel; the rest wait
         # here. Measured in the Part 6 load test without this: at concurrency 4, requests
         # queued inside Ollama ran into the 60 s timeout, the SDK retried them (20 retries),
@@ -124,11 +133,15 @@ class OpenAICompatibleProvider:
             )
 
         extra: dict[str, Any] = {}
-        if json_schema is not None:
+        if json_schema is not None and self._response_format == "json_schema":
             extra["response_format"] = {
                 "type": "json_schema",
                 "json_schema": {"name": "response", "schema": json_schema},
             }
+        elif json_schema is not None and self._response_format == "json_object":
+            # Valid JSON, but the shape is up to the model: the prompt describes it, and the
+            # reply is parsed and checked (with one retry) exactly as with a schema.
+            extra["response_format"] = {"type": "json_object"}
 
         if not self._slots.acquire(timeout=self._queue_timeout):
             raise LLMBusyError(f"No free slot for {self.model} within {self._queue_timeout:.0f} s.")
@@ -181,4 +194,5 @@ def get_llm() -> LLMProvider:
         max_retries=settings.llm_max_retries,
         max_concurrency=settings.llm_max_concurrency,
         queue_timeout_seconds=settings.llm_queue_timeout_seconds,
+        response_format=settings.llm_response_format,
     )

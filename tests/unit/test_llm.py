@@ -170,3 +170,28 @@ def test_a_failed_call_gives_its_slot_back():
         with pytest.raises(LLMError) as raised:
             provider.generate("s", "u", max_tokens=10)
         assert not isinstance(raised.value, LLMBusyError)
+
+
+@pytest.mark.parametrize(
+    ("mode", "expected"),
+    [
+        (
+            "json_schema",
+            {"type": "json_schema", "json_schema": {"name": "response", "schema": SCHEMA}},
+        ),
+        ("json_object", {"type": "json_object"}),
+        ("none", None),
+    ],
+)
+def test_response_format_follows_what_the_model_supports(mode, expected):
+    sent = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.append(json.loads(request.content))
+        return httpx.Response(200, json=completion('{"answer": "ok"}'))
+
+    provider_with(handler, response_format=mode).generate(
+        "s", "u", max_tokens=10, json_schema=SCHEMA
+    )
+
+    assert sent[0].get("response_format") == expected
