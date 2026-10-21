@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/banner.webp" alt="Evidrix: answers from your documents, with a source for every claim" width="100%" />
+</p>
+
 # Evidrix
 
 [![CI](https://github.com/shahriarkabir280/evidrix/actions/workflows/ci.yml/badge.svg)](https://github.com/shahriarkabir280/evidrix/actions/workflows/ci.yml)
